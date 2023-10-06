@@ -5,6 +5,8 @@ import com.freelance.forum.elasticsearch.pojo.ElasticDataModel;
 import com.freelance.forum.elasticsearch.pojo.GUIDType;
 import com.freelance.forum.elasticsearch.queries.Queries;
 import com.freelance.forum.elasticsearch.repository.ESRepository;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -17,6 +19,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
@@ -62,6 +65,9 @@ public class ESService {
      */
     public ElasticDataModel updateByEntryGuid(ElasticDataModel elasticDataModel, boolean copyAchievedResponse) {
         ElasticDataModel elasticDataModelToUpdate = findByGuid(elasticDataModel.getGuid());
+        if(StringUtils.isEmpty(elasticDataModel.getEntryGuid())) {
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"Entry Id Required for update but is provided");
+        }
         elasticDataModelToUpdate.setGuid(UUID.randomUUID().toString());
         elasticDataModelToUpdate.setCreated(getCurrentDate());
         elasticDataModelToUpdate.setEntryGuid(elasticDataModel.getEntryGuid());
