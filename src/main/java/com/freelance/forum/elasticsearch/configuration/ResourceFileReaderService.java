@@ -1,0 +1,64 @@
+package com.freelance.forum.elasticsearch.configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+import org.apache.commons.io.IOUtils;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class ResourceFileReaderService {
+    
+    public IndexMetadataConfiguration getDocsPropertyFile(String filePath, Class resourceClass) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        IndexMetadataConfiguration indexMetadataConfiguration;
+        indexMetadataConfiguration = mapper.readValue(getFileFromResources(filePath, resourceClass), IndexMetadataConfiguration.class);
+        return indexMetadataConfiguration;
+    }
+    
+    public PolicyInfo getPolicyFile(String policyFile, Class resourceClass) {
+        ObjectMapper mapper = new ObjectMapper();
+        PolicyInfo getPolicyInfo;
+        try {
+            String filePath = Constants.POLICY_DIR + policyFile;
+            getPolicyInfo = mapper.readValue(getFileFromResources(filePath, resourceClass), PolicyInfo.class);
+        } catch (IOException | NullPointerException e) {
+            throw new RuntimeException("policy file does not exist");
+        }
+        return getPolicyInfo;
+
+    }
+    
+    public Template getTemplateFile(String templateFile, Class resourceClass) {
+        ObjectMapper mapper = new ObjectMapper();
+        Template template;
+        try {
+            String filePath = Constants.TEMPLATE_DIR + templateFile;
+            template = mapper.readValue(getFileFromResources(filePath, resourceClass), Template.class);
+        } catch (IOException | NullPointerException e) {
+            throw new RuntimeException("template file does not exist");
+        }
+        return template;
+
+    }
+    
+    public String getMappingFromFile(String mappingFile, Class resourceClass) throws IOException {
+        String mappingString;
+        try {
+            mappingString =  getFileFromResources(mappingFile, resourceClass);
+        } catch (IOException | NullPointerException e) {
+            throw new RuntimeException("mapping file does not exist"+resourceClass.toString());
+        }
+        return mappingString;
+    }
+    
+    private String getFileFromResources(String fileName, Class resourceClass) throws IOException {
+        return IOUtils.toString(
+                Objects.requireNonNull(
+                        resourceClass.getClassLoader().getResourceAsStream(fileName)), StandardCharsets.UTF_8);
+    }
+
+}

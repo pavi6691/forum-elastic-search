@@ -1,0 +1,140 @@
+package com.freelance.forum.elasticsearch.pojo;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Document(indexName = "note-v1")
+public class ElasticDataModel implements Serializable {
+    @Id
+    private String guid; // Unique for the document and also the Elasticsearch key/id
+    @Field(type = FieldType.Text, name = "externalGuid")
+    private String externalGuid; // An external Guid
+
+    @Field(type = FieldType.Text, name = "threadGuid")
+    private String threadGuid; // A thread Guid
+
+    @Field(type = FieldType.Text, name = "entryGuid")
+    private String entryGuid; // A Guid for this entry
+
+    @Field(type = FieldType.Text, name = "threadGuidParent")
+    private String threadGuidParent; // A Guid for this entry's parent
+
+    @Field(type = FieldType.Text, name = "content")
+    private String content;
+
+    @Field(type = FieldType.Date, name = "created", format = DateFormat.date_time)
+    private Date created;
+
+    @Field(type = FieldType.Date, name = "archived", format = DateFormat.date_time)
+    private Date archived;
+    
+    private List<ElasticDataModel> answers = new ArrayList<>(); // answers/responses to this answer
+    
+    private List<ElasticDataModel> history = new ArrayList<>(); // Previous versions of this entryGuid, sorted by
+
+    public String getGuid() {
+        return guid;
+    }
+
+    public void setGuid(String guid) {
+        this.guid = guid;
+    }
+
+    public String getExternalGuid() {
+        return externalGuid;
+    }
+
+    public void setExternalGuid(String externalGuid) {
+        this.externalGuid = externalGuid;
+    }
+
+    public String getThreadGuid() {
+        return threadGuid;
+    }
+
+    public void setThreadGuid(String threadGuid) {
+        this.threadGuid = threadGuid;
+    }
+
+    public String getEntryGuid() {
+        return entryGuid;
+    }
+
+    public void setEntryGuid(String entryGuid) {
+        this.entryGuid = entryGuid;
+    }
+
+    public String getThreadGuidParent() {
+        return threadGuidParent;
+    }
+
+    public void setThreadGuidParent(String threadGuidParent) {
+        this.threadGuidParent = threadGuidParent;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public Date getArchived() {
+        return archived;
+    }
+
+    public void setArchived(Date archived) {
+        this.archived = archived;
+    }
+
+    public List<ElasticDataModel> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<ElasticDataModel> answers) {
+        this.answers = answers;
+    }
+
+    public List<ElasticDataModel> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<ElasticDataModel> history) {
+        this.history = history;
+    }
+
+    public void addAnswers(ElasticDataModel answer) {
+        this.answers.add(answer);
+    }
+    public void addHistory(ElasticDataModel history) {
+        this.history.add(history);
+    }
+    
+    public String toJson() {
+        Gson gson = new GsonBuilder().create();
+        return gson.toJson(this);
+    }
+    
+    public static ElasticDataModel fromJson(String json) {
+        Gson gson = new GsonBuilder().create();
+        return gson.fromJson(json, ElasticDataModel.class);
+    }
+}

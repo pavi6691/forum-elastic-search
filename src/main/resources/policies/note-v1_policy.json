@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "policy": {
+      "description": "A simple default note-v1_policy that changes the rollover the index.",
+      "default_state": "hot",
+      "states": [
+        {
+          "name": "hot",
+          "actions": [
+            {
+              "retry": {
+                "count": 6,
+                "backoff": "exponential",
+                "delay": "3h"
+              },
+              "rollover": {
+                "min_doc_count": 40000000,
+                "min_index_age": "365d",
+                "min_size": "10gb"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+

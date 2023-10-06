@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "shards" : 3,
+  "replicas": 1
+}

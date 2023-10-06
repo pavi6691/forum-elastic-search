@@ -1,0 +1,9 @@
+indexMetadataMap:
+  NOTE-V1:
+    policyFile: note-v1_policy.json
+    templateFile: note-v1_template.json
+    mappingFile: note-v1.json
+    cmd: [INSERT_ACCESSLOG]
+    indexType: MULTI
+    isEnableUpdate: false
+    docType: note-v1
