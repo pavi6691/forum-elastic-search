@@ -1,11 +1,11 @@
 package com.freelance.forum.service;
 
 import com.freelance.forum.elasticsearch.configuration.*;
+import com.freelance.forum.elasticsearch.pojo.DeleteResponse;
 import com.freelance.forum.elasticsearch.pojo.ElasticDataModel;
 import com.freelance.forum.elasticsearch.pojo.GUIDType;
 import com.freelance.forum.elasticsearch.queries.Queries;
 import com.freelance.forum.elasticsearch.repository.ESRepository;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -21,18 +21,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 import java.util.*;
 
 @Service
 public class ESService {
-    
+
     @Autowired
     ResourceFileReaderService resourceFileReaderService;
 
     @Autowired
     EsConfig esConfig;
-    
+
     @Autowired
     ESRepository esRepository;
 
@@ -50,8 +52,8 @@ public class ESService {
         }
         return esRepository.save(elasticDataModel);
     }
-    
-    public ElasticDataModel findByGuid(String guid) {
+
+    public ElasticDataModel searchByGuid(String guid) {
         return esRepository.findById(guid).get();
     }
 
@@ -63,11 +65,11 @@ public class ESService {
      * @param elasticDataModel
      * @return
      */
-    public ElasticDataModel updateByEntryGuid(ElasticDataModel elasticDataModel, boolean copyAchievedResponse) {
-        ElasticDataModel elasticDataModelToUpdate = findByGuid(elasticDataModel.getGuid());
+    public ElasticDataModel updateByEntryGuid(ElasticDataModel elasticDataModel) {
         if(StringUtils.isEmpty(elasticDataModel.getEntryGuid())) {
             throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"Entry Id Required for update but is provided");
         }
+        ElasticDataModel elasticDataModelToUpdate = searchByGuid(elasticDataModel.getGuid());
         elasticDataModelToUpdate.setGuid(UUID.randomUUID().toString());
         elasticDataModelToUpdate.setCreated(getCurrentDate());
         elasticDataModelToUpdate.setEntryGuid(elasticDataModel.getEntryGuid());
@@ -80,28 +82,43 @@ public class ESService {
      *   1. externalGuid
      *   2. entryGuid
      * @param guid
+     * @param searchUpdateHistory
      * @param sendArchivedResponse
      * @param guidType
      * @return
      */
-    public ElasticDataModel queryGuid(String guid, boolean sendArchivedResponse, GUIDType guidType) {
+    public ElasticDataModel searchByGuid(String guid,boolean searchUpdateHistory,boolean sendArchivedResponse,boolean searchResponses,
+                                       GUIDType guidType) {
         Iterator<SearchHit> searchResponseIterator = null;
         if(GUIDType.EXTERNAL == guidType) {
             searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_BY_EXTERNAL_GUID, guid), SortOrder.DESC);
         } else if(GUIDType.ENTRY == guidType) {
             searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_BY_ENTRY_GUID, guid), SortOrder.DESC);
         }
+        ElasticDataModel rootEntry = new ElasticDataModel();
         if(searchResponseIterator != null) {
-            ElasticDataModel rootEntry = new ElasticDataModel();
             while (searchResponseIterator.hasNext()) {
                 rootEntry = ElasticDataModel.fromJson(searchResponseIterator.next().getSourceAsString());
                 if (rootEntry.getThreadGuidParent() == null) {
                     break;
                 }
             }
-            return getResponsesForGuid(rootEntry, new HashSet<>(),sendArchivedResponse);
+            if(searchResponses && (sendArchivedResponse || rootEntry.getArchived() == null)/*do not search archived response*/) {
+                return getResponsesForGuid(rootEntry, new HashSet<>(), searchUpdateHistory, sendArchivedResponse);
+            }
         }
-        return null;
+        return rootEntry;
+    }
+
+    public ElasticDataModel archive(String guid,GUIDType guidType) {
+        ElasticDataModel rootEntry = searchByGuid(guid,false,false,false,guidType);
+        rootEntry.setArchived(getCurrentDate());
+        return esRepository.save(rootEntry);
+    }
+    
+    public DeleteResponse delete(String guid, GUIDType guidType) {
+        ElasticDataModel rootEntry = searchByGuid(guid,true,true,true,guidType);
+        return new DeleteResponse(rootEntry,0);
     }
 
     private Iterator<SearchHit> getSearchResponse(String query,SortOrder sortOrder) {
@@ -115,7 +132,7 @@ public class ESService {
             throw new RuntimeException(e);
         }
     }
-    
+
     private SearchRequest getQueryRequest(String query, SortOrder sortOrder) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.wrapperQuery(query));
@@ -125,31 +142,36 @@ public class ESService {
         searchRequest.source(searchSourceBuilder);
         return searchRequest;
     }
-    
-    private ElasticDataModel getResponsesForGuid(ElasticDataModel responseRoot,Set<String> entryUuid,boolean sendArchivedResponse) {
-        checkAndAddHistory(responseRoot,sendArchivedResponse);
+
+    private ElasticDataModel getResponsesForGuid(ElasticDataModel responseRoot,Set<String> entryUuid,
+                                                 boolean searchUpdateHistory,boolean sendArchivedResponse) {
+        checkAndAddHistory(responseRoot,searchUpdateHistory);
         Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_RESPONSES_BY_THREAD_GUID,
                 responseRoot.getThreadGuid()), SortOrder.DESC);
         while(searchResponseIterator.hasNext()) {
             ElasticDataModel response = ElasticDataModel.fromJson(searchResponseIterator.next().getSourceAsString());
             if(!entryUuid.contains(response.getEntryGuid())) {
+                if(!sendArchivedResponse && responseRoot.getArchived() != null) {
+                    break; // do not search archived response
+                }
                 responseRoot.addAnswers(response);
                 entryUuid.add(response.getEntryGuid());
             }
-            getResponsesForGuid(response,entryUuid, sendArchivedResponse);
+            getResponsesForGuid(response,entryUuid,searchUpdateHistory, sendArchivedResponse);
         }
         return responseRoot;
     }
-    
-    private void checkAndAddHistory(ElasticDataModel entry,boolean sendArchivedResponse) {
-        if(sendArchivedResponse && entry != null) {
+
+    private void checkAndAddHistory(ElasticDataModel entry,boolean getUpdateHistory) {
+        if(getUpdateHistory && entry != null) {
             Iterator<SearchHit> historyIterator = getSearchResponse(String.format(Queries.QUERY_BY_ENTRY_GUID,
                     entry.getEntryGuid()), SortOrder.DESC);
             if(historyIterator.hasNext()) {
                 historyIterator.next();
             }
             while(historyIterator.hasNext()) {
-                entry.addHistory(ElasticDataModel.fromJson(historyIterator.next().getSourceAsString()));
+                ElasticDataModel history = ElasticDataModel.fromJson(historyIterator.next().getSourceAsString());
+                entry.addHistory(history);
             }
         }
     }
@@ -160,10 +182,10 @@ public class ESService {
     public String createIndex(String indexName) {
         try {
             IndexMetadataConfiguration indexMetadataConfiguration =
-                    resourceFileReaderService.getDocsPropertyFile("conf/application.yaml",this.getClass());
-//            Template template = resourceFileReaderService.getTemplateFile("templates/note-v1_template.yaml",this.getClass());
-            String mapping  = resourceFileReaderService.getMappingFromFile("mappings/note-v1_mapping.json",this.getClass());
-//            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile("policies/note-v1_policy.json",this.getClass());
+                    resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
+//            Template template = resourceFileReaderService.getTemplateFile(Constants.NOTE_V1_INDEX_TEMPLATE,this.getClass());
+            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
+//            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
             CreateIndexRequest request = new CreateIndexRequest(indexName);
             request.source(mapping, XContentType.JSON);
             CreateIndexResponse createIndexResponse = esConfig.elasticsearchClient().indices().create(request, RequestOptions.DEFAULT);

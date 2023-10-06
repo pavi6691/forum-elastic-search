@@ -17,28 +17,41 @@ public class ESResource {
     public ElasticDataModel saveNew(@RequestBody ElasticDataModel elasticDataModel) {
         return service.saveNew(elasticDataModel);
     }
-    
-    @GetMapping("/findByGuid/{guid}")
-    public ElasticDataModel findByGuid(@PathVariable String guid) {
-        return service.findByGuid(guid);
+
+    @GetMapping("/search/guid")
+    public ElasticDataModel searchByGuid(@RequestParam String guid) {
+        return service.searchByGuid(guid);
     }
 
-    @PutMapping("/update/{copyAchievedResponse}")
-    public ElasticDataModel update(@RequestBody ElasticDataModel elasticDataModel,@PathVariable boolean copyAchievedResponse) {
-        return service.updateByEntryGuid(elasticDataModel,copyAchievedResponse);
+    @PutMapping("/update")
+    public ElasticDataModel update(@RequestBody ElasticDataModel elasticDataModel) {
+        return service.updateByEntryGuid(elasticDataModel);
     }
 
-    @GetMapping("/findByExternalGuid/{externalGuid}/{sendArchivedResponse}")
-    public ElasticDataModel queryByExternalGuid(@PathVariable String externalGuid,@PathVariable boolean sendArchivedResponse) {
-        return service.queryGuid(externalGuid,sendArchivedResponse, GUIDType.EXTERNAL);
+    @GetMapping("/search/externalGuid")
+    public ElasticDataModel searchByExternalGuid(@RequestParam String externalGuid,@RequestParam boolean searchUpdateHistory,
+                                                @RequestParam boolean sendArchivedResponse) {
+        return service.searchByGuid(externalGuid,searchUpdateHistory,sendArchivedResponse,true, GUIDType.EXTERNAL);
     }
 
-    @GetMapping("/findByEntryGuid/{entryGuid}/{sendArchivedResponse}")
-    public ElasticDataModel queryByEntryGuid(@PathVariable String entryGuid,@PathVariable boolean sendArchivedResponse) {
-        return service.queryGuid(entryGuid,sendArchivedResponse,GUIDType.ENTRY);
+    @GetMapping("/search/entryGuid")
+    public ElasticDataModel searchByEntryGuid(@RequestParam String entryGuid,@RequestParam boolean searchUpdateHistory,
+                                             @RequestParam boolean sendArchivedResponse) {
+        return service.searchByGuid(entryGuid,searchUpdateHistory,sendArchivedResponse,true,GUIDType.ENTRY);
     }
-    @PostMapping("/createIndex/{index}")
-    public String createIndex(@PathVariable String index) {
+
+    @PutMapping("/archive/externalGuid")
+    public ElasticDataModel archiveExternalGuid(@RequestParam String externalGuid) {
+        return service.archive(externalGuid,GUIDType.EXTERNAL);
+    }
+
+    @PutMapping("/archive/entryGuid")
+    public ElasticDataModel archiveEntryGuid(@RequestParam String entryGuid) {
+        return service.archive(entryGuid,GUIDType.EXTERNAL);
+    }
+
+    @PostMapping("/createIndex")
+    public String createIndex(@RequestParam String index) {
         return service.createIndex(index);
     }
 }
