@@ -1,4 +1,4 @@
-- Execute below command to start elastic container
+Execute below command to start elastic container
   - docker run --name elastic_search -d -p 9200:9200 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.8.1
 
 Get Started with - 
