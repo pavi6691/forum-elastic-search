@@ -3,8 +3,12 @@ package com.freelance.forum.resource;
 import com.freelance.forum.elasticsearch.pojo.ElasticDataModel;
 import com.freelance.forum.elasticsearch.pojo.GUIDType;
 import com.freelance.forum.service.ESService;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -31,13 +35,13 @@ public class ESResource {
     @GetMapping("/search/externalGuid")
     public ElasticDataModel searchByExternalGuid(@RequestParam String externalGuid,@RequestParam boolean searchUpdateHistory,
                                                 @RequestParam boolean sendArchivedResponse) {
-        return service.searchByGuid(externalGuid,searchUpdateHistory,sendArchivedResponse,true, GUIDType.EXTERNAL);
+        return service.searchByGuid(externalGuid,searchUpdateHistory,sendArchivedResponse,true, GUIDType.EXTERNAL,new ArrayList<>(), SortOrder.DESC);
     }
 
     @GetMapping("/search/entryGuid")
     public ElasticDataModel searchByEntryGuid(@RequestParam String entryGuid,@RequestParam boolean searchUpdateHistory,
                                              @RequestParam boolean sendArchivedResponse) {
-        return service.searchByGuid(entryGuid,searchUpdateHistory,sendArchivedResponse,true,GUIDType.ENTRY);
+        return service.searchByGuid(entryGuid,searchUpdateHistory,sendArchivedResponse,true,GUIDType.ENTRY,new ArrayList<>(),SortOrder.DESC);
     }
 
     @PutMapping("/archive/externalGuid")
@@ -47,11 +51,21 @@ public class ESResource {
 
     @PutMapping("/archive/entryGuid")
     public ElasticDataModel archiveEntryGuid(@RequestParam String entryGuid) {
-        return service.archive(entryGuid,GUIDType.EXTERNAL);
+        return service.archive(entryGuid,GUIDType.ENTRY);
+    }
+
+    @DeleteMapping("/delete/externalGuid")
+    public List<ElasticDataModel> deleteExternalGuid(@RequestParam String externalGuid) {
+        return service.delete(externalGuid,GUIDType.EXTERNAL);
+    }
+
+    @DeleteMapping("/delete/entryGuid")
+    public List<ElasticDataModel> deleteEntryGuidGuid(@RequestParam String entryGuid) {
+        return service.delete(entryGuid,GUIDType.ENTRY);
     }
 
     @PostMapping("/createIndex")
-    public String createIndex(@RequestParam String index) {
-        return service.createIndex(index);
+    public String createIndex(@RequestParam String indexName) {
+        return service.createIndex(indexName);
     }
 }

@@ -1,7 +1,6 @@
 package com.freelance.forum.service;
 
 import com.freelance.forum.elasticsearch.configuration.*;
-import com.freelance.forum.elasticsearch.pojo.DeleteResponse;
 import com.freelance.forum.elasticsearch.pojo.ElasticDataModel;
 import com.freelance.forum.elasticsearch.pojo.GUIDType;
 import com.freelance.forum.elasticsearch.queries.Queries;
@@ -42,7 +41,6 @@ public class ESService {
     private String indexName;
 
     public ElasticDataModel saveNew(ElasticDataModel elasticDataModel) {
-        elasticDataModel.setGuid(UUID.randomUUID().toString());
         elasticDataModel.setEntryGuid(UUID.randomUUID().toString());
         elasticDataModel.setThreadGuid(UUID.randomUUID().toString());
         elasticDataModel.setCreated(getCurrentDate());
@@ -54,7 +52,7 @@ public class ESService {
     }
 
     public ElasticDataModel searchByGuid(String guid) {
-        return esRepository.findById(guid).get();
+        return esRepository.findById(guid).orElse(null);
     }
 
     /**
@@ -67,9 +65,12 @@ public class ESService {
      */
     public ElasticDataModel updateByEntryGuid(ElasticDataModel elasticDataModel) {
         if(StringUtils.isEmpty(elasticDataModel.getEntryGuid())) {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"Entry Id Required for update but is provided");
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"Entry id is not provided");
         }
         ElasticDataModel elasticDataModelToUpdate = searchByGuid(elasticDataModel.getGuid());
+        if(elasticDataModelToUpdate== null) {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "guid to update is not exists");
+        }
         elasticDataModelToUpdate.setGuid(UUID.randomUUID().toString());
         elasticDataModelToUpdate.setCreated(getCurrentDate());
         elasticDataModelToUpdate.setEntryGuid(elasticDataModel.getEntryGuid());
@@ -88,12 +89,12 @@ public class ESService {
      * @return
      */
     public ElasticDataModel searchByGuid(String guid,boolean searchUpdateHistory,boolean sendArchivedResponse,boolean searchResponses,
-                                       GUIDType guidType) {
+                                       GUIDType guidType,List<ElasticDataModel> flatten,SortOrder sortOrder) {
         Iterator<SearchHit> searchResponseIterator = null;
         if(GUIDType.EXTERNAL == guidType) {
-            searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_BY_EXTERNAL_GUID, guid), SortOrder.DESC);
+            searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_BY_EXTERNAL_GUID, guid), sortOrder);
         } else if(GUIDType.ENTRY == guidType) {
-            searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_BY_ENTRY_GUID, guid), SortOrder.DESC);
+            searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_BY_ENTRY_GUID, guid), sortOrder);
         }
         ElasticDataModel rootEntry = new ElasticDataModel();
         if(searchResponseIterator != null) {
@@ -104,23 +105,33 @@ public class ESService {
                 }
             }
             if(searchResponses && (sendArchivedResponse || rootEntry.getArchived() == null)/*do not search archived response*/) {
-                return getResponsesForGuid(rootEntry, new HashSet<>(), searchUpdateHistory, sendArchivedResponse);
+                flatten.add(rootEntry);
+                return getResponsesForGuid(rootEntry, new HashSet<>(), searchUpdateHistory, sendArchivedResponse, flatten);
             }
         }
         return rootEntry;
     }
 
     public ElasticDataModel archive(String guid,GUIDType guidType) {
-        ElasticDataModel rootEntry = searchByGuid(guid,false,false,false,guidType);
+        ElasticDataModel rootEntry = searchByGuid(guid,false,false,false,guidType,new ArrayList<>(),SortOrder.ASC);
         rootEntry.setArchived(getCurrentDate());
         return esRepository.save(rootEntry);
     }
     
-    public DeleteResponse delete(String guid, GUIDType guidType) {
-        ElasticDataModel rootEntry = searchByGuid(guid,true,true,true,guidType);
-        return new DeleteResponse(rootEntry,0);
+    public List<ElasticDataModel> delete(String guid, GUIDType guidType) {
+        List<ElasticDataModel> entriesToDelete = new ArrayList<>();
+        searchByGuid(guid,true,true,true,guidType,entriesToDelete,SortOrder.DESC);
+        entriesToDelete.forEach(entryToDelete -> {
+            if(entryToDelete.getGuid() != null) {
+                esRepository.deleteById(entryToDelete.getGuid());
+            }
+        });
+        if(entriesToDelete.size() == 1 && entriesToDelete.get(0).getGuid() == null) {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Guid to delete is not found");
+        }
+        return entriesToDelete;
     }
-
+ 
     private Iterator<SearchHit> getSearchResponse(String query,SortOrder sortOrder) {
         SearchRequest searchRequest = getQueryRequest(query,sortOrder);
         try {
@@ -142,27 +153,29 @@ public class ESService {
         searchRequest.source(searchSourceBuilder);
         return searchRequest;
     }
-
+    
     private ElasticDataModel getResponsesForGuid(ElasticDataModel responseRoot,Set<String> entryUuid,
-                                                 boolean searchUpdateHistory,boolean sendArchivedResponse) {
-        checkAndAddHistory(responseRoot,searchUpdateHistory);
+                                                 boolean searchUpdateHistory,boolean sendArchivedResponse,
+                                                 List<ElasticDataModel> flattenList) {
+        checkAndAddHistory(responseRoot,searchUpdateHistory,flattenList);
         Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_RESPONSES_BY_THREAD_GUID,
                 responseRoot.getThreadGuid()), SortOrder.DESC);
         while(searchResponseIterator.hasNext()) {
             ElasticDataModel response = ElasticDataModel.fromJson(searchResponseIterator.next().getSourceAsString());
             if(!entryUuid.contains(response.getEntryGuid())) {
-                if(!sendArchivedResponse && responseRoot.getArchived() != null) {
+                if(!sendArchivedResponse && response.getArchived() != null) {
                     break; // do not search archived response
                 }
                 responseRoot.addAnswers(response);
+                flattenList.add(response);
                 entryUuid.add(response.getEntryGuid());
             }
-            getResponsesForGuid(response,entryUuid,searchUpdateHistory, sendArchivedResponse);
+            getResponsesForGuid(response,entryUuid,searchUpdateHistory, sendArchivedResponse,flattenList);
         }
         return responseRoot;
     }
 
-    private void checkAndAddHistory(ElasticDataModel entry,boolean getUpdateHistory) {
+    private void checkAndAddHistory(ElasticDataModel entry,boolean getUpdateHistory,List<ElasticDataModel> flattenList) {
         if(getUpdateHistory && entry != null) {
             Iterator<SearchHit> historyIterator = getSearchResponse(String.format(Queries.QUERY_BY_ENTRY_GUID,
                     entry.getEntryGuid()), SortOrder.DESC);
@@ -172,6 +185,7 @@ public class ESService {
             while(historyIterator.hasNext()) {
                 ElasticDataModel history = ElasticDataModel.fromJson(historyIterator.next().getSourceAsString());
                 entry.addHistory(history);
+                flattenList.add(history);
             }
         }
     }

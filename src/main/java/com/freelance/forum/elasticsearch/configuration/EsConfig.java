@@ -1,5 +1,4 @@
 package com.freelance.forum.elasticsearch.configuration;
-
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,25 +13,22 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 public class EsConfig extends AbstractElasticsearchConfiguration {
 
     @Value("${elasticsearch.host}")
-    private String esHost;
+    private String elasticsearchHost;
 
-    @Value("${elasticsearch.port}")
-    private int esPort;
+    @Value("${index.name}")
+    private String indexName;
 
-    @Value("${elasticsearch.clustername}")
-    private String esClusterName;
-    
-    
+    @Bean
+    public String indexName(){
+        return indexName;
+    }
+
     @Override
     @Bean
     public RestHighLevelClient elasticsearchClient() {
-
-        final ClientConfiguration clientConfiguration =
-                ClientConfiguration
-                        .builder()
-                        .connectedTo(esHost + ":" + esPort)
-                        .build();
-
+        final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
+                .connectedTo(elasticsearchHost)
+                .build();
         return RestClients.create(clientConfiguration).rest();
     }
 }

@@ -2,20 +2,20 @@ package com.freelance.forum.elasticsearch.pojo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
-@Document(indexName = "note-v1")
+@Document(indexName = "#{@indexName}", createIndex = false)
 public class ElasticDataModel implements Serializable {
+    
     @Id
-    private String guid; // Unique for the document and also the Elasticsearch key/id
+    private String guid = UUID.randomUUID().toString();; // Unique for the document and also the Elasticsearch key/id
+    
     @Field(type = FieldType.Text, name = "externalGuid")
     private String externalGuid; // An external Guid
 
