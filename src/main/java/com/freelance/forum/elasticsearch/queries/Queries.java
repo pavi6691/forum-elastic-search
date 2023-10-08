@@ -2,22 +2,25 @@ package com.freelance.forum.elasticsearch.queries;
 
 public class Queries {
     
-    public static String QUERY_BY_EXTERNAL_GUID = "{\n" +
+    public static String QUERY_BY_GUID = "{\n" +
             "  \"match_phrase\": {\n" +
-            "    \"externalGuid\": \"%s\"\n" +
+            "    \"%s\": \"%s\"\n" +
             "  }\n" +
             "}";
-
-    public static String QUERY_BY_ENTRY_GUID = "{\n" +
-            "  \"match_phrase\": {\n" +
-            "    \"entryGuid\": \"%s\"\n" +
+    public static String QUERY_ARCHIVED_ENTRIES = "{\n" +
+            "  \"bool\": {\n" +
+            "    \"must\": [\n" +
+            "      {\n" +
+            "        \"exists\": {\n" +
+            "          \"field\": \"archived\"\n" +
+            "        }\n" +
+            "      },\n" +
+            "      {\n" +
+            "        \"match_phrase\": {\n" +
+            "          \"%s\": \"%s\"\n" +
+            "        }\n" +
+            "      }\n" +
+            "    ]\n" +
             "  }\n" +
             "}";
-    
-    public static String QUERY_RESPONSES_BY_THREAD_GUID = "{\n" +
-            "  \"match_phrase\": {\n" +
-            "    \"threadGuidParent\": \"%s\"\n" +
-            "  }\n" +
-            "}";
-    public static String QUERY_TO_SEARCH_CONTENT = "{ \"match\": { \"content\": \"%s\" } }";
 }

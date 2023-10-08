@@ -11,10 +11,10 @@ import java.util.List;
 import java.util.UUID;
 
 @Document(indexName = "#{@indexName}", createIndex = false)
-public class ElasticDataModel implements Serializable {
+public class ElasticDataModel {
     
     @Id
-    private String guid = UUID.randomUUID().toString();; // Unique for the document and also the Elasticsearch key/id
+    private String guid = UUID.randomUUID().toString(); // Unique for the document and also the Elasticsearch key/id
     
     @Field(type = FieldType.Text, name = "externalGuid")
     private String externalGuid; // An external Guid
