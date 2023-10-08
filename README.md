@@ -3,7 +3,7 @@
 
 ### Get Started with creating index. execute below API
   ```http
-    POST http://localhost:8080/api/v1/createIndex?indexName=note-v1
+  POST http://localhost:8080/api/v1/createIndex?indexName=note-v1
   ```
 
 ### API Details
@@ -29,14 +29,14 @@
   | `content`      | `string`  | **Required**. Content                   |
 
 
-  2. #### Create Answer (thread entry)
+  2. #### Create thread entry
   ```http
   POST http://localhost:8080/api/v1/create
   ```
-  | Field              | Type     | Description                                                      |
-  |:-------------------|:---------|:-----------------------------------------------------------------|
-  | `threadGuidParent` | `string` | **Required**. Thread GUID Of entry to this answer is created for |
-  | `content`          | `string` | **Required**. Content                                            | 
+  | Field              | Type     | Description                                                  |
+  |:-------------------|:---------|:-------------------------------------------------------------|
+  | `threadGuidParent` | `string` | **Required**. Thread GUID Of parent to create an entry under |
+  | `content`          | `string` | **Required**. Content                                        | 
 
 
   3. #### Update - By entryGuid
@@ -61,26 +61,26 @@
 
   5. #### Search - by externalGuid
   ```http
-  GET http://localhost:8080/api/v1/search/external?externalGuid=External-ID&searchUpdateHistory=true&getArchivedResponse=true
+  GET http://localhost:8080/api/v1/search/external?externalGuid=External-ID&getUpdateHistory=true&getArchivedResponse=true
   ```
-  | QueryParams            | Type      | Description                                                                      |
-  |:-----------------------|:----------|:---------------------------------------------------------------------------------|
-  | `externalGuid`         | `string`  | **Required**. GUID of an external system                                         |
-  | `searchUpdateHistory`  | `boolean` | **optional**. **default false** true to Include history of this entry            |
+  | QueryParams           | Type      | Description                                                                      |
+  |:----------------------|:----------|:---------------------------------------------------------------------------------|
+  | `externalGuid`        | `string`  | **Required**. GUID of an external system                                         |
+  | `getUpdateHistory`    | `boolean` | **optional**. **default false** true to Include history of this entry            |
   | `getArchivedResponse` | `boolean` | **optional**. **default false** true to Include archived entries if exists       |
-  | `onlyArchived`         | `boolean` | **optional**. **default true** Search only archived/all. default it searches all |
+  | `onlyArchived`        | `boolean` | **optional**. **default true** Search only archived/all. default it searches all |
 
 
   6. #### Search - by entryGuid
   ```http
-  GET http://localhost:8080/api/v1/search/entry?entryGuid=EntryID&searchUpdateHistory=true&getArchivedResponse=true
+  GET http://localhost:8080/api/v1/search/entry?entryGuid=EntryID&getUpdateHistory=true&getArchivedResponse=true
   ```
-  | QueryParams            | Type      | Description                                                                      |
-  |:-----------------------|:----------|:---------------------------------------------------------------------------------|
-  | `entryGuid`            | `string`  | **Required**. GUID of an entry                                                   |
-  | `searchUpdateHistory`  | `boolean` | **optional**. **default false** true to Include all history of this entry        |
+  | QueryParams           | Type      | Description                                                                      |
+  |:----------------------|:----------|:---------------------------------------------------------------------------------|
+  | `entryGuid`           | `string`  | **Required**. GUID of an entry                                                   |
+  | `getUpdateHistory`    | `boolean` | **optional**. **default false** true to Include all history of this entry        |
   | `getArchivedResponse` | `boolean` | **optional**. **default false** true to Include all archived entries if exits    |
-  | `onlyArchived`         | `boolean` | **optional**. **default true** Search only archived/all. default it searches all |
+  | `onlyArchived`        | `boolean` | **optional**. **default true** Search only archived/all. default it searches all |
 
 
   7. #### Archive - By ExternalGuid
@@ -121,19 +121,19 @@
 
   11. #### Delete - By ExternalGuid
   ```http
-  PUT http://localhost:8080/api/v1/delete/external?externalGuid=&deleteOnlyArchived=
+  PUT http://localhost:8080/api/v1/delete/external?externalGuid=&deleteEntries=archived
   ```
-  | QueryParams          | Type      | Description                            |
-  |:---------------------|:----------|:---------------------------------------|
-  | `externalGuid`       | `string`  | **Required**. GUID of external system  |
-  | `deleteOnlyArchived` | `boolean` | **Required**. Delete only archived/all |
+  | QueryParams       | Type     | Description                                                                      |
+  |:------------------|:---------|:---------------------------------------------------------------------------------|
+  | `externalGuid`    | `string` | **Required**. GUID of external system                                            |
+  | `entriesToDelete` | `String` | **Required**. "all" to Delete all entries and "archived" to delete only archived |
 
 
   12. #### Delete - By entryGuid
   ```http
-  PUT http://localhost:8080/api/v1/delete/entry?entryGuid=&deleteOnlyArchived=
+  PUT http://localhost:8080/api/v1/delete/entry?entryGuid=&deleteEntries=archived
   ```
-  | QueryParams          | Type      | Description                            |
-  |:---------------------|:----------|:---------------------------------------|
-  | `entryGuid`          | `string`  | **Required**. GUID of an entry         |
-  | `deleteOnlyArchived` | `boolean` | **Required**. Delete only archived/all |
+  | QueryParams       | Type      | Description                                                                     |
+  |:------------------|:----------|:--------------------------------------------------------------------------------|
+  | `entryGuid`       | `string`  | **Required**. GUID of an entry                                                  |
+  | `entriesToDelete` | `String`  | **Required**. "all" to Delete all enteis and "archived" to delete only archived |

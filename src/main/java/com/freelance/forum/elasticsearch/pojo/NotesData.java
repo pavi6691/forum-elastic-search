@@ -4,14 +4,13 @@ import com.google.gson.GsonBuilder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 @Document(indexName = "#{@indexName}", createIndex = false)
-public class ElasticDataModel {
+public class NotesData {
     
     @Id
     private String guid = UUID.randomUUID().toString(); // Unique for the document and also the Elasticsearch key/id
@@ -37,9 +36,9 @@ public class ElasticDataModel {
     @Field(type = FieldType.Date, name = "archived", format = DateFormat.date_time)
     private Date archived;
     
-    private List<ElasticDataModel> answers = new ArrayList<>(); // answers/responses to this answer
+    private List<NotesData> threads = new ArrayList<>(); // answers/responses to this answer
     
-    private List<ElasticDataModel> history = new ArrayList<>(); // Previous versions of this entryGuid, sorted by
+    private List<NotesData> history = new ArrayList<>(); // Previous versions of this entryGuid, sorted by
 
     public String getGuid() {
         return guid;
@@ -105,26 +104,26 @@ public class ElasticDataModel {
         this.archived = archived;
     }
 
-    public List<ElasticDataModel> getAnswers() {
-        return answers;
+    public List<NotesData> getThreads() {
+        return threads;
     }
 
-    public void setAnswers(List<ElasticDataModel> answers) {
-        this.answers = answers;
+    public void setAnswers(List<NotesData> answers) {
+        this.threads = answers;
     }
 
-    public List<ElasticDataModel> getHistory() {
+    public List<NotesData> getHistory() {
         return history;
     }
 
-    public void setHistory(List<ElasticDataModel> history) {
+    public void setHistory(List<NotesData> history) {
         this.history = history;
     }
 
-    public void addAnswers(ElasticDataModel answer) {
-        this.answers.add(answer);
+    public void addThreads(NotesData answer) {
+        this.threads.add(answer);
     }
-    public void addHistory(ElasticDataModel history) {
+    public void addHistory(NotesData history) {
         this.history.add(history);
     }
     
@@ -133,8 +132,8 @@ public class ElasticDataModel {
         return gson.toJson(this);
     }
     
-    public static ElasticDataModel fromJson(String json) {
+    public static NotesData fromJson(String json) {
         Gson gson = new GsonBuilder().create();
-        return gson.fromJson(json, ElasticDataModel.class);
+        return gson.fromJson(json, NotesData.class);
     }
 }

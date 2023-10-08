@@ -1,10 +1,11 @@
 package com.freelance.forum.service;
 
 import com.freelance.forum.elasticsearch.configuration.*;
-import com.freelance.forum.elasticsearch.pojo.ElasticDataModel;
+import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexFields;
 import com.freelance.forum.elasticsearch.queries.Queries;
 import com.freelance.forum.elasticsearch.repository.ESRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -40,32 +40,35 @@ public class ESService {
     @Value("${index.name}")
     private String indexName;
 
-    @Value("${max.number.of.results}")
-    private int max_number_of_results;
+    @Value("${max.number.of.history.and.threads}")
+    private int max_number_of_history_and_threads;
 
-    public ElasticDataModel saveNew(ElasticDataModel elasticDataModel) {
-        if(StringUtils.isEmpty(elasticDataModel.getGuid())) {
-            elasticDataModel.setGuid(UUID.randomUUID().toString());
+    public NotesData saveNew(NotesData notesData) {
+        if(StringUtils.isEmpty(notesData.getGuid())) {
+            notesData.setGuid(UUID.randomUUID().toString());
         }
-        elasticDataModel.setEntryGuid(UUID.randomUUID().toString());
-        elasticDataModel.setThreadGuid(UUID.randomUUID().toString());
-        elasticDataModel.setCreated(getCurrentDate());
-        if(StringUtils.isEmpty(elasticDataModel.getThreadGuidParent())) {
-            elasticDataModel.setThreadGuidParent(null);
+        notesData.setEntryGuid(UUID.randomUUID().toString());
+        notesData.setThreadGuid(UUID.randomUUID().toString());
+        notesData.setCreated(getCurrentDate());
+        if(StringUtils.isEmpty(notesData.getThreadGuidParent())) {
+            notesData.setThreadGuidParent(null);
         } else {
-            ElasticDataModel existingEntry = 
-                    search(String.format(Queries.QUERY_BY_GUID, ESIndexFields.THREAD.getEsFieldName(), elasticDataModel.getThreadGuidParent()),
+            // It's a thread that needs to created
+            NotesData existingEntry = 
+                    search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexFields.THREAD.getEsFieldName(), notesData.getThreadGuidParent()),
                             false,false,false,SortOrder.ASC);
-            if(existingEntry != null) {
-                elasticDataModel.setExternalGuid(existingEntry.getExternalGuid());
-            } else {
+            if(existingEntry == null) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Entry with this thread guid is not present");
+            } else if(existingEntry.getArchived() != null) {
+                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot add thread");
+            } else {
+                notesData.setExternalGuid(existingEntry.getExternalGuid());
             }
         }
-        return esRepository.save(elasticDataModel);
+        return esRepository.save(notesData);
     }
 
-    public ElasticDataModel searchByGuid(String guid) {
+    public NotesData searchByGuid(String guid) {
         return esRepository.findById(guid).orElse(null);
     }
 
@@ -74,32 +77,33 @@ public class ESService {
      *   - provide GUID that's being updated
      *   - provide entryGUID in payload. - same entryGUID is used in new version of updated entry
      *   - So to get history, we can query by entryGUID
-     * @param elasticDataModel
+     * @param notesData
      * @return
      */
-    public ElasticDataModel update(ElasticDataModel elasticDataModel, ESIndexFields esIndexFields) {
-        List<ElasticDataModel> results = new ArrayList<>();
-        ElasticDataModel elasticDataModelToUpdate = null;
+    public NotesData update(NotesData notesData, ESIndexFields esIndexFields) {
+        NotesData notesDataToUpdate = null;
         if(esIndexFields == ESIndexFields.ENTRY ){
-            if(StringUtils.isEmpty(elasticDataModel.getEntryGuid())) {
+            if(StringUtils.isEmpty(notesData.getEntryGuid())) {
                 throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided");
             } else {
-                elasticDataModelToUpdate = search(String.format(Queries.QUERY_BY_GUID, esIndexFields.getEsFieldName(), elasticDataModel.getEntryGuid()),
+                notesDataToUpdate = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(), notesData.getEntryGuid()),
                         false,false,false,SortOrder.ASC);
             }
-        } else if(esIndexFields == ESIndexFields.GUID && StringUtils.isEmpty(elasticDataModel.getGuid())) {
+        } else if(esIndexFields == ESIndexFields.GUID && StringUtils.isEmpty(notesData.getGuid())) {
             throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"GUID is not provided");
         } else {
-            elasticDataModelToUpdate = searchByGuid(elasticDataModel.getGuid());
+            notesDataToUpdate = searchByGuid(notesData.getGuid());
         }
-        if(elasticDataModelToUpdate== null) {
+        if(notesDataToUpdate == null) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "GUID provided is not exists");
+        } else if(notesDataToUpdate.getArchived() != null) {
+            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
         }
-        elasticDataModelToUpdate.setGuid(UUID.randomUUID().toString());
-        elasticDataModelToUpdate.setCreated(getCurrentDate());
-        elasticDataModelToUpdate.setEntryGuid(elasticDataModel.getEntryGuid());
-        elasticDataModelToUpdate.setContent(elasticDataModel.getContent());
-        return esRepository.save(elasticDataModelToUpdate);
+        notesDataToUpdate.setGuid(UUID.randomUUID().toString());
+        notesDataToUpdate.setCreated(getCurrentDate());
+        notesDataToUpdate.setEntryGuid(notesData.getEntryGuid());
+        notesDataToUpdate.setContent(notesData.getContent());
+        return esRepository.save(notesDataToUpdate);
     }
 
     /**
@@ -107,87 +111,103 @@ public class ESService {
      *  1. externalGuid
      *  2. entryGuid
      * @param query
-     * @param searchUpdateHistory
+     * @param getUpdateHistory
      * @param getArchivedResponse
      * @param searchResponses
      * @param sortOrder
      * @return
      */
-    public ElasticDataModel search(String query,boolean searchUpdateHistory,boolean getArchivedResponse,boolean searchResponses,SortOrder sortOrder) {
+    public NotesData search(String query, boolean getUpdateHistory, boolean getArchivedResponse, boolean searchResponses, SortOrder sortOrder) {
         Iterator<SearchHit> searchResponseIterator = null;
         searchResponseIterator = getSearchResponse(query, sortOrder);
-        ElasticDataModel rootEntry = null;
+        NotesData rootEntry = null;
         if(searchResponseIterator != null) {
             while (searchResponseIterator.hasNext()) {
-                rootEntry = ElasticDataModel.fromJson(searchResponseIterator.next().getSourceAsString());
+                rootEntry = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
                 if (rootEntry.getThreadGuidParent() == null) {
-                    break;
+                    break; // this is an external root entry, when updated 
                 }
             }
-            if(searchResponses && (rootEntry != null && (getArchivedResponse || rootEntry.getArchived() == null))/*do not search archived response*/) {
-                searchAllEntries(rootEntry, new HashSet<>(), searchUpdateHistory, getArchivedResponse);
+            if(searchResponses && (rootEntry != null && (getArchivedResponse || rootEntry.getArchived() == null))/*do not search archived threads*/) {
+                searchAllEntries(rootEntry, new HashSet<>(), getUpdateHistory, getArchivedResponse);
             }
         }
         if(rootEntry == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "GUID provided is not exists");
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "No entries found");
         }
         return rootEntry;
     }
 
-    public ElasticDataModel archive(String guid, ESIndexFields esIndexFields) {
-        ElasticDataModel result = search(String.format(Queries.QUERY_BY_GUID, esIndexFields.getEsFieldName(), guid),
-                true,true,true,SortOrder.DESC);
+    public NotesData archive(String guid, ESIndexFields esIndexFields) {
+        NotesData result = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(), guid),
+                true,false,true,getSortOrder(esIndexFields));
         if(result == null) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries with given GUID");
         }
-        Set<ElasticDataModel> entriesToArchive = new HashSet<>();
+        Set<NotesData> entriesToArchive = new HashSet<>();
         flatten(result,entriesToArchive);
-        entriesToArchive.forEach(entryToArchive -> {
-            if(entryToArchive.getGuid() != null) {
-                entryToArchive.setArchived(getCurrentDate());
-                entryToArchive.getHistory().clear(); // clean up as answers and history will be also stored in es
-                entryToArchive.getAnswers().clear();
-                esRepository.save(entryToArchive);
-            }
-        });
         if(entriesToArchive.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "GUID provided is not exists");
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "not entries to archive for given guid");
         }
+        entriesToArchive.forEach(entryToArchive -> {
+            entryToArchive.setEntryGuid(entryToArchive.getEntryGuid());
+            entryToArchive.setArchived(getCurrentDate());
+            entryToArchive.getHistory().clear(); // clean up as threads and history will be also stored in es
+            entryToArchive.getThreads().clear();
+            esRepository.save(entryToArchive);
+        });
         return result;
     }
 
-    public ElasticDataModel searchArchive(String guid, ESIndexFields esIndexFields) {
-        ElasticDataModel result = search(String.format(Queries.QUERY_ARCHIVED_ENTRIES, esIndexFields.getEsFieldName(), guid),
+    public NotesData searchArchive(String guid, ESIndexFields esIndexFields) {
+        NotesData result = search(String.format(Queries.QUERY_ARCHIVED_ENTRIES, esIndexFields.getEsFieldName(), guid),
                 true,true,true,SortOrder.DESC);
         if(result== null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "GUID provided is not exists");
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "No archived entries found");
         }
         return result;
     }
     
-    public ElasticDataModel delete(String guid, ESIndexFields esIndexFields, boolean deleteOnlyArchived) {
-        ElasticDataModel result;
-        if(deleteOnlyArchived) {
-            result = search(String.format(Queries.QUERY_ARCHIVED_ENTRIES, esIndexFields.getEsFieldName(), guid),
-                    true, true, true, SortOrder.DESC);
-        } else {
-            result =  search(String.format(Queries.QUERY_BY_GUID, esIndexFields.getEsFieldName(), guid),
-                    true, true, true, SortOrder.DESC);   
-        }
-        if(result == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries with given GUID");
-        }
-        Set<ElasticDataModel> entriesToDelete = new HashSet<>();
+    public List<NotesData> delete(String guid, ESIndexFields esIndexFields, String deleteEntries) {
+        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(), guid),
+                true, true, true, getSortOrder(esIndexFields));
+        Set<NotesData> entriesToDelete = new HashSet<>();
         flatten(result,entriesToDelete);
+        List<NotesData> results = new ArrayList<>();
         entriesToDelete.forEach(e -> {
-            esRepository.deleteById(e.getGuid());
+            if(StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ALL,deleteEntries) || 
+                    (StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ONLY_ARCHIVED,deleteEntries) && e.getArchived() != null)) {
+                esRepository.deleteById(e.getGuid());
+                e.getHistory().clear();
+                e.getThreads().clear();
+                results.add(e);
+            }
         });
-        return result;
+        if(results.isEmpty()) {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries were found to delete for given GUID/query");
+        }
+        return results;
+    }
+
+    public String createIndex(String indexName) {
+        try {
+            IndexMetadataConfiguration indexMetadataConfiguration =
+                    resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
+//            Template template = resourceFileReaderService.getTemplateFile(Constants.NOTE_V1_INDEX_TEMPLATE,this.getClass());
+            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
+//            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
+            CreateIndexRequest request = new CreateIndexRequest(indexName);
+            request.source(mapping, XContentType.JSON);
+            CreateIndexResponse createIndexResponse = esConfig.elasticsearchClient().indices().create(request, RequestOptions.DEFAULT);
+            return createIndexResponse.index();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     
-    public void flatten(ElasticDataModel root, Set<ElasticDataModel> entries) {
+    private void flatten(NotesData root, Set<NotesData> entries) {
         entries.add(root);
-        root.getAnswers().forEach(e -> flatten(e,entries));
+        root.getThreads().forEach(e -> flatten(e,entries));
         root.getHistory().forEach(e -> flatten(e,entries));
     }
  
@@ -207,41 +227,42 @@ public class ESService {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.wrapperQuery(query));
         searchSourceBuilder.sort("created",sortOrder);
-        searchSourceBuilder.size(max_number_of_results);
+        searchSourceBuilder.size(max_number_of_history_and_threads);
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices(indexName);
         searchRequest.source(searchSourceBuilder);
         return searchRequest;
     }
     
-    private ElasticDataModel searchAllEntries(ElasticDataModel responseRoot,Set<String> entryUuid, boolean searchUpdateHistory, 
-                                              boolean getArchivedResponse) {
-        checkAndAddHistory(responseRoot,searchUpdateHistory);
-        Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_BY_GUID, ESIndexFields.PARENT_THREAD.getEsFieldName(),
-                responseRoot.getThreadGuid()), SortOrder.DESC);
+    private NotesData searchAllEntries(NotesData threadRoot, Set<String> entryThreadUuid, boolean getUpdateHistory,
+                                       boolean getArchivedResponse) {
+        checkAndAddHistory(threadRoot,getUpdateHistory);
+        Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexFields.PARENT_THREAD.getEsFieldName(),
+                threadRoot.getThreadGuid()), SortOrder.DESC);
         while(searchResponseIterator.hasNext()) {
-            ElasticDataModel response = ElasticDataModel.fromJson(searchResponseIterator.next().getSourceAsString());
-            if(!entryUuid.contains(response.getEntryGuid())) {
-                if(!getArchivedResponse && response.getArchived() != null) {
-                    break; // do not search archived response
+            NotesData thread = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
+            // below if to make sure to avoid history entries here as search Entry id will have history entries as well
+            if(!entryThreadUuid.contains(thread.getEntryGuid()+thread.getThreadGuid())) { 
+                if(!getArchivedResponse && thread.getArchived() != null) {
+                    break; // do not search archived thread
                 }
-                responseRoot.addAnswers(response);
-                entryUuid.add(response.getEntryGuid());
+                threadRoot.addThreads(thread);
+                entryThreadUuid.add(thread.getEntryGuid()+thread.getThreadGuid());
             }
-            searchAllEntries(response,entryUuid,searchUpdateHistory, getArchivedResponse);
+            searchAllEntries(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
         }
-        return responseRoot;
+        return threadRoot;
     }
 
-    private void checkAndAddHistory(ElasticDataModel entry,boolean getUpdateHistory) {
+    private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory) {
         if(getUpdateHistory && entry != null) {
-            Iterator<SearchHit> historyIterator = getSearchResponse(String.format(Queries.QUERY_BY_GUID, ESIndexFields.ENTRY.getEsFieldName(),
-                    entry.getEntryGuid()), SortOrder.DESC);
+            Iterator<SearchHit> historyIterator = getSearchResponse(String.format(Queries.QUERY_HISTORY_OF_ENTRIES,
+                    entry.getEntryGuid(),entry.getThreadGuid()), SortOrder.DESC);
             if(historyIterator.hasNext()) {
                 historyIterator.next();
             }
             while(historyIterator.hasNext()) {
-                ElasticDataModel history = ElasticDataModel.fromJson(historyIterator.next().getSourceAsString());
+                NotesData history = NotesData.fromJson(historyIterator.next().getSourceAsString());
                 entry.addHistory(history);
             }
         }
@@ -250,19 +271,11 @@ public class ESService {
         return new Date();
     }
 
-    public String createIndex(String indexName) {
-        try {
-            IndexMetadataConfiguration indexMetadataConfiguration =
-                    resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
-//            Template template = resourceFileReaderService.getTemplateFile(Constants.NOTE_V1_INDEX_TEMPLATE,this.getClass());
-            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
-//            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
-            CreateIndexRequest request = new CreateIndexRequest(indexName);
-            request.source(mapping, XContentType.JSON);
-            CreateIndexResponse createIndexResponse = esConfig.elasticsearchClient().indices().create(request, RequestOptions.DEFAULT);
-            return createIndexResponse.index();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private SortOrder getSortOrder(ESIndexFields esIndexFields){
+        if(ESIndexFields.EXTERNAL == esIndexFields) {
+            return SortOrder.DESC; // DESC to get latest updated entry with threadParentGuid null and that entry will be root
+        } else {
+            return SortOrder.ASC;
         }
     }
 }

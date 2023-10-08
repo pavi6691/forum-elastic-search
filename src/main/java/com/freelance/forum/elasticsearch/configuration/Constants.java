@@ -9,5 +9,9 @@ public class Constants {
     public static final String NOTE_V1_INDEX_MAPPINGS = "mappings/note-v1_mapping.json";
     public static final String NOTE_V1_INDEX_POLICY = "policies/note-v1_policy.json";
     public static final String NOTE_V1_INDEX_TEMPLATE = "templates/note-v1_template.yaml";
+
+    public static final String DELETE_ALL = "all";
+
+    public static final String DELETE_ONLY_ARCHIVED = "archived";
     
 }
