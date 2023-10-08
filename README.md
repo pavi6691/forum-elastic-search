@@ -1,8 +1,10 @@
 ### Execute below command to start elastic container
     docker run --name elastic_search -d -p 9200:9200 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.8.1
 
-### Get Started with
-    createIndex - POST [http://localhost:8080/api/v1/createIndex?indexName=note-v1]
+### Get Started with creating index. execute below API
+  ```http
+    POST http://localhost:8080/api/v1/createIndex?indexName=note-v1
+  ```
 
 ### API Details
   #### Payload for create and update requests
@@ -14,6 +16,8 @@
     "entryGuid": "",
     "content":"This World Is beautiful!"
   }
+
+
   ```
   1. #### Create new Entry
   ```http
