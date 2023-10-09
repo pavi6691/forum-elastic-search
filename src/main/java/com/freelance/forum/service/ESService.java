@@ -58,9 +58,12 @@ public class ESService {
                     search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.THREAD.getEsFieldName(), notesData.getThreadGuidParent()),
                             false,false,false,SortOrder.ASC);
             if(existingEntry == null) {
-                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Entry with this thread guid is not present");
+                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
+                        notesData.getThreadGuidParent()));
             } else if(existingEntry.getArchived() != null) {
-                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot add thread");
+                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, 
+                        String.format("Entry is archived cannot add thread. ExternalGuid=%s, EntryGuid=%s",existingEntry.getExternalGuid(),
+                                existingEntry.getEntryGuid()));
             } else {
                 notesData.setExternalGuid(existingEntry.getExternalGuid());
             }
@@ -90,12 +93,12 @@ public class ESService {
                         false,false,false,SortOrder.ASC);
             }
         } else if(esIndexNotesFields == ESIndexNotesFields.GUID && StringUtils.isEmpty(notesData.getGuid())) {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"GUID is not provided");
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"guid is not provided");
         } else {
             notesDataToUpdate = searchByGuid(notesData.getGuid());
         }
         if(notesDataToUpdate == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "GUID provided is not exists");
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot update. %s not found.",esIndexNotesFields.getEsFieldName()));
         } else if(notesDataToUpdate.getArchived() != null) {
             throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
         }
@@ -111,7 +114,7 @@ public class ESService {
        NotesData rootEntry = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(),guid),
                getUpdateHistory,getArchivedResponse,searchThreads,sortOrder);
         if(rootEntry == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No entries found with %s = %s",
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No entries found for field = %s = %s",
                     esIndexNotesFields.getEsFieldName(),guid));
         }
         return rootEntry;
@@ -143,22 +146,17 @@ public class ESService {
                 searchAllEntries(rootEntry, new HashSet<>(), getUpdateHistory, getArchivedResponse);
             }
         }
-        if(rootEntry == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "No entries found");
-        }
         return rootEntry;
     }
 
     public NotesData archive(String guid, ESIndexNotesFields esIndexNotesFields) {
         NotesData result = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
                 true,false,true,getSortOrder(esIndexNotesFields));
-        if(result == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries with given GUID");
-        }
         Set<NotesData> entriesToArchive = new HashSet<>();
         flatten(result,entriesToArchive);
-        if(entriesToArchive.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "not entries to archive for given guid");
+        if(result == null || entriesToArchive.isEmpty()) {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot archive. not entries found. %s = %s",
+                    esIndexNotesFields.getEsFieldName(),guid));
         }
         entriesToArchive.forEach(entryToArchive -> {
             entryToArchive.setArchived(getCurrentDate());
@@ -173,15 +171,16 @@ public class ESService {
         NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
                 true, true, true, getSortOrder(esIndexNotesFields));
         if(result != null) {
-            Set<NotesData> threadsOfAllEntries = new HashSet<>();
-            getThreadOfAllEntries(result, threadsOfAllEntries);
-            for(NotesData notesData : threadsOfAllEntries) {
-                if (notesData.getArchived() != null) {
-                    return notesData;
-                }
+            while (result.getArchived() != null && !result.getThreads().isEmpty()) {
+                result = result.getThreads().get(0);
             }
         }
-        throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "No archived entries found");
+        if(result.getArchived() != null) {
+            return result;
+        } else {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No archived entries found. %s = %s",
+                    esIndexNotesFields.getEsFieldName(),guid));   
+        }
     }
     
     public List<NotesData> delete(String guid, ESIndexNotesFields esIndexNotesFields, String deleteEntries) {
@@ -202,7 +201,8 @@ public class ESService {
             });
         }
         if(result == null || results.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries were found to delete for given GUID/query");
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("No entries found to delete. %s = %s",
+                    esIndexNotesFields.getEsFieldName(),guid));
         }
         return results;
     }
@@ -227,11 +227,6 @@ public class ESService {
         entries.add(root);
         root.getThreads().forEach(e -> flatten(e,entries));
         root.getHistory().forEach(e -> flatten(e,entries));
-    }
-
-    private void getThreadOfAllEntries(NotesData root, Set<NotesData> entries) {
-        entries.add(root);
-        root.getThreads().forEach(e -> flatten(e,entries));
     }
  
     private Iterator<SearchHit> getSearchResponse(String query,SortOrder sortOrder) {
