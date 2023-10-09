@@ -119,7 +119,7 @@
 
   11. #### Delete - By ExternalGuid
   ```http
-  PUT http://localhost:8080/api/v1/delete/external?externalGuid=&deleteEntries=archived
+  PUT http://localhost:8080/api/v1/delete/external?externalGuid=&entriesToDelete=archived
   ```
   | QueryParams       | Type     | Description                                                                      |
   |:------------------|:---------|:---------------------------------------------------------------------------------|
@@ -129,7 +129,7 @@
 
   12. #### Delete - By entryGuid
   ```http
-  PUT http://localhost:8080/api/v1/delete/entry?entryGuid=&deleteEntries=archived
+  PUT http://localhost:8080/api/v1/delete/entry?entryGuid=&entriesToDelete=archived
   ```
   | QueryParams       | Type       | Description                                                                      |
   |:------------------|:-----------|:---------------------------------------------------------------------------------|

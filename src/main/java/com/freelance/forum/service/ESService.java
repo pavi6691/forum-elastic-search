@@ -113,8 +113,8 @@ public class ESService {
                                    boolean searchThreads, SortOrder sortOrder) {
        NotesData rootEntry = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(),guid),
                getUpdateHistory,getArchivedResponse,searchThreads,sortOrder);
-        if(rootEntry == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No entries found for field = %s = %s",
+        if(rootEntry == null || (!getArchivedResponse && rootEntry.getArchived() != null)) {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No entries found for field. %s = %s",
                     esIndexNotesFields.getEsFieldName(),guid));
         }
         return rootEntry;
@@ -149,7 +149,7 @@ public class ESService {
         return rootEntry;
     }
 
-    public NotesData archive(String guid, ESIndexNotesFields esIndexNotesFields) {
+    public List<NotesData> archive(String guid, ESIndexNotesFields esIndexNotesFields) {
         NotesData result = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
                 true,false,true,getSortOrder(esIndexNotesFields));
         Set<NotesData> entriesToArchive = new HashSet<>();
@@ -158,20 +158,22 @@ public class ESService {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot archive. not entries found. %s = %s",
                     esIndexNotesFields.getEsFieldName(),guid));
         }
+        List<NotesData> response = new ArrayList<>();
         entriesToArchive.forEach(entryToArchive -> {
             entryToArchive.setArchived(getCurrentDate());
             entryToArchive.getHistory().clear(); // clean up as threads and history will be also stored in es
             entryToArchive.getThreads().clear();
             esRepository.save(entryToArchive);
+            response.add(entryToArchive);
         });
-        return result;
+        return response;
     }
 
     public NotesData searchArchive(String guid, ESIndexNotesFields esIndexNotesFields) {
         NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
                 true, true, true, getSortOrder(esIndexNotesFields));
         if(result != null) {
-            while (result.getArchived() != null && !result.getThreads().isEmpty()) {
+            while (result.getArchived() == null && !result.getThreads().isEmpty()) {
                 result = result.getThreads().get(0);
             }
         }

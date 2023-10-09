@@ -55,12 +55,12 @@ public class ESResource {
     }
 
     @PutMapping("/archive/external")
-    public ResponseEntity<NotesData> archiveExternalGuid(@RequestParam String externalGuid) {
+    public ResponseEntity<List<NotesData>> archiveExternalGuid(@RequestParam String externalGuid) {
         return new ResponseEntity(service.archive(externalGuid, ESIndexNotesFields.EXTERNAL),HttpStatus.OK);
     }
 
     @PutMapping("/archive/entry")
-    public ResponseEntity<NotesData> archiveEntryGuid(@RequestParam String entryGuid) {
+    public ResponseEntity<List<NotesData>> archiveEntryGuid(@RequestParam String entryGuid) {
         return new ResponseEntity(service.archive(entryGuid, ESIndexNotesFields.ENTRY),HttpStatus.OK);
     }
 
