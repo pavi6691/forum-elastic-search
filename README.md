@@ -2,8 +2,9 @@
     docker run --name elastic_search -d -p 9200:9200 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.8.12
 
 ### Get Started with creating index. execute below API
+  `POST /createIndex`
   ```http
-  POST http://localhost:8080/api/v1/createIndex?indexName=note-v1
+  http://localhost:8080/api/v1/createIndex?indexName=note-v1
   ```
 
 ### API Details
@@ -130,7 +131,7 @@
   11. #### Delete - By ExternalGuid
   `DELETE /delete/external`
   ```http
-  PUT http://localhost:8080/api/v1/delete/external?externalGuid=&entriesToDelete=archived
+  http://localhost:8080/api/v1/delete/external?externalGuid=&entriesToDelete=archived
   ```
   | QueryParams       | Type     | Description                                                                      |
   |:------------------|:---------|:---------------------------------------------------------------------------------|
