@@ -131,7 +131,7 @@
   ```http
   PUT http://localhost:8080/api/v1/delete/entry?entryGuid=&deleteEntries=archived
   ```
-  | QueryParams       | Type      | Description                                                                     |
-  |:------------------|:----------|:--------------------------------------------------------------------------------|
-  | `entryGuid`       | `string`  | **Required**. GUID of an entry                                                  |
-  | `entriesToDelete` | `String`  | **Required**. "all" to Delete all enteis and "archived" to delete only archived |
+  | QueryParams       | Type       | Description                                                                      |
+  |:------------------|:-----------|:---------------------------------------------------------------------------------|
+  | `entryGuid`       | `string`   | **Required**. GUID of an entry                                                   |
+  | `entriesToDelete` | `String`   | **Required**. "all" to Delete all entries and "archived" to delete only archived |
