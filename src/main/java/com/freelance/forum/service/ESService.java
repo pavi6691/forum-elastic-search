@@ -173,9 +173,9 @@ public class ESService {
         NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
                 true, true, true, getSortOrder(esIndexNotesFields));
         if(result != null) {
-            Set<NotesData> entriesToDelete = new HashSet<>();
-            flatten(result, entriesToDelete);
-            for(NotesData notesData : entriesToDelete) {
+            Set<NotesData> threadsOfAllEntries = new HashSet<>();
+            getThreadOfAllEntries(result, threadsOfAllEntries);
+            for(NotesData notesData : threadsOfAllEntries) {
                 if (notesData.getArchived() != null) {
                     return notesData;
                 }
@@ -227,6 +227,11 @@ public class ESService {
         entries.add(root);
         root.getThreads().forEach(e -> flatten(e,entries));
         root.getHistory().forEach(e -> flatten(e,entries));
+    }
+
+    private void getThreadOfAllEntries(NotesData root, Set<NotesData> entries) {
+        entries.add(root);
+        root.getThreads().forEach(e -> flatten(e,entries));
     }
  
     private Iterator<SearchHit> getSearchResponse(String query,SortOrder sortOrder) {
