@@ -43,7 +43,7 @@ public class ESResource {
     public ResponseEntity<NotesData> searchByExternalGuid(@RequestParam String externalGuid,
                                                           @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                           @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
-        return new ResponseEntity(service.search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexFields.EXTERNAL.getEsFieldName(),externalGuid),
+        return new ResponseEntity(service.searchEntries(externalGuid,ESIndexFields.EXTERNAL,
                                     getUpdateHistory,getArchivedResponse,true,SortOrder.DESC),HttpStatus.OK);
     }
 
@@ -51,7 +51,7 @@ public class ESResource {
     public ResponseEntity<NotesData> searchByEntryGuid(@RequestParam String entryGuid,
                                                        @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                        @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
-        return new ResponseEntity(service.search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexFields.ENTRY.getEsFieldName(),entryGuid),getUpdateHistory,
+        return new ResponseEntity(service.searchEntries(entryGuid,ESIndexFields.ENTRY,getUpdateHistory,
                                     getArchivedResponse,true,SortOrder.ASC),HttpStatus.OK);
     }
 
