@@ -22,7 +22,7 @@
   1. #### Create new Entry
   `POST /create`
   ```http
-  POST http://localhost:8080/api/v1/create
+  http://localhost:8080/api/v1/create
   ```
   | Field          | Type      | Description                             |
   |:---------------|:----------|:----------------------------------------|
@@ -90,7 +90,7 @@
   7. #### Archive - By ExternalGuid
   `PUT /archive/external`
   ```http
-  PUT http://localhost:8080/api/v1/archive/external?externalGuid=
+  http://localhost:8080/api/v1/archive/external?externalGuid=
   ```
   | QueryParams    | Type      | Description                            |
   |:---------------|:----------|:---------------------------------------|
