@@ -244,7 +244,7 @@ public class ESService {
     private SearchRequest getQueryRequest(String query, SortOrder sortOrder) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.wrapperQuery(query));
-        searchSourceBuilder.sort("created",sortOrder);
+        searchSourceBuilder.sort(ESIndexNotesFields.CREATED.getEsFieldName(),sortOrder);
         searchSourceBuilder.size(max_number_of_history_and_threads);
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices(indexName);
