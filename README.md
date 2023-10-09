@@ -1,5 +1,5 @@
 ### Execute below command to start elastic container
-    docker run --name elastic_search -d -p 9200:9200 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.8.1
+    docker run --name elastic_search -d -p 9200:9200 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.8.12
 
 ### Get Started with creating index. execute below API
   ```http
