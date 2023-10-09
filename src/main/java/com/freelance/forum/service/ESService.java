@@ -2,7 +2,7 @@ package com.freelance.forum.service;
 
 import com.freelance.forum.elasticsearch.configuration.*;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.ESIndexFields;
+import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.Queries;
 import com.freelance.forum.elasticsearch.repository.ESRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +55,7 @@ public class ESService {
         } else {
             // It's a thread that needs to created
             NotesData existingEntry = 
-                    search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexFields.THREAD.getEsFieldName(), notesData.getThreadGuidParent()),
+                    search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.THREAD.getEsFieldName(), notesData.getThreadGuidParent()),
                             false,false,false,SortOrder.ASC);
             if(existingEntry == null) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Entry with this thread guid is not present");
@@ -80,16 +80,16 @@ public class ESService {
      * @param notesData
      * @return
      */
-    public NotesData update(NotesData notesData, ESIndexFields esIndexFields) {
+    public NotesData update(NotesData notesData, ESIndexNotesFields esIndexNotesFields) {
         NotesData notesDataToUpdate = null;
-        if(esIndexFields == ESIndexFields.ENTRY ){
+        if(esIndexNotesFields == ESIndexNotesFields.ENTRY ){
             if(StringUtils.isEmpty(notesData.getEntryGuid())) {
                 throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided");
             } else {
-                notesDataToUpdate = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(), notesData.getEntryGuid()),
+                notesDataToUpdate = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), notesData.getEntryGuid()),
                         false,false,false,SortOrder.ASC);
             }
-        } else if(esIndexFields == ESIndexFields.GUID && StringUtils.isEmpty(notesData.getGuid())) {
+        } else if(esIndexNotesFields == ESIndexNotesFields.GUID && StringUtils.isEmpty(notesData.getGuid())) {
             throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"GUID is not provided");
         } else {
             notesDataToUpdate = searchByGuid(notesData.getGuid());
@@ -106,13 +106,13 @@ public class ESService {
         return esRepository.save(notesDataToUpdate);
     }
 
-    public NotesData searchEntries(String guid,ESIndexFields esIndexFields, boolean getUpdateHistory, boolean getArchivedResponse, 
+    public NotesData searchEntries(String guid, ESIndexNotesFields esIndexNotesFields, boolean getUpdateHistory, boolean getArchivedResponse,
                                    boolean searchThreads, SortOrder sortOrder) {
-       NotesData rootEntry = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(),guid),
+       NotesData rootEntry = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(),guid),
                getUpdateHistory,getArchivedResponse,searchThreads,sortOrder);
         if(rootEntry == null) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No entries found with %s = %s",
-                    esIndexFields.getEsFieldName(),guid));
+                    esIndexNotesFields.getEsFieldName(),guid));
         }
         return rootEntry;
     }
@@ -149,9 +149,9 @@ public class ESService {
         return rootEntry;
     }
 
-    public NotesData archive(String guid, ESIndexFields esIndexFields) {
-        NotesData result = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(), guid),
-                true,false,true,getSortOrder(esIndexFields));
+    public NotesData archive(String guid, ESIndexNotesFields esIndexNotesFields) {
+        NotesData result = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
+                true,false,true,getSortOrder(esIndexNotesFields));
         if(result == null) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries with given GUID");
         }
@@ -169,9 +169,9 @@ public class ESService {
         return result;
     }
 
-    public NotesData searchArchive(String guid, ESIndexFields esIndexFields) {
-        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(), guid),
-                true, true, true, getSortOrder(esIndexFields));
+    public NotesData searchArchive(String guid, ESIndexNotesFields esIndexNotesFields) {
+        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
+                true, true, true, getSortOrder(esIndexNotesFields));
         if(result != null) {
             Set<NotesData> entriesToDelete = new HashSet<>();
             flatten(result, entriesToDelete);
@@ -184,9 +184,9 @@ public class ESService {
         throw new RestStatusException(HttpStatus.SC_NOT_FOUND, "No archived entries found");
     }
     
-    public List<NotesData> delete(String guid, ESIndexFields esIndexFields, String deleteEntries) {
-        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexFields.getEsFieldName(), guid),
-                true, true, true, getSortOrder(esIndexFields));
+    public List<NotesData> delete(String guid, ESIndexNotesFields esIndexNotesFields, String deleteEntries) {
+        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
+                true, true, true, getSortOrder(esIndexNotesFields));
         List<NotesData> results = new ArrayList<>();
         if(result != null) {
             Set<NotesData> entriesToDelete = new HashSet<>();
@@ -255,7 +255,7 @@ public class ESService {
     private NotesData searchAllEntries(NotesData threadRoot, Set<String> entryThreadUuid, boolean getUpdateHistory,
                                        boolean getArchivedResponse) {
         checkAndAddHistory(threadRoot,getUpdateHistory);
-        Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexFields.PARENT_THREAD.getEsFieldName(),
+        Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.PARENT_THREAD.getEsFieldName(),
                 threadRoot.getThreadGuid()), SortOrder.DESC);
         while(searchResponseIterator.hasNext()) {
             NotesData thread = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
@@ -275,7 +275,7 @@ public class ESService {
     private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory) {
         if(getUpdateHistory && entry != null) {
             Iterator<SearchHit> historyIterator = getSearchResponse(String.format(Queries.QUERY_ALL_ENTRIES,
-                    ESIndexFields.ENTRY.getEsFieldName(),entry.getEntryGuid()), SortOrder.DESC);
+                    ESIndexNotesFields.ENTRY.getEsFieldName(),entry.getEntryGuid()), SortOrder.DESC);
             if(historyIterator.hasNext()) {
                 historyIterator.next();
             }
@@ -289,8 +289,8 @@ public class ESService {
         return new Date();
     }
 
-    private SortOrder getSortOrder(ESIndexFields esIndexFields){
-        if(ESIndexFields.EXTERNAL == esIndexFields) {
+    private SortOrder getSortOrder(ESIndexNotesFields esIndexNotesFields){
+        if(ESIndexNotesFields.EXTERNAL == esIndexNotesFields) {
             return SortOrder.DESC; // DESC to get latest updated entry with threadParentGuid null and that entry will be root
         } else {
             return SortOrder.ASC;
