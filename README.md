@@ -68,7 +68,6 @@
   | `externalGuid`        | `string`  | **Required**. GUID of an external system                                         |
   | `getUpdateHistory`    | `boolean` | **optional**. **default false** true to Include history of this entry            |
   | `getArchivedResponse` | `boolean` | **optional**. **default false** true to Include archived entries if exists       |
-  | `onlyArchived`        | `boolean` | **optional**. **default true** Search only archived/all. default it searches all |
 
 
   6. #### Search - by entryGuid
@@ -80,7 +79,6 @@
   | `entryGuid`           | `string`  | **Required**. GUID of an entry                                                   |
   | `getUpdateHistory`    | `boolean` | **optional**. **default false** true to Include all history of this entry        |
   | `getArchivedResponse` | `boolean` | **optional**. **default false** true to Include all archived entries if exits    |
-  | `onlyArchived`        | `boolean` | **optional**. **default true** Search only archived/all. default it searches all |
 
 
   7. #### Archive - By ExternalGuid
