@@ -20,6 +20,7 @@
 
   ```
   1. #### Create new Entry
+  `POST /create`
   ```http
   POST http://localhost:8080/api/v1/create
   ```
@@ -30,8 +31,9 @@
 
 
   2. #### Create thread entry
+  `POST /create`
   ```http
-  POST http://localhost:8080/api/v1/create
+  http://localhost:8080/api/v1/create
   ```
   | Field              | Type     | Description                                                  |
   |:-------------------|:---------|:-------------------------------------------------------------|
@@ -40,8 +42,9 @@
 
 
   3. #### Update - By entryGuid
+  `PUT /update/entry`
   ```http
-  POST http://localhost:8080/api/v1/update/entry
+  http://localhost:8080/api/v1/update/entry
   ```
   | Field       | Type     | Description                                                    |
   |:------------|:---------|:---------------------------------------------------------------|
@@ -50,8 +53,9 @@
 
 
   4. #### Update - By guid - straight forward way to update an entry, if entry of guid is available
+  `PUT /update/guid`
   ```http
-  POST http://localhost:8080/api/v1/update/guid
+  http://localhost:8080/api/v1/update/guid
   ```
   | Field     | Type      | Description                        |
   |:----------|:----------|:-----------------------------------|
@@ -60,8 +64,9 @@
 
 
   5. #### Search - by externalGuid
+  `GET /search/external`
   ```http
-  GET http://localhost:8080/api/v1/search/external?externalGuid=External-ID&getUpdateHistory=true&getArchivedResponse=true
+  http://localhost:8080/api/v1/search/external?externalGuid=External-ID&getUpdateHistory=true&getArchivedResponse=true
   ```
   | QueryParams           | Type      | Description                                                                      |
   |:----------------------|:----------|:---------------------------------------------------------------------------------|
@@ -71,8 +76,9 @@
 
 
   6. #### Search - by entryGuid
+  `GET /search/entry`
   ```http
-  GET http://localhost:8080/api/v1/search/entry?entryGuid=EntryID&getUpdateHistory=true&getArchivedResponse=true
+  http://localhost:8080/api/v1/search/entry?entryGuid=EntryID&getUpdateHistory=true&getArchivedResponse=true
   ```
   | QueryParams           | Type      | Description                                                                      |
   |:----------------------|:----------|:---------------------------------------------------------------------------------|
@@ -82,6 +88,7 @@
 
 
   7. #### Archive - By ExternalGuid
+  `PUT /archive/external`
   ```http
   PUT http://localhost:8080/api/v1/archive/external?externalGuid=
   ```
@@ -91,8 +98,9 @@
 
 
   8. #### Archive - By entryGuid
+  `PUT /archive/entry`
   ```http
-  PUT http://localhost:8080/api/v1/archive/entry?entryGuid=
+  http://localhost:8080/api/v1/archive/entry?entryGuid=
   ```
   | QueryParams | Type     | Description                        |
   |:------------|:---------|:-----------------------------------|
@@ -100,8 +108,9 @@
 
 
   9. #### Search archived entries - By ExternalGuid
+  `GET /search/archive/external`
   ```http
-  PUT http://localhost:8080/api/v1/search/archive/external?externalGuid=
+  http://localhost:8080/api/v1/search/archive/external?externalGuid=
   ```
   | QueryParams    | Type      | Description                            |
   |:---------------|:----------|:---------------------------------------|
@@ -109,8 +118,9 @@
 
 
   10. #### Search archived entries - By entryGuid
+  `GET /search/archive/entry`
   ```http
-  PUT http://localhost:8080/api/v1/search/archive/entry?entryGuid=
+  http://localhost:8080/api/v1/search/archive/entry?entryGuid=
   ```
   | QueryParams | Type     | Description                        |
   |:------------|:---------|:-----------------------------------|
@@ -118,6 +128,7 @@
 
 
   11. #### Delete - By ExternalGuid
+  `DELETE /delete/external`
   ```http
   PUT http://localhost:8080/api/v1/delete/external?externalGuid=&entriesToDelete=archived
   ```
@@ -128,8 +139,9 @@
 
 
   12. #### Delete - By entryGuid
+  `DELETE /delete/entry`
   ```http
-  PUT http://localhost:8080/api/v1/delete/entry?entryGuid=&entriesToDelete=archived
+  http://localhost:8080/api/v1/delete/entry?entryGuid=&entriesToDelete=archived
   ```
   | QueryParams       | Type       | Description                                                                      |
   |:------------------|:-----------|:---------------------------------------------------------------------------------|
