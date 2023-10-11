@@ -1,4 +1,6 @@
 package com.freelance.forum.elasticsearch.pojo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,12 +12,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Document(indexName = "#{@indexName}", createIndex = false)
 public class NotesData {
     
     @Id
     private String guid = UUID.randomUUID().toString(); // Unique for the document and also the Elasticsearch key/id
-
+    
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "externalGuid")
     private String externalGuid; // An external Guid
