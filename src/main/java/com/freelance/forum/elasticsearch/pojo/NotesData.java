@@ -1,6 +1,7 @@
 package com.freelance.forum.elasticsearch.pojo;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
@@ -14,30 +15,39 @@ public class NotesData {
     
     @Id
     private String guid = UUID.randomUUID().toString(); // Unique for the document and also the Elasticsearch key/id
-    
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "externalGuid")
     private String externalGuid; // An external Guid
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "threadGuid")
     private String threadGuid; // A thread Guid
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "entryGuid")
     private String entryGuid; // A Guid for this entry
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "threadGuidParent")
     private String threadGuidParent; // A Guid for this entry's parent
-
+    
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "content")
     private String content;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Date, name = "created", format = DateFormat.date_time)
     private Date created;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Date, name = "archived", format = DateFormat.date_time)
     private Date archived;
-    
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<NotesData> threads = new ArrayList<>(); // answers/responses to this answer
-    
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<NotesData> history = new ArrayList<>(); // Previous versions of this entryGuid, sorted by
 
     public String getGuid() {
@@ -127,13 +137,12 @@ public class NotesData {
         this.history.add(history);
     }
     
-    public String toJson() {
-        Gson gson = new GsonBuilder().create();
-        return gson.toJson(this);
-    }
-    
     public static NotesData fromJson(String json) {
-        Gson gson = new GsonBuilder().create();
-        return gson.fromJson(json, NotesData.class);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(json, NotesData.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
