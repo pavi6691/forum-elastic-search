@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -25,7 +26,7 @@ public class ESResource {
 
     @GetMapping("/search/guid")
     public ResponseEntity<NotesData> searchByGuid(@RequestParam String guid) {
-        return new ResponseEntity(service.searchByGuid(guid),HttpStatus.OK);
+        return new ResponseEntity(service.searchByGuid(UUID.fromString(guid)),HttpStatus.OK);
     }
 
     @PutMapping("/update/entry")

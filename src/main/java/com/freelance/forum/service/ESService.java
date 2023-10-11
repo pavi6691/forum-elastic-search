@@ -44,15 +44,13 @@ public class ESService {
     private int max_number_of_history_and_threads;
 
     public NotesData saveNew(NotesData notesData) {
-        if(StringUtils.isEmpty(notesData.getGuid())) {
-            notesData.setGuid(UUID.randomUUID().toString());
+        if(notesData.getGuid() == null) {
+            notesData.setGuid(UUID.randomUUID());
         }
-        notesData.setEntryGuid(UUID.randomUUID().toString());
-        notesData.setThreadGuid(UUID.randomUUID().toString());
+        notesData.setEntryGuid(UUID.randomUUID());
+        notesData.setThreadGuid(UUID.randomUUID());
         notesData.setCreated(getCurrentDate());
-        if(StringUtils.isEmpty(notesData.getThreadGuidParent())) {
-            notesData.setThreadGuidParent(null);
-        } else {
+        if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
             NotesData existingEntry = 
                     search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.THREAD.getEsFieldName(), notesData.getThreadGuidParent()),
@@ -71,7 +69,7 @@ public class ESService {
         return esRepository.save(notesData);
     }
 
-    public NotesData searchByGuid(String guid) {
+    public NotesData searchByGuid(UUID guid) {
         return esRepository.findById(guid).orElse(null);
     }
 
@@ -86,13 +84,13 @@ public class ESService {
     public NotesData update(NotesData notesData, ESIndexNotesFields esIndexNotesFields) {
         NotesData notesDataToUpdate = null;
         if(esIndexNotesFields == ESIndexNotesFields.ENTRY ){
-            if(StringUtils.isEmpty(notesData.getEntryGuid())) {
+            if(notesData.getEntryGuid() == null) {
                 throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided");
             } else {
                 notesDataToUpdate = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), notesData.getEntryGuid()),
                         false,false,false,SortOrder.ASC);
             }
-        } else if(esIndexNotesFields == ESIndexNotesFields.GUID && StringUtils.isEmpty(notesData.getGuid())) {
+        } else if(esIndexNotesFields == ESIndexNotesFields.GUID && notesData.getGuid() == null) {
             throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"guid is not provided");
         } else {
             notesDataToUpdate = searchByGuid(notesData.getGuid());
@@ -102,7 +100,7 @@ public class ESService {
         } else if(notesDataToUpdate.getArchived() != null) {
             throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
         }
-        notesDataToUpdate.setGuid(UUID.randomUUID().toString());
+        notesDataToUpdate.setGuid(UUID.randomUUID());
         notesDataToUpdate.setCreated(getCurrentDate());
         notesDataToUpdate.setEntryGuid(notesData.getEntryGuid());
         notesDataToUpdate.setContent(notesData.getContent());
@@ -267,7 +265,7 @@ public class ESService {
                     break; // do not search archived thread
                 }
                 threadRoot.addThreads(thread);
-                entryThreadUuid.add(thread.getEntryGuid());
+                entryThreadUuid.add(thread.getEntryGuid().toString());
             }
             searchAllEntries(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
         }

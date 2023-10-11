@@ -1,9 +1,10 @@
 package com.freelance.forum.elasticsearch.pojo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
@@ -17,23 +18,28 @@ import java.util.UUID;
 public class NotesData {
     
     @Id
-    private String guid = UUID.randomUUID().toString(); // Unique for the document and also the Elasticsearch key/id
+    @JsonDeserialize(using = UUIDDeserializer.class)
+    private UUID guid = UUID.randomUUID(); // Unique for the document and also the Elasticsearch key/id
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Text, name = "externalGuid")
-    private String externalGuid; // An external Guid
+    private UUID externalGuid; // An external Guid
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Text, name = "threadGuid")
-    private String threadGuid; // A thread Guid
+    private UUID threadGuid; // A thread Guid
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Text, name = "entryGuid")
-    private String entryGuid; // A Guid for this entry
+    private UUID entryGuid; // A Guid for this entry
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Text, name = "threadGuidParent")
-    private String threadGuidParent; // A Guid for this entry's parent
+    private UUID threadGuidParent; // A Guid for this entry's parent
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "content")
@@ -53,43 +59,43 @@ public class NotesData {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<NotesData> history = new ArrayList<>(); // Previous versions of this entryGuid, sorted by
 
-    public String getGuid() {
+    public UUID getGuid() {
         return guid;
     }
 
-    public void setGuid(String guid) {
+    public void setGuid(UUID guid) {
         this.guid = guid;
     }
 
-    public String getExternalGuid() {
+    public UUID getExternalGuid() {
         return externalGuid;
     }
 
-    public void setExternalGuid(String externalGuid) {
+    public void setExternalGuid(UUID externalGuid) {
         this.externalGuid = externalGuid;
     }
 
-    public String getThreadGuid() {
+    public UUID getThreadGuid() {
         return threadGuid;
     }
 
-    public void setThreadGuid(String threadGuid) {
+    public void setThreadGuid(UUID threadGuid) {
         this.threadGuid = threadGuid;
     }
 
-    public String getEntryGuid() {
+    public UUID getEntryGuid() {
         return entryGuid;
     }
 
-    public void setEntryGuid(String entryGuid) {
+    public void setEntryGuid(UUID entryGuid) {
         this.entryGuid = entryGuid;
     }
 
-    public String getThreadGuidParent() {
+    public UUID getThreadGuidParent() {
         return threadGuidParent;
     }
 
-    public void setThreadGuidParent(String threadGuidParent) {
+    public void setThreadGuidParent(UUID threadGuidParent) {
         this.threadGuidParent = threadGuidParent;
     }
 
@@ -99,6 +105,10 @@ public class NotesData {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public void setThreads(List<NotesData> threads) {
+        this.threads = threads;
     }
 
     public Date getCreated() {
