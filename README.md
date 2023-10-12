@@ -1,5 +1,7 @@
-### Execute below command to start elastic container
-    docker run --name elastic_search -d -p 9200:9200 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:6.8.12
+### Execute below command to start Elasticsearch + Kibana
+    cd Docker
+    docker compose up
+Then connect to Kibana using http://localhost:5601
 
 ### Get Started with creating index. execute below API
   `POST /createIndex`
