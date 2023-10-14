@@ -40,11 +40,11 @@ public class ESResource {
     }
 
     @GetMapping("/search/external")
-    public ResponseEntity<NotesData> searchByExternalGuid(@RequestParam String externalGuid,
+    public ResponseEntity<List<NotesData>> searchByExternalGuid(@RequestParam String externalGuid,
                                                           @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                           @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
         return new ResponseEntity(service.searchEntries(externalGuid, ESIndexNotesFields.EXTERNAL,
-                                    getUpdateHistory,getArchivedResponse,true,SortOrder.DESC),HttpStatus.OK);
+                                    getUpdateHistory,getArchivedResponse,SortOrder.DESC),HttpStatus.OK);
     }
 
     @GetMapping("/search/entry")
@@ -53,6 +53,14 @@ public class ESResource {
                                                        @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
         return new ResponseEntity(service.searchEntries(entryGuid, ESIndexNotesFields.ENTRY,getUpdateHistory,
                                     getArchivedResponse,true,SortOrder.ASC),HttpStatus.OK);
+    }
+
+    @GetMapping("/search/content")
+    public ResponseEntity<List<NotesData>> searchContent(@RequestParam String search,
+                                                                @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
+                                                                @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
+        return new ResponseEntity(service.searchEntries(search, ESIndexNotesFields.CONTENT,
+                getUpdateHistory,getArchivedResponse,SortOrder.DESC),HttpStatus.OK);
     }
 
     @PutMapping("/archive/external")

@@ -21,8 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -107,6 +108,38 @@ public class ESService {
         return esRepository.save(notesDataToUpdate);
     }
 
+    public List<NotesData> searchEntries(String searchString, ESIndexNotesFields esIndexNotesFields, boolean getUpdateHistory, 
+                                                 boolean getArchivedResponse, SortOrder sortOrder) {
+        String query = null;
+        if(esIndexNotesFields == ESIndexNotesFields.EXTERNAL) {
+            query = String.format(Queries.QUERY_ROOT_EXTERNAL_ENTRIES, searchString);
+        } else if(esIndexNotesFields == ESIndexNotesFields.CONTENT) {
+            query = String.format(Queries.QUERY_CONTENT_ROOT_EXTERNAL_ENTRIES, searchString);
+        }
+        List<NotesData> results = new ArrayList<>();
+        Set<String> doNotSearchFurtherForHistory = new HashSet<>();
+        if(query != null) {
+            Iterator<SearchHit> searchResponseIterator = getSearchResponse(query, sortOrder);
+            if (searchResponseIterator != null) {
+                while (searchResponseIterator.hasNext()) {
+                    NotesData entry = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
+                    if (entry != null && (getArchivedResponse || entry.getArchived() == null)/*do not search archived threads*/) {
+                        if(!doNotSearchFurtherForHistory.contains(entry.getEntryGuid().toString())) {
+                            if (esIndexNotesFields == ESIndexNotesFields.EXTERNAL) {
+                                results.add(searchThreadsAndHistories(entry, new HashSet<>(), getUpdateHistory, getArchivedResponse));
+                            } else if (esIndexNotesFields == ESIndexNotesFields.CONTENT) {
+                                results.add(searchThreadsAndHistoriesForContent(searchString, entry, new HashSet<>(), getUpdateHistory, getArchivedResponse));
+                            }
+                            doNotSearchFurtherForHistory.add(entry.getEntryGuid().toString());
+                        } 
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
+
     public NotesData searchEntries(String guid, ESIndexNotesFields esIndexNotesFields, boolean getUpdateHistory, boolean getArchivedResponse,
                                    boolean searchThreads, SortOrder sortOrder) {
        NotesData rootEntry = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(),guid),
@@ -130,8 +163,7 @@ public class ESService {
      * @return
      */
     private NotesData search(String query, boolean getUpdateHistory, boolean getArchivedResponse, boolean searchThreads, SortOrder sortOrder) {
-        Iterator<SearchHit> searchResponseIterator = null;
-        searchResponseIterator = getSearchResponse(query, sortOrder);
+        Iterator<SearchHit>  searchResponseIterator = getSearchResponse(query, sortOrder);
         NotesData rootEntry = null;
         if(searchResponseIterator != null) {
             while (searchResponseIterator.hasNext()) {
@@ -141,7 +173,7 @@ public class ESService {
                 }
             }
             if(searchThreads && (rootEntry != null && (getArchivedResponse || rootEntry.getArchived() == null))/*do not search archived threads*/) {
-                searchAllEntries(rootEntry, new HashSet<>(), getUpdateHistory, getArchivedResponse);
+                searchThreadsAndHistories(rootEntry, new HashSet<>(), getUpdateHistory, getArchivedResponse);
             }
         }
         return rootEntry;
@@ -159,8 +191,7 @@ public class ESService {
         List<NotesData> response = new ArrayList<>();
         entriesToArchive.forEach(entryToArchive -> {
             entryToArchive.setArchived(getCurrentDate());
-            entryToArchive.getHistory().clear(); // clean up as threads and history will be also stored in es
-            entryToArchive.getThreads().clear();
+            clearHistoryAndThreads(entryToArchive);// clean up as threads and history will be also stored in es
             esRepository.save(entryToArchive);
             response.add(entryToArchive);
         });
@@ -194,8 +225,7 @@ public class ESService {
                 if (StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ALL, deleteEntries) ||
                         (StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ONLY_ARCHIVED, deleteEntries) && e.getArchived() != null)) {
                     esRepository.deleteById(e.getGuid());
-                    e.getHistory().clear();
-                    e.getThreads().clear();
+                    clearHistoryAndThreads(e);
                     results.add(e);
                 }
             });
@@ -252,7 +282,7 @@ public class ESService {
         return searchRequest;
     }
     
-    private NotesData searchAllEntries(NotesData threadRoot, Set<String> entryThreadUuid, boolean getUpdateHistory,
+    private NotesData searchThreadsAndHistories(NotesData threadRoot, Set<String> entryThreadUuid, boolean getUpdateHistory,
                                        boolean getArchivedResponse) {
         checkAndAddHistory(threadRoot,getUpdateHistory);
         Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.PARENT_THREAD.getEsFieldName(),
@@ -267,7 +297,28 @@ public class ESService {
                 threadRoot.addThreads(thread);
                 entryThreadUuid.add(thread.getEntryGuid().toString());
             }
-            searchAllEntries(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
+            searchThreadsAndHistories(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
+        }
+        return threadRoot;
+    }
+
+    private NotesData searchThreadsAndHistoriesForContent(String contentSearch, NotesData threadRoot, Set<String> entryThreadUuid, 
+                                                          boolean getUpdateHistory, boolean getArchivedResponse) {
+        checkAndAddHistoryForContent(contentSearch,threadRoot,getUpdateHistory);
+        String query = String.format(Queries.QUERY_CONTENT_ENTRIES, ESIndexNotesFields.PARENT_THREAD.getEsFieldName(), 
+                threadRoot.getThreadGuid(),contentSearch);
+        Iterator<SearchHit> searchResponseIterator = getSearchResponse(query, SortOrder.DESC);
+        while(searchResponseIterator.hasNext()) {
+            NotesData thread = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
+            // below if to make sure to avoid history entries here as search Entry id will have history entries as well
+            if(!entryThreadUuid.contains(thread.getEntryGuid())) {
+                if(!getArchivedResponse && thread.getArchived() != null) {
+                    break; // do not search archived thread
+                }
+                threadRoot.addThreads(thread);
+                entryThreadUuid.add(thread.getEntryGuid().toString());
+            }
+            searchThreadsAndHistories(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
         }
         return threadRoot;
     }
@@ -285,8 +336,32 @@ public class ESService {
             }
         }
     }
+
+    private void checkAndAddHistoryForContent(String contentSearch,NotesData entry, boolean getUpdateHistory) {
+        if(getUpdateHistory && entry != null) {
+            Iterator<SearchHit> historyIterator = getSearchResponse(String.format(Queries.QUERY_CONTENT_ENTRIES,
+                    ESIndexNotesFields.ENTRY.getEsFieldName(),entry.getEntryGuid(),contentSearch), SortOrder.DESC);
+            if(historyIterator.hasNext()) {
+                historyIterator.next();
+            }
+            while(historyIterator.hasNext()) {
+                NotesData history = NotesData.fromJson(historyIterator.next().getSourceAsString());
+                entry.addHistory(history);
+            }
+        }
+    }
+    
     private Date getCurrentDate() {
         return new Date();
+    }
+
+    private void clearHistoryAndThreads(NotesData entry) {
+        if(entry.getThreads() != null) {
+            entry.getThreads().clear();
+        }
+        if(entry.getHistory() != null) {
+            entry.getHistory().clear();
+        }
     }
 
     private SortOrder getSortOrder(ESIndexNotesFields esIndexNotesFields){

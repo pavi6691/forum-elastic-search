@@ -1,10 +1,14 @@
 package com.freelance.forum.elasticsearch.pojo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
+import com.freelance.forum.serialzation.CustomDateSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
@@ -14,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Document(indexName = "#{@indexName}", createIndex = false)
+@Document(indexName = "#{@indexName}", createIndex = false, writeTypeHint = WriteTypeHint.FALSE)
 public class NotesData {
     
     @Id
@@ -23,22 +27,22 @@ public class NotesData {
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
-    @Field(type = FieldType.Text, name = "externalGuid")
+    @Field(type = FieldType.Keyword, name = "externalGuid")
     private UUID externalGuid; // An external Guid
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
-    @Field(type = FieldType.Text, name = "threadGuid")
+    @Field(type = FieldType.Keyword, name = "threadGuid")
     private UUID threadGuid; // A thread Guid
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
-    @Field(type = FieldType.Text, name = "entryGuid")
+    @Field(type = FieldType.Keyword, name = "entryGuid")
     private UUID entryGuid; // A Guid for this entry
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
-    @Field(type = FieldType.Text, name = "threadGuidParent")
+    @Field(type = FieldType.Keyword, name = "threadGuidParent")
     private UUID threadGuidParent; // A Guid for this entry's parent
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -46,18 +50,20 @@ public class NotesData {
     private String content;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Field(type = FieldType.Date, name = "created", format = DateFormat.date_time)
+    @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date created;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Field(type = FieldType.Date, name = "archived", format = DateFormat.date_time)
+    @Field(type = FieldType.Date, name = "archived", format = DateFormat.custom, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    @JsonSerialize(using = CustomDateSerializer.class)
     private Date archived;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<NotesData> threads = new ArrayList<>(); // answers/responses to this answer
+    private List<NotesData> threads = null; // answers/responses to this answer
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<NotesData> history = new ArrayList<>(); // Previous versions of this entryGuid, sorted by
+    private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by
 
     public UUID getGuid() {
         return guid;
@@ -143,10 +149,16 @@ public class NotesData {
         this.history = history;
     }
 
-    public void addThreads(NotesData answer) {
-        this.threads.add(answer);
+    public void addThreads(NotesData threads) {
+        if( this.threads == null) {
+            this.threads  = new ArrayList<>();;
+        }
+        this.threads.add(threads);
     }
     public void addHistory(NotesData history) {
+        if( this.history == null) {
+            this.history  = new ArrayList<>();;
+        }
         this.history.add(history);
     }
     

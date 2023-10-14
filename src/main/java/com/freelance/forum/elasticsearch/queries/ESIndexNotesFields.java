@@ -7,7 +7,8 @@ public enum ESIndexNotesFields {
     THREAD("threadGuid"),
     PARENT_THREAD("threadGuidParent"),
     ARCHIVED("archived"),
-    CREATED("created");
+    CREATED("created"),
+    CONTENT("content");
 
     private String indexFieldName ="";
     ESIndexNotesFields(String indexFieldName) {
