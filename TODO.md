@@ -13,6 +13,7 @@
   - [ ] Provide different strategy, where there will be 1 or 2 calls/search request to elastic search and get the response in one go and process them
     internally. Both implementation can be kept with flag
 - [ ] Add logs, handle exceptions and other validations if any
+- [ ] Swagger. SpringDoc open api 3
 - [ ] pagination
 - [ ] POC on Logging and tracing
 - [ ] Authentication and authorization
