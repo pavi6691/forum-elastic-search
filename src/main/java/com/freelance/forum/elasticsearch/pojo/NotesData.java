@@ -1,5 +1,4 @@
 package com.freelance.forum.elasticsearch.pojo;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
 import com.freelance.forum.serialzation.CustomDateSerializer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
@@ -64,6 +62,22 @@ public class NotesData {
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by
+
+    public NotesData(UUID guid, UUID externalGuid, UUID threadGuid, UUID entryGuid, UUID threadGuidParent, 
+                     String content, Date created, Date archived, List<NotesData> threads, List<NotesData> history) {
+        this.guid = guid;
+        this.externalGuid = externalGuid;
+        this.threadGuid = threadGuid;
+        this.entryGuid = entryGuid;
+        this.threadGuidParent = threadGuidParent;
+        this.content = content;
+        this.created = created;
+        this.archived = archived;
+        this.threads = threads;
+        this.history = history;
+    }
+    
+    public NotesData(){}
 
     public UUID getGuid() {
         return guid;
@@ -160,6 +174,13 @@ public class NotesData {
             this.history  = new ArrayList<>();;
         }
         this.history.add(history);
+    }
+
+    public void addAllHistory(List<NotesData> history) {
+        if( this.history == null) {
+            this.history  = new ArrayList<>();;
+        }
+        this.history.addAll(history);
     }
     
     public static NotesData fromJson(String json) {

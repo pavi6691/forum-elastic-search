@@ -54,7 +54,7 @@ public class ESService {
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
             NotesData existingEntry = 
-                    search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.THREAD.getEsFieldName(), notesData.getThreadGuidParent()),
+                    search(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.THREAD.getEsFieldName(), notesData.getThreadGuidParent(),0),
                             false,false,false,SortOrder.ASC);
             if(existingEntry == null) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
@@ -88,7 +88,7 @@ public class ESService {
             if(notesData.getEntryGuid() == null) {
                 throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided");
             } else {
-                notesDataToUpdate = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), notesData.getEntryGuid()),
+                notesDataToUpdate = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), notesData.getEntryGuid(),0),
                         false,false,false,SortOrder.ASC);
             }
         } else if(esIndexNotesFields == ESIndexNotesFields.GUID && notesData.getGuid() == null) {
@@ -142,7 +142,7 @@ public class ESService {
 
     public NotesData searchEntries(String guid, ESIndexNotesFields esIndexNotesFields, boolean getUpdateHistory, boolean getArchivedResponse,
                                    boolean searchThreads, SortOrder sortOrder) {
-       NotesData rootEntry = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(),guid),
+       NotesData rootEntry = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(),guid,0),
                getUpdateHistory,getArchivedResponse,searchThreads,sortOrder);
         if(rootEntry == null || (!getArchivedResponse && rootEntry.getArchived() != null)) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No entries found for field. %s = %s",
@@ -180,7 +180,7 @@ public class ESService {
     }
 
     public List<NotesData> archive(String guid, ESIndexNotesFields esIndexNotesFields) {
-        NotesData result = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
+        NotesData result = search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid,0),
                 true,false,true,getSortOrder(esIndexNotesFields));
         Set<NotesData> entriesToArchive = new HashSet<>();
         flatten(result,entriesToArchive);
@@ -199,7 +199,7 @@ public class ESService {
     }
 
     public NotesData searchArchive(String guid, ESIndexNotesFields esIndexNotesFields) {
-        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
+        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid,0),
                 true, true, true, getSortOrder(esIndexNotesFields));
         if(result != null) {
             while (result.getArchived() == null && !result.getThreads().isEmpty()) {
@@ -215,7 +215,7 @@ public class ESService {
     }
     
     public List<NotesData> delete(String guid, ESIndexNotesFields esIndexNotesFields, String deleteEntries) {
-        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid),
+        NotesData result =  search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid,0),
                 true, true, true, getSortOrder(esIndexNotesFields));
         List<NotesData> results = new ArrayList<>();
         if(result != null) {
@@ -286,7 +286,7 @@ public class ESService {
                                        boolean getArchivedResponse) {
         checkAndAddHistory(threadRoot,getUpdateHistory);
         Iterator<SearchHit> searchResponseIterator = getSearchResponse(String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.PARENT_THREAD.getEsFieldName(),
-                threadRoot.getThreadGuid()), SortOrder.DESC);
+                threadRoot.getThreadGuid(),0), SortOrder.DESC);
         while(searchResponseIterator.hasNext()) {
             NotesData thread = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
@@ -296,8 +296,8 @@ public class ESService {
                 }
                 threadRoot.addThreads(thread);
                 entryThreadUuid.add(thread.getEntryGuid().toString());
+                searchThreadsAndHistories(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
             }
-            searchThreadsAndHistories(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
         }
         return threadRoot;
     }
@@ -317,8 +317,8 @@ public class ESService {
                 }
                 threadRoot.addThreads(thread);
                 entryThreadUuid.add(thread.getEntryGuid().toString());
+                searchThreadsAndHistoriesForContent(contentSearch,thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
             }
-            searchThreadsAndHistories(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
         }
         return threadRoot;
     }
@@ -326,7 +326,7 @@ public class ESService {
     private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory) {
         if(getUpdateHistory && entry != null) {
             Iterator<SearchHit> historyIterator = getSearchResponse(String.format(Queries.QUERY_ALL_ENTRIES,
-                    ESIndexNotesFields.ENTRY.getEsFieldName(),entry.getEntryGuid()), SortOrder.DESC);
+                    ESIndexNotesFields.ENTRY.getEsFieldName(),entry.getEntryGuid(),0), SortOrder.DESC);
             if(historyIterator.hasNext()) {
                 historyIterator.next();
             }

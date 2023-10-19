@@ -1,7 +1,9 @@
 package com.freelance.forum.resource;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
+import com.freelance.forum.elasticsearch.pojo.Request;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
+import com.freelance.forum.service.AbstractService;
 import com.freelance.forum.service.ESService;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ public class ESResource {
 
     @Autowired
     ESService service;
+    
+    @Autowired
+    AbstractService restHighLevelService;
 
     @PostMapping("/create")
     public ResponseEntity<NotesData> saveNew(@RequestBody NotesData notesData) {
@@ -43,24 +48,27 @@ public class ESResource {
     public ResponseEntity<List<NotesData>> searchByExternalGuid(@RequestParam String externalGuid,
                                                           @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                           @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
-        return new ResponseEntity(service.searchEntries(externalGuid, ESIndexNotesFields.EXTERNAL,
-                                    getUpdateHistory,getArchivedResponse,SortOrder.DESC),HttpStatus.OK);
+        return new ResponseEntity(restHighLevelService.search(new Request.Builder().setSearch(externalGuid)
+                        .setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(getUpdateHistory)
+                        .setArchivedResponse(getArchivedResponse).build()),HttpStatus.OK);
     }
 
     @GetMapping("/search/entry")
     public ResponseEntity<NotesData> searchByEntryGuid(@RequestParam String entryGuid,
                                                        @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                        @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
-        return new ResponseEntity(service.searchEntries(entryGuid, ESIndexNotesFields.ENTRY,getUpdateHistory,
-                                    getArchivedResponse,true,SortOrder.ASC),HttpStatus.OK);
+        return new ResponseEntity(restHighLevelService.search(new Request.Builder().setSearch(entryGuid)
+                .setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(getUpdateHistory)
+                .setArchivedResponse(getArchivedResponse).build()),HttpStatus.OK);
     }
 
     @GetMapping("/search/content")
     public ResponseEntity<List<NotesData>> searchContent(@RequestParam String search,
                                                                 @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                                 @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
-        return new ResponseEntity(service.searchEntries(search, ESIndexNotesFields.CONTENT,
-                getUpdateHistory,getArchivedResponse,SortOrder.DESC),HttpStatus.OK);
+        return new ResponseEntity(restHighLevelService.search(new Request.Builder().setSearch(search)
+                .setEsIndexNotesFields(ESIndexNotesFields.CONTENT).setUpdateHistory(getUpdateHistory)
+                .setArchivedResponse(getArchivedResponse).build()),HttpStatus.OK);
     }
 
     @PutMapping("/archive/external")

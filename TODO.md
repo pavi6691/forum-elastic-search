@@ -15,6 +15,7 @@
 - [ ] Add logs, handle exceptions and other validations if any
 - [ ] Swagger. SpringDoc open api 3
 - [ ] pagination
+- [ ] JUnit Test Cases
 - [ ] POC on Logging and tracing
 - [ ] Authentication and authorization
 - [ ] Scalability - lstio API gateway?
