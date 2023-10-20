@@ -195,7 +195,8 @@ public class ESService {
             esRepository.save(entryToArchive);
             response.add(entryToArchive);
         });
-        return response;
+        return List.of(search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid,0),
+                true,false,true,getSortOrder(esIndexNotesFields)));
     }
 
     public NotesData searchArchive(String guid, ESIndexNotesFields esIndexNotesFields) {
@@ -234,7 +235,8 @@ public class ESService {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("No entries found to delete. %s = %s",
                     esIndexNotesFields.getEsFieldName(),guid));
         }
-        return results;
+        return List.of(search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid,0),
+                true, true, true, getSortOrder(esIndexNotesFields)));
     }
 
     public String createIndex(String indexName) {
@@ -255,8 +257,10 @@ public class ESService {
     
     private void flatten(NotesData root, Set<NotesData> entries) {
         entries.add(root);
-        root.getThreads().forEach(e -> flatten(e,entries));
-        root.getHistory().forEach(e -> flatten(e,entries));
+        if(root.getThreads() != null)
+            root.getThreads().forEach(e -> flatten(e,entries));
+        if(root.getHistory() != null)
+            root.getHistory().forEach(e -> flatten(e,entries));
     }
  
     private Iterator<SearchHit> getSearchResponse(String query,SortOrder sortOrder) {
