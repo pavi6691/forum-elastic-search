@@ -37,7 +37,8 @@ public abstract class AbstractService<T> implements ISearchService {
                     uuid  = notesData.getThreadGuidParent().toString();
                 }
                 if (!results.containsKey(uuid)) {
-                    results.put(uuid, new HashMap<>()); // null key is allowed and holds root element
+                    // null key is allowed and holds root element
+                    results.put(uuid, new HashMap<>());
                 }
                 String entryGuid = notesData.getEntryGuid().toString();
                 if(!results.get(uuid).containsKey(entryGuid)) {
@@ -53,27 +54,35 @@ public abstract class AbstractService<T> implements ISearchService {
     public List<NotesData> search(Request request) {
         List<NotesData> results = new ArrayList<>();
         Iterator<T> rootEntries = execQueryOnEs(getRootQuery(request));
-        Map<String,List<NotesData>> rootEntriesMap = new HashMap<>();
+        Map<String,Map<String,List<NotesData>>> rootEntriesMap = new HashMap<>();
         if(rootEntries != null) {
             while (rootEntries.hasNext()) {
                 NotesData rootNotesData = parseSearchHitToNoteData(rootEntries.next());
                 String externalUuid = rootNotesData.getExternalGuid().toString();
                 if (!rootEntriesMap.containsKey(externalUuid)) {
-                    rootEntriesMap.put(externalUuid, new ArrayList<>());
+                    rootEntriesMap.put(externalUuid, new HashMap<>());
                 }
-                rootEntriesMap.get(externalUuid).add(rootNotesData);
+                String entryUuid = rootNotesData.getEntryGuid().toString();
+                if(!rootEntriesMap.get(externalUuid).containsKey(entryUuid)) {
+                    rootEntriesMap.get(externalUuid).put(entryUuid, new ArrayList<>());
+                }
+                rootEntriesMap.get(externalUuid).get(entryUuid).add(rootNotesData);
             }
-            for (List<NotesData> entries : rootEntriesMap.values()) {
+            for (Map<String,List<NotesData>> entries : rootEntriesMap.values()) {
                 NotesData mostRecentUpdatedEntry = null;
-                for (int i = 0; i < entries.size(); i++) {
-                    if (i == 0) {
-                        mostRecentUpdatedEntry = entries.get(i);
-                        // Since query is by external id, we only need results after first of entry these entries,
-                        String queryByExternalId = String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.EXTERNAL.getEsFieldName(),
-                                mostRecentUpdatedEntry.getExternalGuid(), entries.get(entries.size() - 1).getCreated().getTime());
-                        Map<String,Map<String,List<NotesData>>> threads = getThreads(queryByExternalId, request);
-                        if (threads != null && !threads.isEmpty()) {
-                            results.add(buildThreads(mostRecentUpdatedEntry, threads, new HashSet<>(), request));
+                for (List<NotesData> entryList : entries.values()) {
+                    for (int i = 0; i < entryList.size(); i++) {
+                        if (i == 0) {
+                            mostRecentUpdatedEntry = entryList.get(i);
+                            if(request.isArchivedResponse() || mostRecentUpdatedEntry.getArchived() == null) {
+                                // Since query is by external id, we only need results after first of entry these entries,
+                                String queryByExternalId = String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.EXTERNAL.getEsFieldName(),
+                                        mostRecentUpdatedEntry.getExternalGuid(), entryList.get(entryList.size() - 1).getCreated().getTime());
+                                Map<String, Map<String, List<NotesData>>> threads = getThreads(queryByExternalId, request);
+                                if (threads != null && !threads.isEmpty()) {
+                                    results.add(buildThreads(mostRecentUpdatedEntry, threads, new HashSet<>(), request));
+                                }
+                            }
                         }
                     }
                 }
