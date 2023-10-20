@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public abstract class AbstractService<T> implements ISearchService {
@@ -25,9 +26,9 @@ public abstract class AbstractService<T> implements ISearchService {
     
     public abstract Iterator<T> execQueryOnEs(String query);
     public abstract NotesData parseSearchHitToNoteData(T searchHit);
-    public Map<String,List<NotesData>> getThreads(String queryByExternalId, Request request) {
+    public Map<String,Map<String,List<NotesData>>> getThreads(String queryByExternalId, Request request) {
         Iterator<T> threads = execQueryOnEs(queryByExternalId);
-        Map<String,List<NotesData>> results = new HashMap<>();
+        Map<String,Map<String,List<NotesData>>> results = new HashMap<>();
         if(threads != null) {
             while (threads.hasNext()) {
                 NotesData notesData = parseSearchHitToNoteData(threads.next());
@@ -36,9 +37,13 @@ public abstract class AbstractService<T> implements ISearchService {
                     uuid  = notesData.getThreadGuidParent().toString();
                 }
                 if (!results.containsKey(uuid)) {
-                    results.put(uuid, new ArrayList<>()); // null key is allowed and holds root element
+                    results.put(uuid, new HashMap<>()); // null key is allowed and holds root element
                 }
-                results.get(uuid).add(notesData);
+                String entryGuid = notesData.getEntryGuid().toString();
+                if(!results.get(uuid).containsKey(entryGuid)) {
+                    results.get(uuid).put(entryGuid, new ArrayList<>());
+                }
+                results.get(uuid).get(entryGuid).add(notesData);
             }
         }
         return results;
@@ -66,7 +71,7 @@ public abstract class AbstractService<T> implements ISearchService {
                         // Since query is by external id, we only need results after first of entry these entries,
                         String queryByExternalId = String.format(Queries.QUERY_ALL_ENTRIES, ESIndexNotesFields.EXTERNAL.getEsFieldName(),
                                 mostRecentUpdatedEntry.getExternalGuid(), entries.get(entries.size() - 1).getCreated().getTime());
-                        Map<String, List<NotesData>> threads = getThreads(queryByExternalId, request);
+                        Map<String,Map<String,List<NotesData>>> threads = getThreads(queryByExternalId, request);
                         if (threads != null && !threads.isEmpty()) {
                             results.add(buildThreads(mostRecentUpdatedEntry, threads, new HashSet<>(), request));
                         }
@@ -89,18 +94,23 @@ public abstract class AbstractService<T> implements ISearchService {
         return query;
     }
 
-    private NotesData buildThreads(NotesData threadEntry,Map<String, List<NotesData>> results, Set<String> entryThreadUuid,Request request) {
+    private NotesData buildThreads(NotesData threadEntry,Map<String,Map<String,List<NotesData>>> results, Set<String> entryThreadUuid,Request request) {
         String parentThreadGuid = null;
         if(threadEntry.getThreadGuidParent() != null) {
             parentThreadGuid  = threadEntry.getThreadGuidParent().toString();
         }
-        if(request.isUpdateHistory() && threadEntry != null && results.containsKey(parentThreadGuid)) {
-            for(int i = 1; i < results.get(parentThreadGuid).size(); i++) {
-                threadEntry.addHistory(results.get(parentThreadGuid).get(i));
+        String entryGuid = threadEntry.getEntryGuid().toString();
+        if(request.isUpdateHistory() && threadEntry != null && results.containsKey(parentThreadGuid) &&
+                results.get(parentThreadGuid).containsKey(entryGuid)) {
+            for(int i = 1; i < results.get(parentThreadGuid).get(entryGuid).size(); i++) { 
+                threadEntry.addHistory(results.get(parentThreadGuid).get(entryGuid).get(i));
             }
         }
-        List<NotesData> threads = results.get(threadEntry.getThreadGuid().toString());
-        if(threads != null) {
+        List<NotesData> threads = new ArrayList<>();
+        if(results.containsKey(threadEntry.getThreadGuid().toString())) {
+            results.get(threadEntry.getThreadGuid().toString()).values().stream().forEach(l -> threads.addAll(l));
+        }
+        if(!threads.isEmpty()) {
             for(int i = 0; i < threads.size(); i++) {
                 String entryUuid = threads.get(i).getEntryGuid().toString();
                 // entryThreadUuid set is to make sure to avoid history entries here as search Entry id will have history entries as well

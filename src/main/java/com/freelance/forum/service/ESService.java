@@ -290,7 +290,7 @@ public class ESService {
         while(searchResponseIterator.hasNext()) {
             NotesData thread = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
-            if(!entryThreadUuid.contains(thread.getEntryGuid())) { 
+            if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) { 
                 if(!getArchivedResponse && thread.getArchived() != null) {
                     break; // do not search archived thread
                 }
@@ -311,7 +311,7 @@ public class ESService {
         while(searchResponseIterator.hasNext()) {
             NotesData thread = NotesData.fromJson(searchResponseIterator.next().getSourceAsString());
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
-            if(!entryThreadUuid.contains(thread.getEntryGuid())) {
+            if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) {
                 if(!getArchivedResponse && thread.getArchived() != null) {
                     break; // do not search archived thread
                 }
