@@ -116,7 +116,7 @@ public abstract class AbstractService<T> implements ISearchService {
             }
         }
         List<NotesData> threads = new ArrayList<>();
-        if(results.containsKey(threadEntry.getThreadGuid().toString())) {
+        if(threadEntry.getThreadGuid() != null && results.containsKey(threadEntry.getThreadGuid().toString())) {
             results.get(threadEntry.getThreadGuid().toString()).values().stream().forEach(l -> threads.addAll(l));
         }
         if(!threads.isEmpty()) {

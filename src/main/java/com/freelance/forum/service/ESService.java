@@ -235,8 +235,7 @@ public class ESService {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("No entries found to delete. %s = %s",
                     esIndexNotesFields.getEsFieldName(),guid));
         }
-        return List.of(search(String.format(Queries.QUERY_ALL_ENTRIES, esIndexNotesFields.getEsFieldName(), guid,0),
-                true, true, true, getSortOrder(esIndexNotesFields)));
+        return results;
     }
 
     public String createIndex(String indexName) {

@@ -66,9 +66,7 @@ public class ESResource {
     public ResponseEntity<List<NotesData>> searchContent(@RequestParam String search,
                                                                 @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                                 @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
-        return new ResponseEntity(restHighLevelService.search(new Request.Builder().setSearch(search)
-                .setEsIndexNotesFields(ESIndexNotesFields.CONTENT).setUpdateHistory(getUpdateHistory)
-                .setArchivedResponse(getArchivedResponse).build()),HttpStatus.OK);
+        return new ResponseEntity(service.searchEntries(search, ESIndexNotesFields.CONTENT,true,true, SortOrder.DESC),HttpStatus.OK);
     }
 
     @PutMapping("/archive/external")

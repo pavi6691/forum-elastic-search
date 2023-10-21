@@ -7,6 +7,7 @@ import com.freelance.forum.elasticsearch.configuration.EsConfig;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.pojo.Request;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.repository.ESRepository;
 import com.freelance.forum.service.AbstractService;
 import com.freelance.forum.service.ESService;
 import org.apache.http.HttpHost;
@@ -20,6 +21,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
@@ -62,6 +64,9 @@ class RestHighLevelClientSearchService {
 	@Autowired
 	ESService service;
 
+	@Autowired
+	ESRepository esRepository;
+
 	@Value("${index.name}")
 	private String indexName;
 
@@ -103,7 +108,41 @@ class RestHighLevelClientSearchService {
 		validateAll(result,11,6,2);
 		// there can be multiple external entries, so check them too
 		assertEquals(3,result.size());
+	}
 
+	@Test
+	void getByExternalGuid_noHistories() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
+				.setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(false).setArchivedResponse(true).build());
+		validateAll(result,9,6,0);
+		// there can be multiple external entries, so check them too
+		assertEquals(3,result.size());
+	}
+
+	@Test
+	void getByExternalGuid_noArchive() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
+				.setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(true).setArchivedResponse(false).build());
+		validateAll(result,7,3,1);
+		// there can be multiple external entries, so check them too
+		assertEquals(3,result.size());
+	}
+
+	@Test
+	void getByExternalGuid_noHistoryAndArchives() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
+				.setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(false).setArchivedResponse(false).build());
+		validateAll(result,6,3,0);
+		// there can be multiple external entries, so check them too
+		assertEquals(3,result.size());
+	}
+
+	@Test
+	void searchContent() {
+		List<NotesData> result = service.searchEntries("Content-", ESIndexNotesFields.CONTENT,true,true, SortOrder.DESC);
+		validateAll(result,10,6,2);
+		// there can be multiple external entries, so check them too
+		assertEquals(3,result.size());
 	}
 
 	@Test
@@ -115,11 +154,35 @@ class RestHighLevelClientSearchService {
 	}
 
 	@Test
+	void getByEntryGuid_all_test_1() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(true).build());
+
+		validateAll(result,8,5,2);
+	}
+
+	@Test
+	void getByEntryGuid_all_test_2() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("06a418c3-7475-473e-9e9d-3e952d672d4c")
+				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(true).build());
+
+		validateAll(result,6,4,1);
+	}
+
+	@Test
 	void getByEntryGuid_noHistories() {
 		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
 				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(true).build());
 
 		validateAll(result,3,2,0);
+	}
+
+	@Test
+	void getByEntryGuid_noHistories_test_1() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(true).build());
+
+		validateAll(result,6,5,0);
 	}
 
 	@Test
@@ -145,6 +208,22 @@ class RestHighLevelClientSearchService {
 
 		validateAll(result,4,2,1);
 	}
+
+	@Test
+	void getByEntryGuid_NoHistoriesAndArchives_test_1() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(false).build());
+
+		validateAll(result,0,0,0);
+	}
+
+	@Test
+	void getByEntryGuid_NoHistoriesAndArchives_test_2() {
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(false).build());
+
+		validateAll(result,3,2,0);
+	}
 	
 	private void validateAll(List<NotesData> result, int expectedResultCount, int expectedThreadCount, int expectedHistoryCount) {
 		List<NotesData> total = new ArrayList<>();
@@ -157,14 +236,14 @@ class RestHighLevelClientSearchService {
 		assertEquals(expectedThreadCount,totalThreads.size());
 		assertEquals(expectedHistoryCount,totalHistories.size());
 		
-		// this Test is to check each individual external entries will have different entryGuid
+		// this is to check each individual external entries will have different entryGuid
 		for(int i = 0; i < result.size(); i++) {
 			for (int j = i + 1; j < result.size(); j++) {
 				assertNotEquals(result.get(i).getEntryGuid(),result.get(j).getEntryGuid());
 			}
 		}
 
-		// this Test is to check each external entry and its history will have the same entryGuid
+		// this is to check each external entry and its history will have the same entryGuid
 		for(int i = 0; i < result.size(); i++) {
 			if(result.get(i).getHistory() != null) {
 				for (int j = 0; j < result.get(i).getHistory().size(); j++) {
@@ -173,7 +252,7 @@ class RestHighLevelClientSearchService {
 			}
 		}
 
-		// this Test is to check each threads of thier parent will have same thread Id of parent and 
+		// this is to check each threads will have same thread guid as their parent 
 		for(int i = 0; i < result.size(); i++) {
 			if(result.get(i).getThreads() != null) {
 				for (int j = 0; j < result.get(i).getThreads().size(); j++) {
@@ -235,13 +314,23 @@ class RestHighLevelClientSearchService {
 //	}
 
 //	@Test
-//	void createEntry() throws JSONException, JsonProcessingException {
+//	void createEntries() throws JSONException {
 //		JSONArray jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
 //		for(int i=0; i< jsonArray.length(); i++) {
-//			NotesData notesData = service.saveNew(NotesData.fromJson(jsonArray.getString(i)));
-//			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-//			String json = ow.writeValueAsString(notesData);
-//			assertEquals(json,jsonArray.getString(i));
+//			List<NotesData> entries = new ArrayList<>();
+//			String jsonStringToStore = jsonArray.getString(i);
+//			flatten(NotesData.fromJson(jsonStringToStore),entries);
+//			entries.forEach(e -> {
+//				NotesData notesData = esRepository.save(e);
+//				assertEquals(notesData.getGuid(),e.getGuid());
+//				assertEquals(notesData.getExternalGuid(),e.getExternalGuid());
+//				assertEquals(notesData.getEntryGuid(),e.getEntryGuid());
+//				assertEquals(notesData.getThreadGuid(),e.getThreadGuid());
+//				assertEquals(notesData.getThreadGuidParent(),e.getThreadGuidParent());
+//				assertEquals(notesData.getContent(),e.getContent());
+//				assertEquals(notesData.getCreated(),e.getCreated());
+//				assertEquals(notesData.getArchived(),e.getArchived());
+//			});
 //		}
 //	}
 
