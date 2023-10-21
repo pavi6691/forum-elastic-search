@@ -31,7 +31,7 @@ public class RestHighLevelClientSearchService extends AbstractService {
             SearchResponse searchResponse = esConfig.elasticsearchClient().search(searchRequest, RequestOptions.DEFAULT);
             Iterator<SearchHit> iterator = searchResponse.getHits().iterator();
             return iterator;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

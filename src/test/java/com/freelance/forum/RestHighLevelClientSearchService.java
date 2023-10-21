@@ -139,10 +139,10 @@ class RestHighLevelClientSearchService {
 
 	@Test
 	void searchContent() {
-		List<NotesData> result = service.searchEntries("Content-", ESIndexNotesFields.CONTENT,true,true, SortOrder.DESC);
-		validateAll(result,10,6,2);
-		// there can be multiple external entries, so check them too
-		assertEquals(3,result.size());
+		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("content")
+				.setEsIndexNotesFields(ESIndexNotesFields.CONTENT).setUpdateHistory(false).setArchivedResponse(false).build());
+		checkDuplicates(result);
+		assertEquals(11,result.size());
 	}
 
 	@Test
@@ -260,7 +260,11 @@ class RestHighLevelClientSearchService {
 				}
 			}
 		}
-		
+
+		checkDuplicates(result);
+	}
+	
+	private void checkDuplicates(List<NotesData> result){
 		// check for duplicate entries
 		List<NotesData> flattenEntries = new ArrayList<>();
 		Set<String> entryCount = new HashSet<>();
@@ -270,13 +274,12 @@ class RestHighLevelClientSearchService {
 			while(j < flattenEntries.size()) {
 				String guidKey = flattenEntries.get(j).getGuid().toString();
 				if(entryCount.contains(guidKey)) { // this check is for debug just in case
-					assertFalse(entryCount.contains(guidKey));	
+					assertFalse(entryCount.contains(guidKey));
 				}
 				entryCount.add(guidKey);
 				j++;
 			}
 		}
-		
 	}
 
 	private void flatten(NotesData root, List<NotesData> entries) {
@@ -321,6 +324,10 @@ class RestHighLevelClientSearchService {
 //			String jsonStringToStore = jsonArray.getString(i);
 //			flatten(NotesData.fromJson(jsonStringToStore),entries);
 //			entries.forEach(e -> {
+//				if(e.getThreads() != null)
+//					e.getThreads().clear();
+//				if(e.getHistory() != null)
+//					e.getHistory().clear();
 //				NotesData notesData = esRepository.save(e);
 //				assertEquals(notesData.getGuid(),e.getGuid());
 //				assertEquals(notesData.getExternalGuid(),e.getExternalGuid());
@@ -330,6 +337,8 @@ class RestHighLevelClientSearchService {
 //				assertEquals(notesData.getContent(),e.getContent());
 //				assertEquals(notesData.getCreated(),e.getCreated());
 //				assertEquals(notesData.getArchived(),e.getArchived());
+//				assertEquals(notesData.getThreads(),e.getThreads());
+//				assertEquals(notesData.getHistory(),e.getHistory());
 //			});
 //		}
 //	}

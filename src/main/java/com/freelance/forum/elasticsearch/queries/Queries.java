@@ -45,43 +45,13 @@ public class Queries {
             "  }\n" +
             "}";
 
-    public static String QUERY_CONTENT_ROOT_EXTERNAL_ENTRIES = "{\n" +
-            "  \"bool\": {\n" +
-            "    \"must\": [\n" +
-            "      {\n" +
-            "        \"bool\": {\n" +
-            "          \"must_not\": [\n" +
-            "            {\n" +
-            "              \"exists\": {\n" +
-            "                \"field\": \"threadGuidParent\"\n" +
-            "              }\n" +
-            "            }\n" +
-            "          ]\n" +
-            "        }\n" +
-            "      },\n" +
-            "      {\n" +
-            "        \"match\": {\n" +
-            "          \"content\": \"%s\"\n" +
-            "        }\n" +
-            "      }\n" +
-            "    ]\n" +
-            "  }\n" +
-            "}";
-
     public static String QUERY_CONTENT_ENTRIES = "{\n" +
-            "  \"bool\": {\n" +
-            "    \"must\": [\n" +
-            "      {\n" +
-            "        \"match_phrase\": {\n" +
-            "          \"%s\": \"%s\"\n" +
-            "        }\n" +
-            "      },\n" +
-            "      {\n" +
-            "        \"match\": {\n" +
-            "          \"content\": \"%s\"\n" +
-            "        }\n" +
+            "    \"wildcard\": {\n" +
+            "      \"content\": {\n" +
+            "        \"value\": \"*%s*\",\n" +
+            "        \"boost\": 1.0,\n" +
+            "        \"rewrite\": \"constant_score\"\n" +
             "      }\n" +
-            "    ]\n" +
-            "  }\n" +
-            "}";
+            "    }\n" +
+            "  }";
 }

@@ -4,22 +4,6 @@
     "version": 1,
     "updateTimeInMs": 0
   },
-  "settings": {
-    "analysis": {
-      "analyzer": {
-        "content_ngram_analyzer": {
-          "tokenizer": "content_ngram_analyzer"
-        }
-      },
-      "tokenizer": {
-        "content_ngram_analyzer": {
-          "type": "nGram",
-          "min_gram": "2",
-          "max_gram": "15"
-        }
-      }
-    }
-  },
   "properties": {
     "guid": {
       "type": "keyword"

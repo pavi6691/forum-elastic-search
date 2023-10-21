@@ -114,7 +114,7 @@ public class ESService {
         if(esIndexNotesFields == ESIndexNotesFields.EXTERNAL) {
             query = String.format(Queries.QUERY_ROOT_EXTERNAL_ENTRIES, searchString);
         } else if(esIndexNotesFields == ESIndexNotesFields.CONTENT) {
-            query = String.format(Queries.QUERY_CONTENT_ROOT_EXTERNAL_ENTRIES, searchString);
+            query = String.format(Queries.QUERY_CONTENT_ENTRIES, searchString);
         }
         List<NotesData> results = new ArrayList<>();
         Set<String> doNotSearchFurtherForHistory = new HashSet<>();

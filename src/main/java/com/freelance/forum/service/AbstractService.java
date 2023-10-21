@@ -58,6 +58,10 @@ public abstract class AbstractService<T> implements ISearchService {
         if(rootEntries != null) {
             while (rootEntries.hasNext()) {
                 NotesData rootNotesData = parseSearchHitToNoteData(rootEntries.next());
+                if(request.getEsIndexNotesField() == ESIndexNotesFields.CONTENT) {
+                    results.add(rootNotesData);  
+                    continue;
+                }
                 String externalUuid = rootNotesData.getExternalGuid().toString();
                 if (!rootEntriesMap.containsKey(externalUuid)) {
                     rootEntriesMap.put(externalUuid, new HashMap<>());
@@ -98,7 +102,7 @@ public abstract class AbstractService<T> implements ISearchService {
         } else if(request.getEsIndexNotesField() == ESIndexNotesFields.ENTRY) {
             query = String.format(Queries.QUERY_ALL_ENTRIES,request.getEsIndexNotesField().getEsFieldName(), request.getSearch(),0);
         } else if(request.getEsIndexNotesField() == ESIndexNotesFields.CONTENT) {
-            query = String.format(Queries.QUERY_CONTENT_ROOT_EXTERNAL_ENTRIES, request.getSearch());
+            query = String.format(Queries.QUERY_CONTENT_ENTRIES, request.getSearch());
         }
         return query;
     }
