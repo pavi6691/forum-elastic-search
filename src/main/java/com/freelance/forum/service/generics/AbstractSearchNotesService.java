@@ -16,6 +16,9 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public abstract class AbstractSearchNotesService implements ISearchNotesService {
     @Value("${max.number.of.history.and.threads}")
@@ -38,16 +41,36 @@ public abstract class AbstractSearchNotesService implements ISearchNotesService 
 
     private String getSearchQuery(SearchRequest searchRequest) {
         String query = "";
-        if(searchRequest.getRequestType() == RequestType.EXTERNAL_ENTRIES) {
+        if(searchRequest.getRequestType() == RequestType.EXTERNAL_ENTRIES ||
+                (searchRequest.getSearchField() == ESIndexNotesFields.EXTERNAL && searchRequest.getRequestType() == RequestType.ARCHIVE)) {
             query = String.format(Queries.QUERY_ROOT_EXTERNAL_ENTRIES, searchRequest.getSearch());
-        } else if(searchRequest.getRequestType() == RequestType.ENTRIES) {
+        } else if(searchRequest.getRequestType() == RequestType.ENTRIES || 
+                (searchRequest.getSearchField() == ESIndexNotesFields.ENTRY && searchRequest.getRequestType() == RequestType.ARCHIVE)) {
             query = String.format(Queries.QUERY_ENTRIES, searchRequest.getSearchField().getEsFieldName(), searchRequest.getSearch(), 
                     searchRequest.getTimeToSearchEntriesAfter());
         } else if(searchRequest.getRequestType() == RequestType.CONTENT) {
             query = String.format(Queries.QUERY_CONTENT_ENTRIES, searchRequest.getSearch());
-        } else if(searchRequest.getRequestType() == RequestType.ARCHIVE) {
-            query = String.format(Queries.QUERY_ARCHIVED_ENTRIES,searchRequest.getSearchField().getEsFieldName(), searchRequest.getSearch());
         }
         return query;
+    }
+
+    /**
+     * filter and return only archived
+     * @param results
+     */
+    public void filterArchived(List<NotesData> results) {
+        List<NotesData> archivedResults = new ArrayList<>();
+        for(NotesData result : results) {
+            if (result != null) {
+                while (result.getArchived() == null && result.getThreads() != null && !result.getThreads().isEmpty()) {
+                    result = result.getThreads().get(0);
+                }
+            }
+            if(result.getArchived() != null) {
+                archivedResults.add(result);
+            }
+        }
+        results.clear();
+        results.addAll(archivedResults);
     }
 }

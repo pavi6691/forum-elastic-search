@@ -62,6 +62,9 @@ public class SearchNotesServiceV2 extends AbstractSearchNotesService {
                 }
             }
         }
+        if(searchRequest.getRequestType() == RequestType.ARCHIVE) {
+            filterArchived(results);
+        } 
         if(results.isEmpty()) {
             System.out.println(String.format("No entries found for given searchRequest. %s = %s",
                     searchRequest.getSearchField().getEsFieldName(),searchRequest.getSearch()));

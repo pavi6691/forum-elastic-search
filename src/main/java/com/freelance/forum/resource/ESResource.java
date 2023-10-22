@@ -5,7 +5,6 @@ import com.freelance.forum.elasticsearch.pojo.SearchRequest;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.RequestType;
 import com.freelance.forum.service.INotesService;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,8 +46,7 @@ public class ESResource {
                                                           @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
         return new ResponseEntity(notesService.search(new SearchRequest.Builder().setSearch(externalGuid)
                         .setSearchField(ESIndexNotesFields.EXTERNAL).setSearchHistory(getUpdateHistory)
-                        .setRequestType(RequestType.EXTERNAL_ENTRIES)
-                        .setSearchArchived(getArchivedResponse).setSortOrder(SortOrder.DESC).build()),HttpStatus.OK);
+                        .setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchArchived(getArchivedResponse).build()),HttpStatus.OK);
     }
 
     @GetMapping("/search/entry")
@@ -57,8 +55,7 @@ public class ESResource {
                                                        @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
         return new ResponseEntity(notesService.search(new SearchRequest.Builder().setSearch(entryGuid)
                 .setSearchField(ESIndexNotesFields.ENTRY).setSearchHistory(getUpdateHistory)
-                .setRequestType(RequestType.ENTRIES)
-                .setSearchArchived(getArchivedResponse).setSortOrder(SortOrder.ASC).build()),HttpStatus.OK);
+                .setRequestType(RequestType.ENTRIES).setSearchArchived(getArchivedResponse).build()),HttpStatus.OK);
     }
 
     @GetMapping("/search/content")
@@ -67,8 +64,7 @@ public class ESResource {
                                                                 @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
         return new ResponseEntity(notesService.search(new SearchRequest.Builder().setSearch(search)
                 .setSearchField(ESIndexNotesFields.CONTENT).setSearchHistory(getUpdateHistory)
-                .setRequestType(RequestType.CONTENT)
-                .setSearchArchived(getArchivedResponse).setSortOrder(SortOrder.DESC).build()),HttpStatus.OK);
+                .setRequestType(RequestType.CONTENT).setSearchArchived(getArchivedResponse).build()),HttpStatus.OK);
     }
 
     @PutMapping("/archive/external")
