@@ -26,10 +26,8 @@ public class SearchNotesServiceV1 extends AbstractSearchNotesService {
                     }
                     if (entry != null && (searchRequest.getArchivedResponse() || entry.getArchived() == null)/*do not search archived threads*/) {
                         if(!doNotSearchFurtherForHistory.contains(entry.getEntryGuid().toString())) {
-                            if (searchRequest.getRequestType() == RequestType.EXTERNAL_ENTRIES || searchRequest.getRequestType() == RequestType.ENTRIES) {
-                                results.add(searchThreadsAndHistories(entry, new HashSet<>(), searchRequest.getUpdateHistory(), 
-                                        searchRequest.getArchivedResponse()));
-                            } 
+                            results.add(searchThreadsAndHistories(entry, new HashSet<>(), searchRequest.getUpdateHistory(),
+                                    searchRequest.getArchivedResponse()));
                             doNotSearchFurtherForHistory.add(entry.getEntryGuid().toString());
                         } 
                     }

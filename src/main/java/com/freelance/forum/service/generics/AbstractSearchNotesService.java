@@ -46,7 +46,7 @@ public abstract class AbstractSearchNotesService implements ISearchNotesService 
         } else if(searchRequest.getRequestType() == RequestType.CONTENT) {
             query = String.format(Queries.QUERY_CONTENT_ENTRIES, searchRequest.getSearch());
         } else if(searchRequest.getRequestType() == RequestType.ARCHIVE) {
-            query = String.format(Queries.QUERY_ARCHIVED_ENTRIES, searchRequest.getSearch());
+            query = String.format(Queries.QUERY_ARCHIVED_ENTRIES,searchRequest.getSearchField().getEsFieldName(), searchRequest.getSearch());
         }
         return query;
     }
