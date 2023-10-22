@@ -1,52 +1,24 @@
 package com.freelance.forum;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.freelance.forum.elasticsearch.configuration.EsConfig;
+import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.pojo.Request;
+import com.freelance.forum.elasticsearch.pojo.SearchRequest;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
-import com.freelance.forum.elasticsearch.repository.ESRepository;
-import com.freelance.forum.service.AbstractService;
-import com.freelance.forum.service.ESService;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.*;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.search.sort.SortOrder;
-import org.json.JSONArray;
+import com.freelance.forum.elasticsearch.queries.RequestType;
+import com.freelance.forum.service.INotesService;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.elasticsearch.client.ClientConfiguration;
-import org.springframework.data.elasticsearch.client.RestClients;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,13 +31,10 @@ class RestHighLevelClientSearchService {
 
 
 	@Autowired
-	AbstractService restHighLevelClientSearchService;
+	INotesService notesService;
 	
 	@Autowired
-	ESService service;
-
-	@Autowired
-	ESRepository esRepository;
+	ESNotesRepository repository;
 
 	@Value("${index.name}")
 	private String indexName;
@@ -103,8 +72,9 @@ class RestHighLevelClientSearchService {
 	
 	@Test
 	void getByExternalGuid_all() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
-				.setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(true).setArchivedResponse(true).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
+				.setSearchField(ESIndexNotesFields.EXTERNAL)
+				.setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchHistory(true).setSearchArchived(true).build());
 		validateAll(result,11,6,2);
 		// there can be multiple external entries, so check them too
 		assertEquals(3,result.size());
@@ -112,8 +82,9 @@ class RestHighLevelClientSearchService {
 
 	@Test
 	void getByExternalGuid_noHistories() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
-				.setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(false).setArchivedResponse(true).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
+				.setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchField(ESIndexNotesFields.EXTERNAL)
+				.setSearchHistory(false).setSearchArchived(true).build());
 		validateAll(result,9,6,0);
 		// there can be multiple external entries, so check them too
 		assertEquals(3,result.size());
@@ -121,8 +92,9 @@ class RestHighLevelClientSearchService {
 
 	@Test
 	void getByExternalGuid_noArchive() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
-				.setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(true).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
+				.setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchField(ESIndexNotesFields.EXTERNAL)
+				.setSearchHistory(true).setSearchArchived(false).build());
 		validateAll(result,7,3,1);
 		// there can be multiple external entries, so check them too
 		assertEquals(3,result.size());
@@ -130,8 +102,9 @@ class RestHighLevelClientSearchService {
 
 	@Test
 	void getByExternalGuid_noHistoryAndArchives() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
-				.setEsIndexNotesFields(ESIndexNotesFields.EXTERNAL).setUpdateHistory(false).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
+				.setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchField(ESIndexNotesFields.EXTERNAL)
+				.setSearchHistory(false).setSearchArchived(false).build());
 		validateAll(result,6,3,0);
 		// there can be multiple external entries, so check them too
 		assertEquals(3,result.size());
@@ -139,88 +112,99 @@ class RestHighLevelClientSearchService {
 
 	@Test
 	void searchContent() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("content")
-				.setEsIndexNotesFields(ESIndexNotesFields.CONTENT).setUpdateHistory(false).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("content")
+				.setRequestType(RequestType.CONTENT).setSearchField(ESIndexNotesFields.CONTENT)
+				.setSearchHistory(false).setSearchArchived(false).build());
 		checkDuplicates(result);
 		assertEquals(11,result.size());
 	}
 
 	@Test
 	void getByEntryGuid_all() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-						.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(true).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(true).setSearchArchived(true).build());
 
 		validateAll(result,4,2,1);
 	}
 
 	@Test
 	void getByEntryGuid_all_test_1() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(true).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(true).setSearchArchived(true).build());
 
 		validateAll(result,8,5,2);
 	}
 
 	@Test
 	void getByEntryGuid_all_test_2() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("06a418c3-7475-473e-9e9d-3e952d672d4c")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(true).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("06a418c3-7475-473e-9e9d-3e952d672d4c")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(true).setSearchArchived(true).build());
 
 		validateAll(result,6,4,1);
 	}
 
 	@Test
 	void getByEntryGuid_noHistories() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(true).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(false).setSearchArchived(true).build());
 
 		validateAll(result,3,2,0);
 	}
 
 	@Test
 	void getByEntryGuid_noHistories_test_1() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(true).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(false).setSearchArchived(true).build());
 
 		validateAll(result,6,5,0);
 	}
 
 	@Test
 	void getByEntryGuid_noArchived_test_1() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(true).setSearchArchived(false).build());
 
 		assertEquals(0,result.size());
 	}
 
 	@Test
 	void getByEntryGuid_noArchived_test_2() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("16b8d331-92ab-424b-b69a-3181f6d80f5a")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("16b8d331-92ab-424b-b69a-3181f6d80f5a")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(true).setSearchArchived(false).build());
 
 		validateAll(result,1,0,0);
 	}
 
 	@Test
 	void getByEntryGuid_noArchived_test_3() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(true).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(true).setSearchArchived(false).build());
 
 		validateAll(result,4,2,1);
 	}
 
 	@Test
 	void getByEntryGuid_NoHistoriesAndArchives_test_1() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(false).setSearchArchived(false).build());
 
 		validateAll(result,0,0,0);
 	}
 
 	@Test
 	void getByEntryGuid_NoHistoriesAndArchives_test_2() {
-		List<NotesData> result = restHighLevelClientSearchService.search(new Request.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-				.setEsIndexNotesFields(ESIndexNotesFields.ENTRY).setUpdateHistory(false).setArchivedResponse(false).build());
+		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+				.setRequestType(RequestType.ENTRIES).setSearchField(ESIndexNotesFields.ENTRY)
+				.setSearchHistory(false).setSearchArchived(false).build());
 
 		validateAll(result,3,2,0);
 	}
@@ -328,7 +312,7 @@ class RestHighLevelClientSearchService {
 //					e.getThreads().clear();
 //				if(e.getHistory() != null)
 //					e.getHistory().clear();
-//				NotesData notesData = esRepository.save(e);
+//				NotesData notesData = repository.save(e);
 //				assertEquals(notesData.getGuid(),e.getGuid());
 //				assertEquals(notesData.getExternalGuid(),e.getExternalGuid());
 //				assertEquals(notesData.getEntryGuid(),e.getEntryGuid());

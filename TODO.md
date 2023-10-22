@@ -9,8 +9,8 @@
 - [x] GET `/api/v1/search/external?externalGuid=...`
   - When searching for an `externalGuid` it only returns the first document found. It should return all documents that has that `externalGuid`.
 - [ ] First and foremost, Refactor, simplify and optimize code and give design perspective to it. Use different strategy to consume data from elasticsearch and process it as -
-  - [ ] Current implementation has incremental calls to elasticsearch for every thread. there are going to be many call in single request.
-  - [ ] Provide different strategy, where there will be 1 or 2 calls/search request to elastic search and get the response in one go and process them
+  - [ ] Current implementation has incremental calls to elasticsearch for every thread. there are going to be many call in single searchRequest.
+  - [ ] Provide different strategy, where there will be 1 or 2 calls/search searchRequest to elastic search and get the response in one go and process them
     internally. Both implementation can be kept with flag
 - [ ] Add logs, handle exceptions and other validations if any
 - [ ] Swagger. SpringDoc open api 3
