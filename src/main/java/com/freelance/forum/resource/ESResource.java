@@ -32,12 +32,15 @@ public class ESResource {
 
     @PutMapping("/update/entry")
     public ResponseEntity<NotesData> updateByEntryGuid(@RequestBody NotesData notesData) {
-        return new ResponseEntity(notesService.update(notesData, ESIndexNotesFields.ENTRY),HttpStatus.OK);
+        return new ResponseEntity(notesService.update(notesData, new SearchRequest.Builder().setSearch(notesData.getEntryGuid().toString())
+                .setSearchField(ESIndexNotesFields.ENTRY).setSearchHistory(false)
+                .setRequestType(RequestType.ENTRIES).setSearchArchived(false).build()),HttpStatus.OK);
     }
 
     @PutMapping("/update/guid")
     public ResponseEntity<NotesData> updateByGuid(@RequestBody NotesData notesData) {
-        return new ResponseEntity(notesService.update(notesData, ESIndexNotesFields.GUID),HttpStatus.OK);
+        return new ResponseEntity(notesService.update(notesData, new SearchRequest.Builder().setSearch(notesData.getGuid().toString())
+                .setSearchField(ESIndexNotesFields.GUID).setSearchHistory(false).setSearchArchived(false).build()),HttpStatus.OK);
     }
 
     @GetMapping("/search/external")
@@ -69,12 +72,16 @@ public class ESResource {
 
     @PutMapping("/archive/external")
     public ResponseEntity<List<NotesData>> archiveExternalGuid(@RequestParam String externalGuid) {
-        return new ResponseEntity(notesService.archive(externalGuid, ESIndexNotesFields.EXTERNAL),HttpStatus.OK);
+        return new ResponseEntity(notesService.archive(new SearchRequest.Builder().setSearch(externalGuid)
+                .setSearchField(ESIndexNotesFields.EXTERNAL).setSearchHistory(false)
+                .setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchArchived(false).build()),HttpStatus.OK);
     }
 
     @PutMapping("/archive/entry")
     public ResponseEntity<List<NotesData>> archiveEntryGuid(@RequestParam String entryGuid) {
-        return new ResponseEntity(notesService.archive(entryGuid, ESIndexNotesFields.ENTRY),HttpStatus.OK);
+        return new ResponseEntity(notesService.archive(new SearchRequest.Builder().setSearch(entryGuid)
+                .setSearchField(ESIndexNotesFields.ENTRY).setSearchHistory(false)
+                .setRequestType(RequestType.ENTRIES).setSearchArchived(false).build()),HttpStatus.OK);
     }
 
     @GetMapping("search/archive/external")
@@ -93,12 +100,16 @@ public class ESResource {
 
     @DeleteMapping("/delete/external")
     public ResponseEntity<List<NotesData>> deleteExternalGuid(@RequestParam String externalGuid, @RequestParam String entriesToDelete) {
-        return new ResponseEntity(notesService.delete(externalGuid, ESIndexNotesFields.EXTERNAL,entriesToDelete),HttpStatus.OK);
+        return new ResponseEntity(notesService.delete(new SearchRequest.Builder().setSearch(externalGuid)
+                .setSearchField(ESIndexNotesFields.EXTERNAL).setSearchHistory(true)
+                .setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchArchived(true).build(),entriesToDelete),HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/entry")
     public ResponseEntity<List<NotesData>> deleteEntryGuidGuid(@RequestParam String entryGuid, @RequestParam String entriesToDelete) {
-        return new ResponseEntity(notesService.delete(entryGuid, ESIndexNotesFields.ENTRY,entriesToDelete),HttpStatus.OK);
+        return new ResponseEntity(notesService.delete(new SearchRequest.Builder().setSearch(entryGuid)
+                .setSearchField(ESIndexNotesFields.ENTRY).setSearchHistory(true)
+                .setRequestType(RequestType.ENTRIES).setSearchArchived(true).build(),entriesToDelete),HttpStatus.OK);
     }
 
     @PostMapping("/createIndex")

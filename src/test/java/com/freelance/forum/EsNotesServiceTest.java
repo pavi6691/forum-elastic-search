@@ -7,6 +7,7 @@ import com.freelance.forum.elasticsearch.pojo.SearchRequest;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.RequestType;
 import com.freelance.forum.service.INotesService;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,12 +28,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RestHighLevelClientSearchService {
+class EsNotesServiceTest {
 
 
 	@Autowired
 	INotesService notesService;
-	
+
 	@Autowired
 	ESNotesRepository repository;
 
@@ -48,9 +49,9 @@ class RestHighLevelClientSearchService {
 //	private static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
 //			.withEnv("discovery.type", "single-node")
 //			.withExposedPorts(9200);
-	
+
 	EsConfig esConfig;
-	
+
 	@BeforeAll
 	void setup() throws JSONException, IOException {
 //		elasticsearchContainer.setWaitStrategy((new LogMessageWaitStrategy())
@@ -67,9 +68,65 @@ class RestHighLevelClientSearchService {
 //		esConfig = Mockito.mock(EsConfig.class);
 //		Mockito.when(esConfig.elasticsearchClient()).thenReturn(restHighLevelClient);
 //		assertEquals(service.createIndex(indexName),indexName);
-		
+
 	}
-	
+
+
+
+	@Test
+	void createEntries_test1() {
+		NotesData newExternalEntry = new NotesData();
+		newExternalEntry.setExternalGuid(UUID.randomUUID());
+		newExternalEntry.setContent("New External Entry");
+		SearchRequest searchRequest = new SearchRequest.Builder().setSearch(newExternalEntry.getExternalGuid().toString())
+				.setSearchField(ESIndexNotesFields.EXTERNAL)
+				.setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchHistory(true).setSearchArchived(true).build();
+		NotesData result = notesService.saveNew(new NotesData(newExternalEntry.getGuid(),
+				newExternalEntry.getExternalGuid(),newExternalEntry.getThreadGuid(), newExternalEntry.getEntryGuid(),
+				newExternalEntry.getThreadGuidParent(), newExternalEntry.getContent(),newExternalEntry.getCreated(),
+				newExternalEntry.getArchived(),newExternalEntry.getThreads(), newExternalEntry.getHistory()));
+		assertEquals(newExternalEntry.getExternalGuid(), result.getExternalGuid());
+		assertEquals(null, result.getHistory());
+		assertEquals(null, result.getThreads());
+		assertEquals(null, result.getThreadGuidParent());
+		assertEquals(null, result.getArchived());
+		assertEquals(newExternalEntry.getContent(), result.getContent());
+		assertNotEquals(newExternalEntry.getEntryGuid(), result.getEntryGuid());
+		assertNotEquals(newExternalEntry.getCreated(), result.getCreated());
+		assertNotEquals(newExternalEntry.getThreadGuid(), result.getThreadGuid());
+		List<NotesData> searchResult = notesService.search(searchRequest);
+		validateAll(searchResult, 1, 0, 0);
+
+		// create Thread
+		newExternalEntry.setContent("New External Entry-Thread-1");
+		newExternalEntry.setThreadGuidParent(result.getThreadGuid());
+		NotesData thread = notesService.saveNew(new NotesData(newExternalEntry.getGuid(),
+				newExternalEntry.getExternalGuid(),newExternalEntry.getThreadGuid(), newExternalEntry.getEntryGuid(),
+				newExternalEntry.getThreadGuidParent(), newExternalEntry.getContent(),newExternalEntry.getCreated(),
+				newExternalEntry.getArchived(),newExternalEntry.getThreads(), newExternalEntry.getHistory()));
+		assertEquals(newExternalEntry.getExternalGuid(), thread.getExternalGuid());
+		assertEquals(null, thread.getHistory());
+		assertEquals(null, thread.getThreads());
+		assertEquals(null, thread.getArchived());
+		assertEquals(result.getThreadGuid(), thread.getThreadGuidParent());
+		assertNotEquals(result.getThreadGuidParent(), thread.getThreadGuidParent());
+		assertNotEquals(result.getEntryGuid(), thread.getEntryGuid());
+		assertNotEquals(result.getCreated(), thread.getCreated());
+		assertNotEquals(result.getContent(), thread.getContent());
+		assertNotEquals(result.getThreadGuid(), thread.getThreadGuid());
+		searchResult = notesService.search(searchRequest);
+		validateAll(searchResult, 2, 1, 0);
+
+		// finally delete
+		notesService.delete(searchRequest,"all");
+		searchResult = notesService.search(searchRequest);
+		validateAll(searchResult,0,0,0);
+	}
+
+	@Test
+	void createNewThread_test1() {
+	}
+
 	@Test
 	void getByExternalGuid_all() {
 		List<NotesData> result = notesService.search(new SearchRequest.Builder().setSearch("10a14259-ca84-4c7d-8d46-7ad398000002")
@@ -208,7 +265,7 @@ class RestHighLevelClientSearchService {
 
 		validateAll(result,3,2,0);
 	}
-	
+
 	private void validateAll(List<NotesData> result, int expectedResultCount, int expectedThreadCount, int expectedHistoryCount) {
 		List<NotesData> total = new ArrayList<>();
 		List<NotesData> totalThreads = new ArrayList<>();
@@ -219,7 +276,7 @@ class RestHighLevelClientSearchService {
 		assertEquals(expectedResultCount,total.size());
 		assertEquals(expectedThreadCount,totalThreads.size());
 		assertEquals(expectedHistoryCount,totalHistories.size());
-		
+
 		// this is to check each individual external entries will have different entryGuid
 		for(int i = 0; i < result.size(); i++) {
 			for (int j = i + 1; j < result.size(); j++) {
@@ -247,7 +304,7 @@ class RestHighLevelClientSearchService {
 
 		checkDuplicates(result);
 	}
-	
+
 	private void checkDuplicates(List<NotesData> result){
 		// check for duplicate entries
 		List<NotesData> flattenEntries = new ArrayList<>();
@@ -293,7 +350,22 @@ class RestHighLevelClientSearchService {
 				flattenHistories(e,entries);
 			});
 	}
-	
+
+	private Map<String,NotesData> getEntries() {
+		Map<String,NotesData> entries = new HashMap<>();
+		JSONArray jsonArray = null;
+		try {
+			jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
+			for(int i=0; i< jsonArray.length(); i++) {
+				NotesData data = NotesData.fromJson(jsonArray.getString(i));
+				entries.put(data.getGuid().toString(),data);
+			}
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return entries;
+	}
+
 
 //	@BeforeEach
 //	void testIsContainerRunning() {

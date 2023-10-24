@@ -10,9 +10,9 @@ import java.util.UUID;
 public interface INotesService {
     NotesData saveNew(NotesData notesData);
     NotesData searchByGuid(UUID guid);
-    NotesData update(NotesData notesData, ESIndexNotesFields esIndexNotesFields);
-    List<NotesData> archive(String guid, ESIndexNotesFields esIndexNotesFields);
-    List<NotesData> delete(String guid, ESIndexNotesFields esIndexNotesFields, String deleteEntries);
+    NotesData update(NotesData notesData, SearchRequest searchRequest);
+    List<NotesData> archive(SearchRequest searchRequest);
+    List<NotesData> delete(SearchRequest searchRequest, String deleteEntries);
     String createIndex(String indexName);
 
     List<NotesData> search(SearchRequest searchRequest);

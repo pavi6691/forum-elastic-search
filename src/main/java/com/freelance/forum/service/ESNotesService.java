@@ -8,6 +8,7 @@ import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.pojo.SearchRequest;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.RequestType;
 import com.freelance.forum.service.generics.ISearchNotesService;
 import com.freelance.forum.util.ESUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -38,15 +39,13 @@ public class ESNotesService implements INotesService {
     ESNotesRepository esNotesRepository;
 
     @Autowired
-    @Qualifier("searchNotesServiceV1")
+    @Qualifier("searchNotesServiceV2")
     ISearchNotesService iSearchNotesService;
     
 
     @Override
     public NotesData saveNew(NotesData notesData) {
-        if(notesData.getGuid() == null) {
-            notesData.setGuid(UUID.randomUUID());
-        }
+        notesData.setGuid(UUID.randomUUID());
         notesData.setEntryGuid(UUID.randomUUID());
         notesData.setThreadGuid(UUID.randomUUID());
         notesData.setCreated(ESUtil.getCurrentDate());
@@ -55,6 +54,7 @@ public class ESNotesService implements INotesService {
             List<NotesData> existingEntry = iSearchNotesService.search(new SearchRequest.Builder()
                     .setSearch(notesData.getThreadGuidParent().toString())
                     .setSearchField(ESIndexNotesFields.THREAD).setSearchHistory(false)
+                    .setRequestType(RequestType.ENTRIES)
                     .setSearchArchived(false).setSortOrder(SortOrder.DESC).build());
             if(existingEntry == null && !existingEntry.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
@@ -83,18 +83,15 @@ public class ESNotesService implements INotesService {
      * @return
      */
     @Override
-    public NotesData update(NotesData notesData, ESIndexNotesFields esIndexNotesFields) {
+    public NotesData update(NotesData notesData, SearchRequest searchRequest) {
         List<NotesData>  notesDataToUpdate = null;
-        if(esIndexNotesFields == ESIndexNotesFields.ENTRY ){
+        if(searchRequest.getSearchField() == ESIndexNotesFields.ENTRY ){
             if(notesData.getEntryGuid() == null) {
                 throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided");
             } else {
-                notesDataToUpdate = iSearchNotesService.search(new SearchRequest.Builder()
-                        .setSearch(notesData.getEntryGuid().toString())
-                        .setSearchField(esIndexNotesFields).setSearchHistory(false)
-                        .setSearchArchived(false).setSortOrder(SortOrder.ASC).build());
+                notesDataToUpdate = iSearchNotesService.search(searchRequest);
             }
-        } else if(esIndexNotesFields == ESIndexNotesFields.GUID && notesData.getGuid() == null) {
+        } else if(searchRequest.getSearchField() == ESIndexNotesFields.GUID && notesData.getGuid() == null) {
             throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"guid is not provided");
         } else {
             NotesData notesData1 = searchByGuid(notesData.getGuid());
@@ -102,7 +99,8 @@ public class ESNotesService implements INotesService {
                 notesDataToUpdate = List.of(notesData1);
         }
         if(notesDataToUpdate == null || notesDataToUpdate.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot update. %s not found.",esIndexNotesFields.getEsFieldName()));
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot update. %s not found.",
+                    searchRequest.getSearchField().getEsFieldName()));
         } else if(notesDataToUpdate.get(0).getArchived() != null) {
             throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
         }
@@ -113,17 +111,14 @@ public class ESNotesService implements INotesService {
         return esNotesRepository.save(notesDataToUpdate.get(0));
     }
     @Override
-    public List<NotesData> archive(String guid, ESIndexNotesFields esIndexNotesFields) {
-        List<NotesData> result = iSearchNotesService.search(new SearchRequest.Builder()
-                .setSearch(guid)
-                .setSearchField(ESIndexNotesFields.THREAD).setSearchHistory(false)
-                .setSearchArchived(false).setSortOrder(ESUtil.getSortOrder(esIndexNotesFields)).build());
+    public List<NotesData> archive(SearchRequest searchRequest) {
+        List<NotesData> result = iSearchNotesService.search(searchRequest);
         Set<NotesData> entriesToArchive = new HashSet<>();
         if(result != null && !result.isEmpty())
             ESUtil.flatten(result.get(0),entriesToArchive);
         if(result == null || entriesToArchive.isEmpty()) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot archive. not entries found. %s = %s",
-                    esIndexNotesFields.getEsFieldName(),guid));
+                    searchRequest.getSearchField().getEsFieldName(),searchRequest.getSearch()));
         }
         List<NotesData> response = new ArrayList<>();
         entriesToArchive.forEach(entryToArchive -> {
@@ -132,15 +127,13 @@ public class ESNotesService implements INotesService {
             esNotesRepository.save(entryToArchive);
             response.add(entryToArchive);
         });
-        return iSearchNotesService.search(new SearchRequest.Builder().setSearch(guid)
+        return iSearchNotesService.search(new SearchRequest.Builder().setSearch(searchRequest.getSearch())
                 .setSearchField(ESIndexNotesFields.THREAD).setSearchHistory(false)
-                .setSearchArchived(false).setSortOrder(ESUtil.getSortOrder(esIndexNotesFields)).build());
+                .setSearchArchived(false).setSortOrder(ESUtil.getSortOrder(searchRequest.getSearchField())).build());
     }
     @Override
-    public List<NotesData> delete(String guid, ESIndexNotesFields esIndexNotesFields, String deleteEntries) {
-        List<NotesData> result = iSearchNotesService.search(new SearchRequest.Builder().setSearch(guid)
-                .setSearchField(esIndexNotesFields).setSearchHistory(true)
-                .setSearchArchived(true).setSortOrder(ESUtil.getSortOrder(esIndexNotesFields)).build());
+    public List<NotesData> delete(SearchRequest searchRequest, String deleteEntries) {
+        List<NotesData> result = iSearchNotesService.search(searchRequest);
         List<NotesData> results = new ArrayList<>();
         if(result != null && !result.isEmpty()) {
             Set<NotesData> entriesToDelete = new HashSet<>();
@@ -156,7 +149,7 @@ public class ESNotesService implements INotesService {
         }
         if(result == null || results.isEmpty()) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("No entries found to delete. %s = %s",
-                    esIndexNotesFields.getEsFieldName(),guid));
+                    searchRequest.getSearchField().getEsFieldName(),searchRequest.getSearch()));
         }
         return results;
     }
