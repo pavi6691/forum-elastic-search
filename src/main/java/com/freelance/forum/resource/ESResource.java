@@ -30,17 +30,9 @@ public class ESResource {
         return new ResponseEntity(notesService.searchByGuid(UUID.fromString(guid)),HttpStatus.OK);
     }
 
-    @PutMapping("/update/entry")
-    public ResponseEntity<NotesData> updateByEntryGuid(@RequestBody NotesData notesData) {
-        return new ResponseEntity(notesService.update(notesData, new SearchRequest.Builder().setSearch(notesData.getEntryGuid().toString())
-                .setSearchField(ESIndexNotesFields.ENTRY).setSearchHistory(false)
-                .setRequestType(RequestType.ENTRIES).setSearchArchived(false).build()),HttpStatus.OK);
-    }
-
-    @PutMapping("/update/guid")
-    public ResponseEntity<NotesData> updateByGuid(@RequestBody NotesData notesData) {
-        return new ResponseEntity(notesService.update(notesData, new SearchRequest.Builder().setSearch(notesData.getGuid().toString())
-                .setSearchField(ESIndexNotesFields.GUID).setSearchHistory(false).setSearchArchived(false).build()),HttpStatus.OK);
+    @PutMapping("/update")
+    public ResponseEntity<NotesData> update(@RequestBody NotesData notesData) {
+        return new ResponseEntity(notesService.update(notesData),HttpStatus.OK);
     }
 
     @GetMapping("/search/external")

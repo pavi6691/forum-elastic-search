@@ -42,20 +42,18 @@ public class SearchNotesServiceV2 extends AbstractSearchNotesService {
             for (Map<String,List<NotesData>> entries : rootEntriesMap.values()) {
                 NotesData mostRecentUpdatedEntry = null;
                 for (List<NotesData> entryList : entries.values()) {
-                    for (int i = 0; i < entryList.size(); i++) {
-                        if (i == 0) {
-                            mostRecentUpdatedEntry = entryList.get(i);
-                            if(searchRequest.getArchivedResponse() || mostRecentUpdatedEntry.getArchived() == null) {
-                                // Since query is by external id, we only need results after first of entry these entries,
-                                Map<String, Map<String, List<NotesData>>> threads = getThreads(new SearchRequest.Builder()
-                                        .setSearchField(ESIndexNotesFields.EXTERNAL)
-                                        .setRequestType(RequestType.ENTRIES)
-                                        .setTimeToSearchEntriesAfter(entryList.get(entryList.size() - 1).getCreated().getTime())
-                                        .setSearch(mostRecentUpdatedEntry.getExternalGuid().toString())
-                                        .setSortOrder(SortOrder.DESC).build());
-                                if (threads != null && !threads.isEmpty()) {
-                                    results.add(buildThreads(mostRecentUpdatedEntry, threads, new HashSet<>(), searchRequest));
-                                }
+                    if (entryList.size() > 0) {
+                        mostRecentUpdatedEntry = entryList.get(0);
+                        if (searchRequest.getArchivedResponse() || mostRecentUpdatedEntry.getArchived() == null) {
+                            // Since query is by external id, we only need results after first of entry these entries,
+                            Map<String, Map<String, List<NotesData>>> threads = getThreads(new SearchRequest.Builder()
+                                    .setSearchField(ESIndexNotesFields.EXTERNAL)
+                                    .setRequestType(RequestType.ENTRIES)
+                                    .setTimeToSearchEntriesAfter(entryList.get(entryList.size() - 1).getCreated().getTime())
+                                    .setSearch(mostRecentUpdatedEntry.getExternalGuid().toString())
+                                    .setSortOrder(SortOrder.DESC).build());
+                            if (threads != null && !threads.isEmpty()) {
+                                results.add(buildThreads(mostRecentUpdatedEntry, threads, new HashSet<>(), searchRequest));
                             }
                         }
                     }
@@ -86,7 +84,7 @@ public class SearchNotesServiceV2 extends AbstractSearchNotesService {
                 }
                 if (!results.containsKey(uuid)) {
                     // null key is allowed and holds root element
-                    results.put(uuid, new HashMap<>());
+                    results.put(uuid, new LinkedHashMap<>());
                 }
                 String entryGuid = notesData.getEntryGuid().toString();
                 if(!results.get(uuid).containsKey(entryGuid)) {

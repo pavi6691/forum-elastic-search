@@ -74,57 +74,142 @@ class EsNotesServiceTest {
 
 
 	@Test
-	void createEntries_test1() {
-		NotesData newExternalEntry = new NotesData();
-		newExternalEntry.setExternalGuid(UUID.randomUUID());
-		newExternalEntry.setContent("New External Entry");
-		SearchRequest searchRequest = new SearchRequest.Builder().setSearch(newExternalEntry.getExternalGuid().toString())
-				.setSearchField(ESIndexNotesFields.EXTERNAL)
-				.setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchHistory(true).setSearchArchived(true).build();
-		NotesData result = notesService.saveNew(new NotesData(newExternalEntry.getGuid(),
-				newExternalEntry.getExternalGuid(),newExternalEntry.getThreadGuid(), newExternalEntry.getEntryGuid(),
-				newExternalEntry.getThreadGuidParent(), newExternalEntry.getContent(),newExternalEntry.getCreated(),
-				newExternalEntry.getArchived(),newExternalEntry.getThreads(), newExternalEntry.getHistory()));
-		assertEquals(newExternalEntry.getExternalGuid(), result.getExternalGuid());
-		assertEquals(null, result.getHistory());
-		assertEquals(null, result.getThreads());
-		assertEquals(null, result.getThreadGuidParent());
-		assertEquals(null, result.getArchived());
-		assertEquals(newExternalEntry.getContent(), result.getContent());
-		assertNotEquals(newExternalEntry.getEntryGuid(), result.getEntryGuid());
-		assertNotEquals(newExternalEntry.getCreated(), result.getCreated());
-		assertNotEquals(newExternalEntry.getThreadGuid(), result.getThreadGuid());
-		List<NotesData> searchResult = notesService.search(searchRequest);
+	void testEverything() {
+		NotesData newEntryCreated = createNewEntry(new NotesData.Builder().setExternalGuid(UUID.randomUUID()).setContent("New External Entry").build());
+
+		SearchRequest searchRequestExternalEntry = new SearchRequest.Builder().setSearch(newEntryCreated.getExternalGuid().toString())
+				.setSearchField(ESIndexNotesFields.EXTERNAL).setRequestType(RequestType.EXTERNAL_ENTRIES).setSearchHistory(true)
+				.setSearchArchived(true).build();
+		
+		List<NotesData> searchResult = notesService.search(searchRequestExternalEntry);
 		validateAll(searchResult, 1, 0, 0);
 
-		// create Thread
-		newExternalEntry.setContent("New External Entry-Thread-1");
-		newExternalEntry.setThreadGuidParent(result.getThreadGuid());
-		NotesData thread = notesService.saveNew(new NotesData(newExternalEntry.getGuid(),
-				newExternalEntry.getExternalGuid(),newExternalEntry.getThreadGuid(), newExternalEntry.getEntryGuid(),
-				newExternalEntry.getThreadGuidParent(), newExternalEntry.getContent(),newExternalEntry.getCreated(),
-				newExternalEntry.getArchived(),newExternalEntry.getThreads(), newExternalEntry.getHistory()));
-		assertEquals(newExternalEntry.getExternalGuid(), thread.getExternalGuid());
-		assertEquals(null, thread.getHistory());
-		assertEquals(null, thread.getThreads());
-		assertEquals(null, thread.getArchived());
-		assertEquals(result.getThreadGuid(), thread.getThreadGuidParent());
-		assertNotEquals(result.getThreadGuidParent(), thread.getThreadGuidParent());
-		assertNotEquals(result.getEntryGuid(), thread.getEntryGuid());
-		assertNotEquals(result.getCreated(), thread.getCreated());
-		assertNotEquals(result.getContent(), thread.getContent());
-		assertNotEquals(result.getThreadGuid(), thread.getThreadGuid());
-		searchResult = notesService.search(searchRequest);
+		// create Thread 1
+		NotesData thread1 = createThread(newEntryCreated,"New External Entry-Thread-1");
+		searchResult = notesService.search(searchRequestExternalEntry);
 		validateAll(searchResult, 2, 1, 0);
 
-		// finally delete
-		notesService.delete(searchRequest,"all");
-		searchResult = notesService.search(searchRequest);
+		// create Thread 2
+		createThread(newEntryCreated,"New External Entry-Thread-2");
+		searchResult = notesService.search(searchRequestExternalEntry);
+		validateAll(searchResult, 3, 2, 0);
+
+		// create Thread 3
+		createThread(newEntryCreated,"New External Entry-Thread-3");
+		searchResult = notesService.search(searchRequestExternalEntry);
+		validateAll(searchResult, 4, 3, 0);
+
+		// create Thread 4
+		createThread(newEntryCreated,"New External Entry-Thread-4");
+		searchResult = notesService.search(searchRequestExternalEntry);
+		validateAll(searchResult, 5, 4, 0);
+
+		// create Thread 1-1
+		createThread(thread1,"New External Entry-Thread-1-1");
+		searchResult = notesService.search(searchRequestExternalEntry);
+		validateAll(searchResult, 6, 5, 0);
+
+		// update guid 1
+		updateGuid(thread1,"New External Entry-Thread-1-Updated");
+		searchResult = notesService.search(searchRequestExternalEntry);
+		validateAll(searchResult, 7, 5, 1);
+
+		// create Thread 1-2
+		NotesData thread1_2 = createThread(thread1,"New External Entry-Thread-1-2");
+		searchResult = notesService.search(searchRequestExternalEntry);
+		validateAll(searchResult, 8, 6, 1);
+
+		// update by entryGuid thread 1-2
+		thread1.setGuid(null); // if guid is null, entry will be updated by entryGuid
+		updateGuid(thread1_2,"New External Entry-Thread-1-2-Updated");
+		searchResult = notesService.search(searchRequestExternalEntry);
+		validateAll(searchResult, 9, 6, 2);
+
+
+		// Search by EntryId
+		SearchRequest searchRequestEntry = new SearchRequest.Builder().setSearch(thread1.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setRequestType(RequestType.ENTRIES).setSearchHistory(true)
+				.setSearchArchived(true).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult, 5, 2, 2);
+
+
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setRequestType(RequestType.ENTRIES).setSearchHistory(false)
+				.setSearchArchived(true).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult, 3, 2, 0);
+
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setRequestType(RequestType.ENTRIES).setSearchHistory(false)
+				.setSearchArchived(false).build();
+		notesService.archive(searchRequestEntry);
+		
+		// search archived by external entry
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getExternalGuid().toString())
+				.setSearchField(ESIndexNotesFields.EXTERNAL).setRequestType(RequestType.ARCHIVE).setSearchHistory(true)
+				.setSearchArchived(true).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult,2,0,1);
+
+		// search archived by entry
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setRequestType(RequestType.ARCHIVE).setSearchHistory(true)
+				.setSearchArchived(true).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult,2,0,1);
+
+		// delete
+		notesService.delete(searchRequestExternalEntry,"all");
+		searchResult = notesService.search(searchRequestExternalEntry);
 		validateAll(searchResult,0,0,0);
 	}
+	
+	private NotesData createNewEntry(NotesData newExternalEntry) {
+		NotesData entryCreated = notesService.saveNew(newExternalEntry);
+		assertEquals(newExternalEntry.getExternalGuid(), entryCreated.getExternalGuid());
+		assertEquals(newExternalEntry.getContent(), entryCreated.getContent());
+		assertEquals(null, entryCreated.getHistory());
+		assertEquals(null, entryCreated.getThreads());
+		assertEquals(null, entryCreated.getThreadGuidParent());
+		assertEquals(null, entryCreated.getArchived());
+		assertNotEquals(null, entryCreated.getEntryGuid());
+		assertNotEquals(null, entryCreated.getCreated());
+		assertNotEquals(null, entryCreated.getThreadGuid());
+		return entryCreated;
+	}
 
-	@Test
-	void createNewThread_test1() {
+
+	private NotesData createThread(NotesData existingEntry, String content) {
+		NotesData newThread = new NotesData();
+		newThread.setContent(content);
+		newThread.setThreadGuidParent(existingEntry.getThreadGuid());
+		NotesData newThreadCreated = notesService.saveNew(newThread);
+		assertEquals(newThread.getExternalGuid(), newThreadCreated.getExternalGuid());
+		assertEquals(null, newThreadCreated.getHistory());
+		assertEquals(null, newThreadCreated.getThreads());
+		assertEquals(null, newThreadCreated.getArchived());
+		assertEquals(existingEntry.getThreadGuid(), newThreadCreated.getThreadGuidParent());
+		assertNotEquals(existingEntry.getEntryGuid(), newThreadCreated.getEntryGuid());
+		assertNotEquals(existingEntry.getCreated(), newThreadCreated.getCreated());
+		assertNotEquals(existingEntry.getContent(), newThreadCreated.getContent());
+		assertNotEquals(existingEntry.getThreadGuid(), newThreadCreated.getThreadGuid());
+		return newThreadCreated;
+	}
+
+	private NotesData updateGuid(NotesData existingEntry, String content) {
+		NotesData newEntry = new NotesData();
+		newEntry.setGuid(existingEntry.getGuid());
+		newEntry.setContent(content);
+		newEntry.setEntryGuid(existingEntry.getEntryGuid());
+		NotesData newThreadUpdated = notesService.update(newEntry);
+		assertEquals(existingEntry.getExternalGuid(), newThreadUpdated.getExternalGuid());
+		assertEquals(existingEntry.getEntryGuid(), newThreadUpdated.getEntryGuid());
+		assertEquals(existingEntry.getThreadGuid(), newThreadUpdated.getThreadGuid());
+		assertEquals(existingEntry.getThreadGuidParent(), newThreadUpdated.getThreadGuidParent());
+		assertNotEquals(existingEntry.getCreated(), newThreadUpdated.getCreated());
+		assertNotEquals(existingEntry.getContent(), newThreadUpdated.getContent());
+		return newThreadUpdated;
 	}
 
 	@Test

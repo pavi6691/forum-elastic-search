@@ -191,4 +191,71 @@ public class NotesData {
             throw new RuntimeException(e);
         }
     }
+    
+    public static class Builder {
+        private UUID guid = UUID.randomUUID(); // Unique for the document and also the Elasticsearch key/id
+        private UUID externalGuid; // An external Guid
+        private UUID threadGuid; // A thread Guid
+        private UUID entryGuid; // A Guid for this entry
+        private UUID threadGuidParent; // A Guid for this entry's parent
+        private String content;
+        private Date created;
+        private Date archived;
+        private List<NotesData> threads = null; // answers/responses to this answer
+        private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by
+
+        public Builder setGuid(UUID guid) {
+            this.guid = guid;
+            return this;
+        }
+
+        public Builder setExternalGuid(UUID externalGuid) {
+            this.externalGuid = externalGuid;
+            return this;
+        }
+
+        public Builder setThreadGuid(UUID threadGuid) {
+            this.threadGuid = threadGuid;
+            return this;
+        }
+
+        public Builder setEntryGuid(UUID entryGuid) {
+            this.entryGuid = entryGuid;
+            return this;
+        }
+
+        public Builder setThreadGuidParent(UUID threadGuidParent) {
+            this.threadGuidParent = threadGuidParent;
+            return this;
+        }
+
+        public Builder setContent(String content) {
+            this.content = content;
+            return this;
+        }
+
+        public Builder setCreated(Date created) {
+            this.created = created;
+            return this;
+        }
+
+        public Builder setArchived(Date archived) {
+            this.archived = archived;
+            return this;
+        }
+
+        public Builder setThreads(List<NotesData> threads) {
+            this.threads = threads;
+            return this;
+        }
+
+        public Builder setHistory(List<NotesData> history) {
+            this.history = history;
+            return this;
+        }
+        
+        public NotesData build() {
+            return new NotesData(guid,externalGuid,threadGuid,entryGuid,threadGuidParent,content,created,archived,threads,history);
+        }
+    } 
 }

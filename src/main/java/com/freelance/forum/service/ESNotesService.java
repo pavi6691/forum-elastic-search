@@ -83,32 +83,33 @@ public class ESNotesService implements INotesService {
      * @return
      */
     @Override
-    public NotesData update(NotesData notesData, SearchRequest searchRequest) {
-        List<NotesData>  notesDataToUpdate = null;
-        if(searchRequest.getSearchField() == ESIndexNotesFields.ENTRY ){
-            if(notesData.getEntryGuid() == null) {
-                throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided");
-            } else {
-                notesDataToUpdate = iSearchNotesService.search(searchRequest);
+    public NotesData update(NotesData notesData) {
+        NotesData  notesDataToUpdate = null;
+        if(notesData.getGuid() != null) {
+            notesDataToUpdate = searchByGuid(notesData.getGuid());
+            if(notesDataToUpdate == null) {
+                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
-        } else if(searchRequest.getSearchField() == ESIndexNotesFields.GUID && notesData.getGuid() == null) {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"guid is not provided");
+        } else if (notesData.getEntryGuid() != null) {
+            List<NotesData> searchResult = iSearchNotesService.search(new SearchRequest.Builder().setSearch(notesData.getEntryGuid().toString())
+                    .setSearchField(ESIndexNotesFields.ENTRY).setSearchHistory(false)
+                    .setRequestType(RequestType.ENTRIES).setSearchArchived(false).build());
+            if(searchResult == null || searchResult.isEmpty()) {
+                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
+            }
+            notesDataToUpdate = searchResult.get(0);
         } else {
-            NotesData notesData1 = searchByGuid(notesData.getGuid());
-            if(notesData1 != null)
-                notesDataToUpdate = List.of(notesData1);
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"GUID is not provided,provide guid/entryGuid");
         }
-        if(notesDataToUpdate == null || notesDataToUpdate.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot update. %s not found.",
-                    searchRequest.getSearchField().getEsFieldName()));
-        } else if(notesDataToUpdate.get(0).getArchived() != null) {
+        if(notesDataToUpdate.getArchived() != null) {
             throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
         }
-        notesDataToUpdate.get(0).setGuid(UUID.randomUUID());
-        notesDataToUpdate.get(0).setCreated(ESUtil.getCurrentDate());
-        notesDataToUpdate.get(0).setEntryGuid(notesData.getEntryGuid());
-        notesDataToUpdate.get(0).setContent(notesData.getContent());
-        return esNotesRepository.save(notesDataToUpdate.get(0));
+        ESUtil.clearHistoryAndThreads(notesDataToUpdate);
+        notesDataToUpdate.setGuid(UUID.randomUUID());
+        notesDataToUpdate.setCreated(ESUtil.getCurrentDate());
+        notesDataToUpdate.setEntryGuid(notesData.getEntryGuid());
+        notesDataToUpdate.setContent(notesData.getContent());
+        return esNotesRepository.save(notesDataToUpdate);
     }
     @Override
     public List<NotesData> archive(SearchRequest searchRequest) {
@@ -128,8 +129,8 @@ public class ESNotesService implements INotesService {
             response.add(entryToArchive);
         });
         return iSearchNotesService.search(new SearchRequest.Builder().setSearch(searchRequest.getSearch())
-                .setSearchField(ESIndexNotesFields.THREAD).setSearchHistory(false)
-                .setSearchArchived(false).setSortOrder(ESUtil.getSortOrder(searchRequest.getSearchField())).build());
+                .setSearchField(searchRequest.getSearchField()).setRequestType(searchRequest.getRequestType())
+                .setSortOrder(searchRequest.getSortOrder()).setSearchHistory(true).setSearchArchived(true).build());
     }
     @Override
     public List<NotesData> delete(SearchRequest searchRequest, String deleteEntries) {
