@@ -145,19 +145,47 @@ class EsNotesServiceTest {
 				.setSearchArchived(false).build();
 		notesService.archive(searchRequestEntry);
 		
-		// search archived by external entry
+		// search archived by external entry test 1
 		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getExternalGuid().toString())
 				.setSearchField(ESIndexNotesFields.EXTERNAL).setRequestType(RequestType.ARCHIVE).setSearchHistory(true)
 				.setSearchArchived(true).build();
 		searchResult = notesService.search(searchRequestEntry);
 		validateAll(searchResult,2,0,1);
 
-		// search archived by entry
+		// search archived by external entry test 2
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getExternalGuid().toString())
+				.setSearchField(ESIndexNotesFields.EXTERNAL).setRequestType(RequestType.ARCHIVE).setSearchHistory(false)
+				.setSearchArchived(true).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult,1,0,0);
+
+		// search archived by external entry test 3
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getExternalGuid().toString())
+				.setSearchField(ESIndexNotesFields.EXTERNAL).setRequestType(RequestType.ARCHIVE).setSearchHistory(false)
+				.setSearchArchived(false).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult,0,0,0);
+
+		// search archived by entry test 1
 		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getEntryGuid().toString())
 				.setSearchField(ESIndexNotesFields.ENTRY).setRequestType(RequestType.ARCHIVE).setSearchHistory(true)
 				.setSearchArchived(true).build();
 		searchResult = notesService.search(searchRequestEntry);
 		validateAll(searchResult,2,0,1);
+
+		// search archived by entry test 2
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setRequestType(RequestType.ARCHIVE).setSearchHistory(false)
+				.setSearchArchived(true).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult,1,0,0);
+
+		// search archived by entry test 3
+		searchRequestEntry = new SearchRequest.Builder().setSearch(thread1_2.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setRequestType(RequestType.ARCHIVE).setSearchHistory(false)
+				.setSearchArchived(false).build();
+		searchResult = notesService.search(searchRequestEntry);
+		validateAll(searchResult,0,0,0);
 
 		// delete
 		notesService.delete(searchRequestExternalEntry,"all");
@@ -351,14 +379,14 @@ class EsNotesServiceTest {
 		validateAll(result,3,2,0);
 	}
 
-	private void validateAll(List<NotesData> result, int expectedResultCount, int expectedThreadCount, int expectedHistoryCount) {
+	private void validateAll(List<NotesData> result, int expectedTotalCount, int expectedThreadCount, int expectedHistoryCount) {
 		List<NotesData> total = new ArrayList<>();
 		List<NotesData> totalThreads = new ArrayList<>();
 		List<NotesData> totalHistories = new ArrayList<>();
 		result.forEach(r -> flatten(r, total));
 		result.forEach(r -> flattenThreads(r, totalThreads));
 		result.forEach(r -> flattenHistories(r, totalHistories));
-		assertEquals(expectedResultCount,total.size());
+		assertEquals(expectedTotalCount,total.size());
 		assertEquals(expectedThreadCount,totalThreads.size());
 		assertEquals(expectedHistoryCount,totalHistories.size());
 

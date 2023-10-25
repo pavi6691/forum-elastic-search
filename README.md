@@ -44,29 +44,19 @@ Then connect to Kibana using http://localhost:5601
   | `content`          | `string` | **Required**. Content                                        | 
 
 
-  3. #### Update - By entryGuid
+  3. #### Update - update entry either by entryGuid / guid. either of them needs to be provided
   `PUT /update/entry`
   ```http
-  http://localhost:8080/api/v1/update/entry
+  http://localhost:8080/api/v1/update
   ```
-  | Field       | Type     | Description                                                    |
-  |:------------|:---------|:---------------------------------------------------------------|
-  | `entryGuid` | `string` | **Required**. entryId to Update. Recommended to update by GUID |
-  | `content`   | `string` | **Required**. Content                                          |
+  | Field       | Type     | Description                                                                     |
+  |:------------|:---------|:--------------------------------------------------------------------------------|
+  | `guid`      | `string` | **Optional**. Key GUID of an entry, if its not provided, must provide entryGuid |
+  | `entryGuid` | `string` | **Optional**. entryId to Update. if its not provided, must provide guid         |
+  | `content`   | `string` | **Required**. Content                                                           |
 
 
-  4. #### Update - By guid - straight forward way to update an entry, if entry of guid is available
-  `PUT /update/guid`
-  ```http
-  http://localhost:8080/api/v1/update/guid
-  ```
-  | Field     | Type      | Description                        |
-  |:----------|:----------|:-----------------------------------|
-  | `guid`    | `string`  | **Required**. Key GUID of an entry |
-  | `content` | `string`  | **Required**. Content              |
-
-
-  5. #### Search - by externalGuid
+  4. #### Search - by externalGuid
   `GET /search/external`
   ```http
   http://localhost:8080/api/v1/search/external?externalGuid=External-ID&getUpdateHistory=true&getArchivedResponse=true
@@ -78,7 +68,7 @@ Then connect to Kibana using http://localhost:5601
   | `getArchivedResponse` | `boolean` | **optional**. **default false** true to Include archived entries if exists       |
 
 
-  6. #### Search - by entryGuid
+  5. #### Search - by entryGuid
   `GET /search/entry`
   ```http
   http://localhost:8080/api/v1/search/entry?entryGuid=EntryID&getUpdateHistory=true&getArchivedResponse=true
@@ -90,7 +80,7 @@ Then connect to Kibana using http://localhost:5601
   | `getArchivedResponse` | `boolean` | **optional**. **default false** true to Include all archived entries if exits    |
 
 
-  7. #### Archive - By ExternalGuid
+  6. #### Archive - By ExternalGuid
   `PUT /archive/external`
   ```http
   http://localhost:8080/api/v1/archive/external?externalGuid=
@@ -100,7 +90,7 @@ Then connect to Kibana using http://localhost:5601
   | `externalGuid` | `string`  | **Required**. GUID of external system  |
 
 
-  8. #### Archive - By entryGuid
+  7. #### Archive - By entryGuid
   `PUT /archive/entry`
   ```http
   http://localhost:8080/api/v1/archive/entry?entryGuid=
@@ -110,7 +100,7 @@ Then connect to Kibana using http://localhost:5601
   | `entryGuid` | `string` | **Required**. GUID of an entryGuid |
 
 
-  9. #### Search archived entries - By ExternalGuid
+  8. #### Search archived entries - By ExternalGuid
   `GET /search/archive/external`
   ```http
   http://localhost:8080/api/v1/search/archive/external?externalGuid=
@@ -119,8 +109,7 @@ Then connect to Kibana using http://localhost:5601
   |:---------------|:----------|:---------------------------------------|
   | `externalGuid` | `string`  | **Required**. GUID of external system  |
 
-
-  10. #### Search archived entries - By entryGuid
+  9. #### Search archived entries - By entryGuid
   `GET /search/archive/entry`
   ```http
   http://localhost:8080/api/v1/search/archive/entry?entryGuid=
@@ -130,7 +119,7 @@ Then connect to Kibana using http://localhost:5601
   | `entryGuid` | `string` | **Required**. GUID of an entryGuid |
 
 
-  11. #### Delete - By ExternalGuid
+  10. #### Delete - By ExternalGuid
   `DELETE /delete/external`
   ```http
   http://localhost:8080/api/v1/delete/external?externalGuid=&entriesToDelete=archived
@@ -141,7 +130,7 @@ Then connect to Kibana using http://localhost:5601
   | `entriesToDelete` | `String` | **Required**. "all" to Delete all entries and "archived" to delete only archived |
 
 
-  12. #### Delete - By entryGuid
+  11. #### Delete - By entryGuid
   `DELETE /delete/entry`
   ```http
   http://localhost:8080/api/v1/delete/entry?entryGuid=&entriesToDelete=archived
