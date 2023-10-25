@@ -6,9 +6,9 @@ import com.freelance.forum.elasticsearch.configuration.IndexMetadataConfiguratio
 import com.freelance.forum.elasticsearch.configuration.ResourceFileReaderService;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.pojo.SearchRequest;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
-import com.freelance.forum.elasticsearch.queries.RequestType;
+import com.freelance.forum.elasticsearch.queries.IQuery;
+import com.freelance.forum.elasticsearch.queries.Queries;
 import com.freelance.forum.service.generics.ISearchNotesService;
 import com.freelance.forum.util.ESUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +16,6 @@ import org.apache.http.HttpStatus;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,7 +38,7 @@ public class ESNotesService implements INotesService {
     ESNotesRepository esNotesRepository;
 
     @Autowired
-    @Qualifier("searchNotesServiceV2")
+    @Qualifier("searchNotesServiceV1")
     ISearchNotesService iSearchNotesService;
     
 
@@ -51,11 +50,10 @@ public class ESNotesService implements INotesService {
         notesData.setCreated(ESUtil.getCurrentDate());
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
-            List<NotesData> existingEntry = iSearchNotesService.search(new SearchRequest.Builder()
-                    .setSearch(notesData.getThreadGuidParent().toString())
-                    .setSearchField(ESIndexNotesFields.THREAD).setSearchHistory(false)
-                    .setRequestType(RequestType.ENTRIES)
-                    .setSearchArchived(false).setSortOrder(SortOrder.DESC).build());
+            List<NotesData> existingEntry = iSearchNotesService.search(new Queries.SearchByEntryGuid()
+                    .setEntryGuid(notesData.getThreadGuidParent().toString())
+                    .setSearchField(ESIndexNotesFields.THREAD)
+                    .setGetUpdateHistory(false).setGetArchived(false));
             if(existingEntry == null && !existingEntry.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
                         notesData.getThreadGuidParent()));
@@ -91,9 +89,10 @@ public class ESNotesService implements INotesService {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
         } else if (notesData.getEntryGuid() != null) {
-            List<NotesData> searchResult = iSearchNotesService.search(new SearchRequest.Builder().setSearch(notesData.getEntryGuid().toString())
-                    .setSearchField(ESIndexNotesFields.ENTRY).setSearchHistory(false)
-                    .setRequestType(RequestType.ENTRIES).setSearchArchived(false).build());
+            List<NotesData> searchResult = iSearchNotesService.search(new Queries.SearchByEntryGuid()
+                    .setEntryGuid(notesData.getEntryGuid().toString())
+                    .setSearchField(ESIndexNotesFields.ENTRY)
+                    .setGetUpdateHistory(false).setGetArchived(false));
             if(searchResult == null || searchResult.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
             }
@@ -112,14 +111,13 @@ public class ESNotesService implements INotesService {
         return esNotesRepository.save(notesDataToUpdate);
     }
     @Override
-    public List<NotesData> archive(SearchRequest searchRequest) {
-        List<NotesData> result = iSearchNotesService.search(searchRequest);
+    public List<NotesData> archive(IQuery query) {
+        List<NotesData> result = iSearchNotesService.search(query);
         Set<NotesData> entriesToArchive = new HashSet<>();
         if(result != null && !result.isEmpty())
             ESUtil.flatten(result.get(0),entriesToArchive);
         if(result == null || entriesToArchive.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot archive. not entries found. %s = %s",
-                    searchRequest.getSearchField().getEsFieldName(),searchRequest.getSearch()));
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entries found");
         }
         List<NotesData> response = new ArrayList<>();
         entriesToArchive.forEach(entryToArchive -> {
@@ -128,13 +126,11 @@ public class ESNotesService implements INotesService {
             esNotesRepository.save(entryToArchive);
             response.add(entryToArchive);
         });
-        return iSearchNotesService.search(new SearchRequest.Builder().setSearch(searchRequest.getSearch())
-                .setSearchField(searchRequest.getSearchField()).setRequestType(searchRequest.getRequestType())
-                .setSortOrder(searchRequest.getSortOrder()).setSearchHistory(true).setSearchArchived(true).build());
+        return iSearchNotesService.search(query);
     }
     @Override
-    public List<NotesData> delete(SearchRequest searchRequest, String deleteEntries) {
-        List<NotesData> result = iSearchNotesService.search(searchRequest);
+    public List<NotesData> delete(IQuery query, String deleteEntries) {
+        List<NotesData> result = iSearchNotesService.search(query);
         List<NotesData> results = new ArrayList<>();
         if(result != null && !result.isEmpty()) {
             Set<NotesData> entriesToDelete = new HashSet<>();
@@ -149,8 +145,7 @@ public class ESNotesService implements INotesService {
             });
         }
         if(result == null || results.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("No entries found to delete. %s = %s",
-                    searchRequest.getSearchField().getEsFieldName(),searchRequest.getSearch()));
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries found to delete");
         }
         return results;
     }
@@ -174,7 +169,7 @@ public class ESNotesService implements INotesService {
     }
 
     @Override
-    public List<NotesData> search(SearchRequest searchRequest) {
-        return iSearchNotesService.search(searchRequest);
+    public List<NotesData> search(IQuery query) {
+        return iSearchNotesService.search(query);
     }
 }

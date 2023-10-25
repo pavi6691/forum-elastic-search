@@ -1,10 +1,10 @@
 package com.freelance.forum.service.generics;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.pojo.SearchRequest;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.IQuery;
+import com.freelance.forum.elasticsearch.queries.Queries;
 import com.freelance.forum.elasticsearch.queries.RequestType;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
@@ -15,17 +15,17 @@ import java.util.*;
 public class SearchNotesServiceV2 extends AbstractSearchNotesService {
 
     @Override
-    public List<NotesData> search(SearchRequest searchRequest) {
+    public List<NotesData> search(IQuery query) {
         List<NotesData> results = new ArrayList<>();
         Iterator<SearchHit<NotesData>> rootEntries = null;
-        SearchHits<NotesData> searchHits = execSearchQuery(searchRequest);
+        SearchHits<NotesData> searchHits = execSearchQuery(query);
         if(searchHits != null)
             rootEntries = searchHits.stream().iterator();
         Map<String,Map<String,List<NotesData>>> rootEntriesMap = new HashMap<>();
         if(rootEntries != null) {
             while (rootEntries.hasNext()) {
                 NotesData rootNotesData = rootEntries.next().getContent();
-                if(searchRequest.getRequestType() == RequestType.CONTENT) {
+                if(query.getRequestType() == RequestType.CONTENT) {
                     results.add(rootNotesData);  
                     continue;
                 }
@@ -44,34 +44,31 @@ public class SearchNotesServiceV2 extends AbstractSearchNotesService {
                 for (List<NotesData> entryList : entries.values()) {
                     if (entryList.size() > 0) {
                         mostRecentUpdatedEntry = entryList.get(0);
-                        if (searchRequest.getArchivedResponse() || mostRecentUpdatedEntry.getArchived() == null) {
+                        if (query.getArchived() || mostRecentUpdatedEntry.getArchived() == null) {
                             // Since query is by external id, we only need results after first of entry these entries,
-                            Map<String, Map<String, List<NotesData>>> threads = getThreads(new SearchRequest.Builder()
-                                    .setSearchField(ESIndexNotesFields.EXTERNAL)
-                                    .setRequestType(RequestType.ENTRIES)
-                                    .setTimeToSearchEntriesAfter(entryList.get(entryList.size() - 1).getCreated().getTime())
-                                    .setSearch(mostRecentUpdatedEntry.getExternalGuid().toString())
-                                    .setSortOrder(SortOrder.DESC).build());
+                            Map<String, Map<String, List<NotesData>>> threads = getThreads(new Queries.SearchByEntryGuid()
+                                    .setEntryGuid(mostRecentUpdatedEntry.getExternalGuid().toString())
+                                    .setSearchField(ESIndexNotesFields.ENTRY).setSearchField(ESIndexNotesFields.EXTERNAL)
+                                    .setCreatedDateTime(entryList.get(entryList.size() - 1).getCreated().getTime()));
                             if (threads != null && !threads.isEmpty()) {
-                                results.add(buildThreads(mostRecentUpdatedEntry, threads, new HashSet<>(), searchRequest));
+                                results.add(buildThreads(mostRecentUpdatedEntry, threads, new HashSet<>(), query));
                             }
                         }
                     }
                 }
             }
         }
-        if(searchRequest.getRequestType() == RequestType.ARCHIVE) {
+        if(query.getRequestType() == RequestType.ARCHIVE) {
             filterArchived(results);
         } 
         if(results.isEmpty()) {
-            System.out.println(String.format("No entries found for given searchRequest. %s = %s",
-                    searchRequest.getSearchField().getEsFieldName(),searchRequest.getSearch()));
+            System.out.println("No entries found for given request");
         }
         return results;
     }
-    private Map<String,Map<String,List<NotesData>>> getThreads(SearchRequest searchRequest) {
+    private Map<String,Map<String,List<NotesData>>> getThreads(IQuery query) {
         Iterator<SearchHit<NotesData>> threads = null;
-        SearchHits<NotesData> searchHits = execSearchQuery(searchRequest);
+        SearchHits<NotesData> searchHits = execSearchQuery(query);
         if(searchHits != null)
             threads = searchHits.stream().iterator();
         Map<String,Map<String,List<NotesData>>> results = new HashMap<>();
@@ -96,13 +93,13 @@ public class SearchNotesServiceV2 extends AbstractSearchNotesService {
         return results;
     }
 
-    private NotesData buildThreads(NotesData threadEntry, Map<String,Map<String,List<NotesData>>> results, Set<String> entryThreadUuid, SearchRequest searchRequest) {
+    private NotesData buildThreads(NotesData threadEntry, Map<String,Map<String,List<NotesData>>> results, Set<String> entryThreadUuid, IQuery query) {
         String parentThreadGuid = null;
         if(threadEntry.getThreadGuidParent() != null) {
             parentThreadGuid  = threadEntry.getThreadGuidParent().toString();
         }
         String entryGuid = threadEntry.getEntryGuid().toString();
-        if(searchRequest.getUpdateHistory() && threadEntry != null && results.containsKey(parentThreadGuid) &&
+        if(query.getUpdateHistory() && threadEntry != null && results.containsKey(parentThreadGuid) &&
                 results.get(parentThreadGuid).containsKey(entryGuid)) {
             for(int i = 1; i < results.get(parentThreadGuid).get(entryGuid).size(); i++) { 
                 threadEntry.addHistory(results.get(parentThreadGuid).get(entryGuid).get(i));
@@ -117,12 +114,12 @@ public class SearchNotesServiceV2 extends AbstractSearchNotesService {
                 String entryUuid = threads.get(i).getEntryGuid().toString();
                 // entryThreadUuid set is to make sure to avoid history entries here as search Entry id will have history entries as well
                 if (!entryThreadUuid.contains(entryUuid)) {
-                    if (!searchRequest.getArchivedResponse() && threads.get(i).getArchived() != null) {
+                    if (!query.getArchived() && threads.get(i).getArchived() != null) {
                         break; // do not search archived thread
                     }
                     threadEntry.addThreads(threads.get(i));
                     entryThreadUuid.add(entryUuid);
-                    buildThreads(threads.get(i), results, entryThreadUuid, searchRequest);
+                    buildThreads(threads.get(i), results, entryThreadUuid, query);
                 }
             }
         }
