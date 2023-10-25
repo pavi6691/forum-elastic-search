@@ -1,7 +1,5 @@
 package com.freelance.forum.elasticsearch.queries;
 
-import org.elasticsearch.search.sort.SortOrder;
-
 public class Queries {
     
     public static class SearchByExternalGuid implements IQuery {
@@ -32,13 +30,6 @@ public class Queries {
         private boolean getUpdateHistory;
         private boolean getArchived;
         private RequestType requestType;
-        
-        private SortOrder sortOrder = SortOrder.DESC;
-
-        public SearchByExternalGuid setSortOrder(SortOrder sortOrder) {
-            this.sortOrder = sortOrder;
-            return this;
-        }
 
         public SearchByExternalGuid setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
@@ -48,11 +39,6 @@ public class Queries {
         public SearchByExternalGuid setGetArchived(boolean getArchived) {
             this.getArchived = getArchived;
             return this;
-        }
-
-        @Override
-        public SortOrder getSortOrder() {
-            return sortOrder;
         }
 
         @Override
@@ -99,31 +85,16 @@ public class Queries {
         private String contentToSearch;
         private boolean getUpdateHistory;
         private boolean getArchived;
-
         private RequestType requestType;
-        private SortOrder sortOrder = SortOrder.DESC;
-
-        public SearchByContent setSortOrder(SortOrder sortOrder) {
-            this.sortOrder = sortOrder;
-            return this;
-        }
-        
 
         public SearchByContent setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
             return this;
         }
-
         public SearchByContent setGetArchived(boolean getArchived) {
             this.getArchived = getArchived;
             return this;
         }
-
-        @Override
-        public SortOrder getSortOrder() {
-            return sortOrder;
-        }
-
         @Override
         public boolean getUpdateHistory() {
             return getUpdateHistory;
@@ -180,15 +151,7 @@ public class Queries {
 
         private boolean getUpdateHistory;
         private boolean getArchived;
-
         private RequestType requestType;
-
-        private SortOrder sortOrder = SortOrder.DESC;
-
-        public SearchByEntryGuid setSortOrder(SortOrder sortOrder) {
-            this.sortOrder = sortOrder;
-            return this;
-        }
 
         public SearchByEntryGuid setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
@@ -198,11 +161,6 @@ public class Queries {
         public SearchByEntryGuid setGetArchived(boolean getArchived) {
             this.getArchived = getArchived;
             return this;
-        }
-
-        @Override
-        public SortOrder getSortOrder() {
-            return sortOrder;
         }
 
         @Override

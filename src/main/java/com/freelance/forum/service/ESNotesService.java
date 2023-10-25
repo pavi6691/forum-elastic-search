@@ -38,7 +38,7 @@ public class ESNotesService implements INotesService {
     ESNotesRepository esNotesRepository;
 
     @Autowired
-    @Qualifier("searchNotesServiceV1")
+    @Qualifier("searchNotesServiceV2")
     ISearchNotesService iSearchNotesService;
     
 

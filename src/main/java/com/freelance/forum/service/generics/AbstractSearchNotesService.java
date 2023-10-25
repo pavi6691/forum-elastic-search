@@ -4,7 +4,6 @@ import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.IQuery;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -25,13 +24,9 @@ public abstract class AbstractSearchNotesService implements ISearchNotesService 
     ElasticsearchOperations elasticsearchOperations;
     
     public SearchHits<NotesData> execSearchQuery(IQuery query) {
-        Sort.Order _sortOrder = Sort.Order.desc(ESIndexNotesFields.CREATED.getEsFieldName());
-        if(query.getSortOrder() == SortOrder.ASC) {
-            _sortOrder = Sort.Order.asc(ESIndexNotesFields.CREATED.getEsFieldName());
-        }
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
-                .withSort(Sort.by(_sortOrder))
+                .withSort(Sort.by(Sort.Order.desc(ESIndexNotesFields.CREATED.getEsFieldName())))
                 .build();
         searchQuery.setMaxResults(max_number_of_history_and_threads);
         return elasticsearchOperations.search(searchQuery, NotesData.class);
