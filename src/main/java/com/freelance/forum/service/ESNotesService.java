@@ -9,39 +9,38 @@ import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.IQuery;
 import com.freelance.forum.elasticsearch.queries.Queries;
-import com.freelance.forum.service.generics.ISearchNotesService;
+import com.freelance.forum.elasticsearch.generics.ISearchNotes;
 import com.freelance.forum.util.ESUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.xcontent.XContentType;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.elasticsearch.RestStatusException;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.util.*;
 
 @Service
 public class ESNotesService implements INotesService {
-
-    @Autowired
     ResourceFileReaderService resourceFileReaderService;
-    
-    @Autowired
-    EsConfig esConfig;
-
-    @Autowired
     ESNotesRepository esNotesRepository;
-
-    @Autowired
-    @Qualifier("searchNotesServiceV2")
-    ISearchNotesService iSearchNotesService;
+    ElasticsearchOperations elasticsearchOperations;
+    ISearchNotes iSearchNotes;
+    EsConfig esConfig;
+    public ESNotesService(ResourceFileReaderService resourceFileReaderService,ESNotesRepository esNotesRepository,
+                          ElasticsearchOperations elasticsearchOperations,@Qualifier("searchNotesV2") ISearchNotes iSearchNotes, EsConfig esConfig) {
+        this.resourceFileReaderService = resourceFileReaderService;
+        this.esNotesRepository = esNotesRepository;
+        this.elasticsearchOperations = elasticsearchOperations;
+        this.iSearchNotes = iSearchNotes;
+        this.esConfig = esConfig;
+    }
     
-
     @Override
     public NotesData saveNew(NotesData notesData) {
         notesData.setGuid(UUID.randomUUID());
@@ -50,7 +49,7 @@ public class ESNotesService implements INotesService {
         notesData.setCreated(ESUtil.getCurrentDate());
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
-            List<NotesData> existingEntry = iSearchNotesService.search(new Queries.SearchByEntryGuid()
+            List<NotesData> existingEntry = iSearchNotes.search(new Queries.SearchByEntryGuid()
                     .setEntryGuid(notesData.getThreadGuidParent().toString())
                     .setSearchField(ESIndexNotesFields.THREAD)
                     .setGetUpdateHistory(false).setGetArchived(false));
@@ -89,7 +88,7 @@ public class ESNotesService implements INotesService {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
         } else if (notesData.getEntryGuid() != null) {
-            List<NotesData> searchResult = iSearchNotesService.search(new Queries.SearchByEntryGuid()
+            List<NotesData> searchResult = iSearchNotes.search(new Queries.SearchByEntryGuid()
                     .setEntryGuid(notesData.getEntryGuid().toString())
                     .setSearchField(ESIndexNotesFields.ENTRY)
                     .setGetUpdateHistory(false).setGetArchived(false));
@@ -112,7 +111,7 @@ public class ESNotesService implements INotesService {
     }
     @Override
     public List<NotesData> archive(IQuery query) {
-        List<NotesData> result = iSearchNotesService.search(query);
+        List<NotesData> result = iSearchNotes.search(query);
         Set<NotesData> entriesToArchive = new HashSet<>();
         if(result != null && !result.isEmpty())
             ESUtil.flatten(result.get(0),entriesToArchive);
@@ -126,11 +125,11 @@ public class ESNotesService implements INotesService {
             esNotesRepository.save(entryToArchive);
             response.add(entryToArchive);
         });
-        return iSearchNotesService.search(query);
+        return iSearchNotes.search(query);
     }
     @Override
     public List<NotesData> delete(IQuery query, String deleteEntries) {
-        List<NotesData> result = iSearchNotesService.search(query);
+        List<NotesData> result = iSearchNotes.search(query);
         List<NotesData> results = new ArrayList<>();
         if(result != null && !result.isEmpty()) {
             Set<NotesData> entriesToDelete = new HashSet<>();
@@ -158,11 +157,17 @@ public class ESNotesService implements INotesService {
 //            Template template = resourceFileReaderService.getTemplateFile(Constants.NOTE_V1_INDEX_TEMPLATE,this.getClass());
             String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
 //            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
-            CreateIndexRequest request = new CreateIndexRequest(indexName);
-            request.source(mapping, XContentType.JSON);
             // TODO create index using repo
-            CreateIndexResponse createIndexResponse = esConfig.elasticsearchClient().indices().create(request, RequestOptions.DEFAULT);
-            return createIndexResponse.index();
+            boolean indexExists = esConfig.elasticsearchClient().indices().exists(new GetIndexRequest(indexName), RequestOptions.DEFAULT);
+            if(!indexExists) {
+                CreateIndexRequest request = new CreateIndexRequest(indexName);
+                request.source(mapping, XContentType.JSON);
+                CreateIndexResponse createIndexResponse = esConfig.elasticsearchClient().indices().create(request, RequestOptions.DEFAULT);
+                return createIndexResponse.index();
+            } else {
+                System.err.println(String.format("Index already exists, indexName=%s", indexName));
+                return String.format("Index already exists, indexName=%s", indexName);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -170,6 +175,6 @@ public class ESNotesService implements INotesService {
 
     @Override
     public List<NotesData> search(IQuery query) {
-        return iSearchNotesService.search(query);
+        return iSearchNotes.search(query);
     }
 }

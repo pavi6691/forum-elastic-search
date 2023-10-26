@@ -1,4 +1,4 @@
-package com.freelance.forum;
+package com.freelance.forum.data;
 
 public class ElasticSearchData {
     

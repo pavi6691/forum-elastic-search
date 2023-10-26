@@ -1,4 +1,4 @@
-package com.freelance.forum.service.generics;
+package com.freelance.forum.elasticsearch.generics;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.IQuery;
@@ -9,8 +9,8 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
-@Service("searchNotesServiceV1")
-public class SearchNotesServiceV1 extends AbstractSearchNotesService {
+@Service("searchNotesV1")
+public class SearchNotesV1 extends AbstractSearchNotes {
 
     @Override
     public List<NotesData> search(IQuery query) {

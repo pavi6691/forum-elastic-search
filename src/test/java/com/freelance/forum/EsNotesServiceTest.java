@@ -1,5 +1,6 @@
 package com.freelance.forum;
 
+import com.freelance.forum.data.ElasticSearchData;
 import com.freelance.forum.elasticsearch.configuration.EsConfig;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
@@ -10,6 +11,7 @@ import com.freelance.forum.elasticsearch.queries.RequestType;
 import com.freelance.forum.service.INotesService;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -456,37 +458,48 @@ class EsNotesServiceTest {
 		return entries;
 	}
 
+	@BeforeAll
+	void createEntries() throws JSONException {
+		JSONArray jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
+		for(int i=0; i< jsonArray.length(); i++) {
+			List<NotesData> entries = new ArrayList<>();
+			String jsonStringToStore = jsonArray.getString(i);
+			flatten(NotesData.fromJson(jsonStringToStore),entries);
+			entries.forEach(e -> {
+				if(e.getThreads() != null)
+					e.getThreads().clear();
+				if(e.getHistory() != null)
+					e.getHistory().clear();
+				NotesData notesData = repository.save(e);
+				assertEquals(notesData.getGuid(),e.getGuid());
+				assertEquals(notesData.getExternalGuid(),e.getExternalGuid());
+				assertEquals(notesData.getEntryGuid(),e.getEntryGuid());
+				assertEquals(notesData.getThreadGuid(),e.getThreadGuid());
+				assertEquals(notesData.getThreadGuidParent(),e.getThreadGuidParent());
+				assertEquals(notesData.getContent(),e.getContent());
+				assertEquals(notesData.getCreated(),e.getCreated());
+				assertEquals(notesData.getArchived(),e.getArchived());
+				assertEquals(notesData.getThreads(),e.getThreads());
+				assertEquals(notesData.getHistory(),e.getHistory());
+			});
+		}
+	}
 
-//	@BeforeEach
-//	void testIsContainerRunning() {
-//		assertTrue(elasticsearchContainer.isRunning());
-//	}
-
-//	@Test
-//	void createEntries() throws JSONException {
-//		JSONArray jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
-//		for(int i=0; i< jsonArray.length(); i++) {
-//			List<NotesData> entries = new ArrayList<>();
-//			String jsonStringToStore = jsonArray.getString(i);
-//			flatten(NotesData.fromJson(jsonStringToStore),entries);
-//			entries.forEach(e -> {
-//				if(e.getThreads() != null)
-//					e.getThreads().clear();
-//				if(e.getHistory() != null)
-//					e.getHistory().clear();
-//				NotesData notesData = repository.save(e);
-//				assertEquals(notesData.getGuid(),e.getGuid());
-//				assertEquals(notesData.getExternalGuid(),e.getExternalGuid());
-//				assertEquals(notesData.getEntryGuid(),e.getEntryGuid());
-//				assertEquals(notesData.getThreadGuid(),e.getThreadGuid());
-//				assertEquals(notesData.getThreadGuidParent(),e.getThreadGuidParent());
-//				assertEquals(notesData.getContent(),e.getContent());
-//				assertEquals(notesData.getCreated(),e.getCreated());
-//				assertEquals(notesData.getArchived(),e.getArchived());
-//				assertEquals(notesData.getThreads(),e.getThreads());
-//				assertEquals(notesData.getHistory(),e.getHistory());
-//			});
-//		}
-//	}
+	@AfterAll
+	void deleteEntries() throws JSONException {
+		JSONArray jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
+		for(int i=0; i< jsonArray.length(); i++) {
+			List<NotesData> entries = new ArrayList<>();
+			String jsonStringToStore = jsonArray.getString(i);
+			flatten(NotesData.fromJson(jsonStringToStore),entries);
+			entries.forEach(e -> {
+				if (e.getThreads() != null)
+					e.getThreads().clear();
+				if (e.getHistory() != null)
+					e.getHistory().clear();
+				repository.delete(e);
+			});
+		}
+	}
 
 }

@@ -3,12 +3,6 @@
     docker compose up
 Then connect to Kibana using http://localhost:5601
 
-### Get Started with creating index. execute below API
-  `POST /createIndex`
-  ```http
-  http://localhost:8080/api/v1/createIndex?indexName=note-v1
-  ```
-
 ### API Details
   #### Payload for create and update requests
   ```json

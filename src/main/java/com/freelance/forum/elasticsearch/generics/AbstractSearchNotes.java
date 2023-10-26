@@ -1,4 +1,4 @@
-package com.freelance.forum.service.generics;
+package com.freelance.forum.elasticsearch.generics;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public abstract class AbstractSearchNotesService implements ISearchNotesService {
+public abstract class AbstractSearchNotes implements ISearchNotes {
     @Value("${max.number.of.history.and.threads}")
     private int max_number_of_history_and_threads;
     @Autowired
