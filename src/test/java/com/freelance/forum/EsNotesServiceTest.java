@@ -33,23 +33,22 @@ public class EsNotesServiceTest {
 
 	@Autowired
 	private ESNotesRepository repository;
-
-//	@Value("${index.name}")
-//	private String indexName;
-//	private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
-//	@Container
-//	public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
-//
-//	@BeforeAll
-//	void setup() {
-//		elasticsearchContainer.setWaitStrategy((new LogMessageWaitStrategy())
-//				.withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
-//				.withStartupTimeout(Duration.ofSeconds(180L)));
-//		elasticsearchContainer.start();
-//		assertEquals(notesService.createIndex(indexName),indexName);
-//	}
-
-
+	
+// TODO	
+//		@Value("${index.name}")
+//		private String indexName;
+//		private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
+//		@Container
+//		public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
+//		@BeforeAll
+//		void setup() {
+//			elasticsearchContainer.setWaitStrategy((new LogMessageWaitStrategy())
+//					.withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
+//					.withStartupTimeout(Duration.ofSeconds(180L)));
+//			elasticsearchContainer.start();
+//			assertEquals(notesService.createIndex(indexName),indexName);
+//		}
+	
 	@Test
 	void testEverything() {
 		NotesData newEntryCreated = createNewEntry(new NotesData.Builder().setExternalGuid(UUID.randomUUID()).setContent("New External Entry").build());
