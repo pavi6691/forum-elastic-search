@@ -10,9 +10,22 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+/**
+ * Search and build response for thread of entries along with update histories. Version 2
+ */
 @Service("searchNotesV2")
 public class SearchNotesV2 extends AbstractSearchNotes {
 
+    /**
+     * Strategy is to search for root entry first(for externalGuid/entryGuid), then call for all subsequent entries created after for given guid.
+     * seconds call responses are store in temporary map and then processed to build threads and histories. This strategy only requires two calls
+     * elastic search for every search request made.
+     * @param query - query containing search details
+     * @return entries with all threads and histories
+     * - returns only archived
+     * - returns only history
+     * - returns both archived and histories
+     */
     @Override
     public List<NotesData> search(IQuery query) {
         List<NotesData> results = new ArrayList<>();
@@ -65,6 +78,12 @@ public class SearchNotesV2 extends AbstractSearchNotes {
         }
         return results;
     }
+
+    /**
+     * Prepare map of all entries in such a way that, entry(or multiple external entries) with threads and history can be built with O(n) time complexity
+     * @param query
+     * @return
+     */
     private Map<String,Map<String,List<NotesData>>> getThreads(IQuery query) {
         Iterator<SearchHit<NotesData>> threads = null;
         SearchHits<NotesData> searchHits = execSearchQuery(query);
@@ -92,6 +111,14 @@ public class SearchNotesV2 extends AbstractSearchNotes {
         return results;
     }
 
+    /**
+     * Recursively builds threads and histories from stored entries in given results map
+     * @param threadEntry
+     * @param results
+     * @param entryThreadUuid
+     * @param query
+     * @return - Entries with threads and update histories
+     */
     private NotesData buildThreads(NotesData threadEntry, Map<String,Map<String,List<NotesData>>> results, Set<String> entryThreadUuid, IQuery query) {
         String parentThreadGuid = null;
         if(threadEntry.getThreadGuidParent() != null) {

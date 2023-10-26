@@ -16,13 +16,21 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * abstraction for executing search query.
+ */
 @Service
 public abstract class AbstractSearchNotes implements ISearchNotes {
     @Value("${max.number.of.history.and.threads}")
     private int max_number_of_history_and_threads;
     @Autowired
     ElasticsearchOperations elasticsearchOperations;
-    
+
+    /**
+     * executes IQuery
+     * @param query 
+     * @return search result from elastics search response
+     */
     public SearchHits<NotesData> execSearchQuery(IQuery query) {
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))

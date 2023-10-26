@@ -30,6 +30,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Service to perform elastic search operations
+ */
 @Service
 public class ESNotesService implements INotesService {
     @Qualifier("searchNotesV2")
@@ -45,7 +48,12 @@ public class ESNotesService implements INotesService {
         this.elasticsearchOperations = elasticsearchOperations;
         this.esConfig = esConfig;
     }
-    
+
+    /**
+     * creates new entry, or a thread if threadGuidParent is provided
+     * @param notesData
+     * @return Entry that's created and stored in elastic search
+     */
     @Override
     public NotesData saveNew(NotesData notesData) {
         notesData.setGuid(UUID.randomUUID());
@@ -71,18 +79,22 @@ public class ESNotesService implements INotesService {
         }
         return esNotesRepository.save(notesData);
     }
+
+    /**
+     * Search entry by key GUID
+     * @param guid
+     * @return Entry from elasticsearch for given guid (key)
+     */
     @Override
     public NotesData searchByGuid(UUID guid) {
         return esNotesRepository.findById(guid).orElse(null);
     }
 
     /**
-     * To Update 
-     *   - provide GUID that's being updated
-     *   - provide entryGUID in payload. - same entryGUID is used in new version of updated entry
-     *   - So to get history, we can query by entryGUID
+     * Update entry by guid (key). if guid is not provided, then looks for entryGUID in payload. 
+     * fetches recent entry for given entryGuid and updates it and create a new entry with updated content
      * @param notesData
-     * @return
+     * @return updated entry
      */
     @Override
     public NotesData update(NotesData notesData) {
@@ -114,6 +126,12 @@ public class ESNotesService implements INotesService {
         notesDataToUpdate.setContent(notesData.getContent());
         return esNotesRepository.save(notesDataToUpdate);
     }
+
+    /**
+     * Archive by updating existing entry. updates archived field on elastic search with current data and time.
+     * @param query - archive can be done by either externalGuid / entryGuid
+     * @return archived entries
+     */
     @Override
     public List<NotesData> archive(IQuery query) {
         List<NotesData> result = iSearchNotes.search(query);
@@ -132,6 +150,13 @@ public class ESNotesService implements INotesService {
         });
         return iSearchNotes.search(query);
     }
+
+    /**
+     * Deletes entries by either externalGuid/entryGuid
+     * @param query - search entries for given externalGuid/entryGuid
+     * @param deleteEntries - "all" to delete all entries, "archived" to delete only archived entries
+     * @return deleted entries
+     */
     @Override
     public List<NotesData> delete(IQuery query, String deleteEntries) {
         List<NotesData> result = iSearchNotes.search(query);
@@ -154,6 +179,11 @@ public class ESNotesService implements INotesService {
         return results;
     }
 
+    /**
+     * Create new index if not exists
+     * @param indexName - index name to create
+     * @return indexName when successfully created, else message that says index already exists
+     */
     @Override
     public String createIndex(String indexName) {
         try {

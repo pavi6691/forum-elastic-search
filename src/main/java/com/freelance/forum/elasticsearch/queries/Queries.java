@@ -1,9 +1,12 @@
 package com.freelance.forum.elasticsearch.queries;
 
 public class Queries {
-    
+
+    /**
+     * Search query to fetch root entries by external guid. also returns historical records
+     */
     public static class SearchByExternalGuid implements IQuery {
-        private static final String QUERY_ROOT_EXTERNAL_ENTRIES = "{\n" +
+        private static final String QUERY = "{\n" +
                 "  \"bool\": {\n" +
                 "    \"must\": [\n" +
                 "      {\n" +
@@ -57,12 +60,15 @@ public class Queries {
 
         @Override
         public String buildQuery() {
-            return String.format(QUERY_ROOT_EXTERNAL_ENTRIES,externalGuid);
+            return String.format(QUERY,externalGuid);
         }
     }
 
+    /**
+     * Search for content
+     */
     public static class SearchByContent implements IQuery {
-        private static String QUERY_CONTENT_ENTRIES = "{\n" +
+        private static String QUERY = "{\n" +
                 "    \"wildcard\": {\n" +
                 "      \""+ESIndexNotesFields.CONTENT.getEsFieldName()+"\": {\n" +
                 "        \"value\": \"*%s*\",\n" +
@@ -101,10 +107,13 @@ public class Queries {
 
         @Override
         public String buildQuery() {
-            return String.format(QUERY_CONTENT_ENTRIES,contentToSearch);
+            return String.format(QUERY,contentToSearch);
         }
     }
 
+    /**
+     * Search by any fields. returns entries created after passed time im millis
+     */
     public static class SearchByEntryGuid implements IQuery {
         private static String QUERY = "{\n" +
                 "  \"bool\": {\n" +
@@ -171,6 +180,11 @@ public class Queries {
         }
     }
 
+    /**
+     * Query to search archived entries. If for externalGuid then returns only archived entries.
+     * For entryGuid, returns all entries even if they are not archived. filter is done in the code. 
+     * For any entryGuid(not archived), if their threads are archived, then return them
+     */
     public static class SearchArchived implements IQuery {
         
         private static String FILTER = ",\n" +

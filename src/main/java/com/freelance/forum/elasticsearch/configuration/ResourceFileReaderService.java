@@ -9,6 +9,10 @@ import java.util.Objects;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * reads template, policy or mapping json file from resource path and store. 
+ * provides ability to get content of the same for multiple indexes as well.
+ */
 @Configuration
 public class ResourceFileReaderService {
     

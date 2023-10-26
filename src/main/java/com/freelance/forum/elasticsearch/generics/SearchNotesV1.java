@@ -8,9 +8,22 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
+/**
+ * Search and build response for thread of entries along with update histories
+ */
 @Service("searchNotesV1")
 public class SearchNotesV1 extends AbstractSearchNotes {
 
+
+    /**
+     * Strategy is to search for root entry first(for externalGuid/entryGuid), then build threads and history by incremental calls to 
+     * elastic search until there are no more threads. Since there will be more network calls to elastic search with this approach V2 is done.
+     * @param query - query containing search details
+     * @return entries with all threads and histories
+     * - returns only archived
+     * - returns only history
+     * - returns both archived and histories
+     */
     @Override
     public List<NotesData> search(IQuery query) {
         List<NotesData> results = new ArrayList<>();
@@ -48,7 +61,15 @@ public class SearchNotesV1 extends AbstractSearchNotes {
         }
         return null;
     }
-    
+
+    /**
+     * recursive function to build threads and histories
+     * @param threadRoot
+     * @param entryThreadUuid
+     * @param getUpdateHistory
+     * @param getArchivedResponse
+     * @return
+     */
     private NotesData searchThreadsAndHistories(NotesData threadRoot, Set<String> entryThreadUuid, boolean getUpdateHistory,
                                        boolean getArchivedResponse) {
         checkAndAddHistory(threadRoot,getUpdateHistory);
