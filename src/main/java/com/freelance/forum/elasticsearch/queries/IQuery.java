@@ -4,5 +4,4 @@ public interface IQuery {
     String buildQuery();
     boolean getUpdateHistory();
     boolean getArchived();
-    RequestType getRequestType();
 }

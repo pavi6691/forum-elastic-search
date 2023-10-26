@@ -12,7 +12,7 @@ public class ForumApplication {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(ForumApplication.class, args);
         INotesService esNotesService = context.getBean(ESNotesService.class);
-        esNotesService.createIndex(context.getEnvironment().getProperty("index.name"));
+        String info  = esNotesService.createIndex(context.getEnvironment().getProperty("index.name"));
+        System.out.println(info);
     }
-
 }

@@ -1,5 +1,6 @@
 package com.freelance.forum.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freelance.forum.elasticsearch.configuration.Constants;
 import com.freelance.forum.elasticsearch.configuration.EsConfig;
 import com.freelance.forum.elasticsearch.configuration.IndexMetadataConfiguration;
@@ -18,26 +19,30 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.xcontent.XContentType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.IndexOperations;
+import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 
 @Service
 public class ESNotesService implements INotesService {
-    ResourceFileReaderService resourceFileReaderService;
-    ESNotesRepository esNotesRepository;
-    ElasticsearchOperations elasticsearchOperations;
-    ISearchNotes iSearchNotes;
-    EsConfig esConfig;
-    public ESNotesService(ResourceFileReaderService resourceFileReaderService,ESNotesRepository esNotesRepository,
-                          ElasticsearchOperations elasticsearchOperations,@Qualifier("searchNotesV2") ISearchNotes iSearchNotes, EsConfig esConfig) {
-        this.resourceFileReaderService = resourceFileReaderService;
+    @Qualifier("searchNotesV2")
+    @Autowired
+    private ISearchNotes iSearchNotes;
+    @Autowired
+    private ResourceFileReaderService resourceFileReaderService;
+    private ESNotesRepository esNotesRepository;
+    private ElasticsearchOperations elasticsearchOperations;
+    private EsConfig esConfig;
+    public ESNotesService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations, EsConfig esConfig) {
         this.esNotesRepository = esNotesRepository;
         this.elasticsearchOperations = elasticsearchOperations;
-        this.iSearchNotes = iSearchNotes;
         this.esConfig = esConfig;
     }
     
@@ -152,18 +157,15 @@ public class ESNotesService implements INotesService {
     @Override
     public String createIndex(String indexName) {
         try {
-            IndexMetadataConfiguration indexMetadataConfiguration =
-                    resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
+//            IndexMetadataConfiguration indexMetadataConfiguration =
+//                    resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
 //            Template template = resourceFileReaderService.getTemplateFile(Constants.NOTE_V1_INDEX_TEMPLATE,this.getClass());
-            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
+//            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
 //            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
-            // TODO create index using repo
-            boolean indexExists = esConfig.elasticsearchClient().indices().exists(new GetIndexRequest(indexName), RequestOptions.DEFAULT);
-            if(!indexExists) {
-                CreateIndexRequest request = new CreateIndexRequest(indexName);
-                request.source(mapping, XContentType.JSON);
-                CreateIndexResponse createIndexResponse = esConfig.elasticsearchClient().indices().create(request, RequestOptions.DEFAULT);
-                return createIndexResponse.index();
+            IndexOperations indexOperations = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
+            if(!indexOperations.exists()) {
+                indexOperations.create();
+                return new ObjectMapper().writeValueAsString(indexOperations.getInformation());
             } else {
                 System.err.println(String.format("Index already exists, indexName=%s", indexName));
                 return String.format("Index already exists, indexName=%s", indexName);

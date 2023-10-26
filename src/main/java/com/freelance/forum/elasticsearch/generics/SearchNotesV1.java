@@ -3,7 +3,6 @@ import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.IQuery;
 import com.freelance.forum.elasticsearch.queries.Queries;
-import com.freelance.forum.elasticsearch.queries.RequestType;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ public class SearchNotesV1 extends AbstractSearchNotes {
             if (searchResponseIterator != null) {
                 while (searchResponseIterator.hasNext()) {
                     NotesData entry = searchResponseIterator.next().getContent();
-                    if (query.getRequestType() == RequestType.CONTENT) {
+                    if (query instanceof Queries.SearchByContent) {
                         results.add(entry);
                         continue;
                     }
@@ -33,7 +32,7 @@ public class SearchNotesV1 extends AbstractSearchNotes {
                     }
                 }
             }
-        if(query.getRequestType() == RequestType.ARCHIVE) {
+        if(query instanceof Queries.SearchArchived) {
             filterArchived(results);
         }
         if(results.isEmpty()) {

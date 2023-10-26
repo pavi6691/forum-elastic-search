@@ -1,13 +1,11 @@
 package com.freelance.forum;
 
 import com.freelance.forum.data.ElasticSearchData;
-import com.freelance.forum.elasticsearch.configuration.EsConfig;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.IQuery;
 import com.freelance.forum.elasticsearch.queries.Queries;
-import com.freelance.forum.elasticsearch.queries.RequestType;
 import com.freelance.forum.service.INotesService;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,12 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.io.IOException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,49 +26,28 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class EsNotesServiceTest {
-
+public class EsNotesServiceTest {
+	
+	@Autowired
+	private INotesService notesService;
 
 	@Autowired
-	INotesService notesService;
+	private ESNotesRepository repository;
 
-	@Autowired
-	ESNotesRepository repository;
-
-	@Value("${index.name}")
-	private String indexName;
-
-	@Value("${elasticsearch.host}")
-	private String esHost;
-
-	private static final String ELASTICSEARCH_IMAGE =
-			"docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
+//	@Value("${index.name}")
+//	private String indexName;
+//	private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
 //	@Container
-//	private static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
-//			.withEnv("discovery.type", "single-node")
-//			.withExposedPorts(9200);
-
-	EsConfig esConfig;
-
-	@BeforeAll
-	void setup() throws JSONException, IOException {
+//	public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
+//
+//	@BeforeAll
+//	void setup() {
 //		elasticsearchContainer.setWaitStrategy((new LogMessageWaitStrategy())
 //				.withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
 //				.withStartupTimeout(Duration.ofSeconds(180L)));
 //		elasticsearchContainer.start();
-//
-//		String hostAndPort = elasticsearchContainer.getHttpHostAddress();
-//		final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-//				.connectedTo(hostAndPort)
-//				.build();
-//		RestHighLevelClient restHighLevelClient = RestClients.create(clientConfiguration).rest();
-//
-//		esConfig = Mockito.mock(EsConfig.class);
-//		Mockito.when(esConfig.elasticsearchClient()).thenReturn(restHighLevelClient);
-//		assertEquals(service.createIndex(indexName),indexName);
-
-	}
-
+//		assertEquals(notesService.createIndex(indexName),indexName);
+//	}
 
 
 	@Test
@@ -82,7 +56,7 @@ class EsNotesServiceTest {
 
 		IQuery query = new Queries.SearchByExternalGuid().setExternalGuid(newEntryCreated.getExternalGuid().toString())
 				.setGetUpdateHistory(true).setGetArchived(true);
-		
+
 		List<NotesData> searchResult = notesService.search(query);
 		validateAll(searchResult, 1, 0, 0);
 
@@ -131,65 +105,51 @@ class EsNotesServiceTest {
 		// Search by EntryId
 		IQuery entryQuery = new Queries.SearchByEntryGuid().setEntryGuid(thread1.getEntryGuid().toString())
 				.setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true).setGetArchived(true);
-		
+
 		searchResult = notesService.search(entryQuery);
 		validateAll(searchResult, 5, 2, 2);
 
 
 		entryQuery = new Queries.SearchByEntryGuid().setEntryGuid(thread1.getEntryGuid().toString())
 				.setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(false).setGetArchived(true);
-		
+
 		searchResult = notesService.search(entryQuery);
 		validateAll(searchResult, 3, 2, 0);
 
 		entryQuery = new Queries.SearchByEntryGuid().setEntryGuid(thread1_2.getEntryGuid().toString())
-				.setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(false).setGetArchived(false);
+				.setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true).setGetArchived(true);
 		notesService.archive(entryQuery);
-		
+
 		// search archived by external entry test 1
-		entryQuery = new Queries.SearchByExternalGuid().setExternalGuid(thread1_2.getExternalGuid().toString())
-				.setGetUpdateHistory(true).setGetArchived(true).setRequestType(RequestType.ARCHIVE);
+		entryQuery = new Queries.SearchArchived().setGuid(thread1_2.getExternalGuid().toString())
+				.setGetUpdateHistory(true).setSearchField(ESIndexNotesFields.EXTERNAL);
 		searchResult = notesService.search(entryQuery);
 		validateAll(searchResult,2,0,1);
 
 		// search archived by external entry test 2
-		entryQuery = new Queries.SearchByExternalGuid().setExternalGuid(thread1_2.getExternalGuid().toString())
-				.setGetUpdateHistory(false).setGetArchived(true).setRequestType(RequestType.ARCHIVE);
+		entryQuery = new Queries.SearchArchived().setGuid(thread1_2.getExternalGuid().toString())
+				.setGetUpdateHistory(false).setSearchField(ESIndexNotesFields.EXTERNAL);
 		searchResult = notesService.search(entryQuery);
 		validateAll(searchResult,1,0,0);
 
-		// search archived by external entry test 3
-		entryQuery = new Queries.SearchByExternalGuid().setExternalGuid(thread1_2.getExternalGuid().toString())
-				.setGetUpdateHistory(false).setGetArchived(false).setRequestType(RequestType.ARCHIVE);
-		searchResult = notesService.search(entryQuery);
-		validateAll(searchResult,0,0,0);
-
 		// search archived by entry test 1
-		entryQuery = new Queries.SearchByEntryGuid().setEntryGuid(thread1.getEntryGuid().toString())
-				.setRequestType(RequestType.ARCHIVE).setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true).setGetArchived(true);
+		entryQuery = new Queries.SearchArchived().setGuid(thread1.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true);
 		searchResult = notesService.search(entryQuery);
 		validateAll(searchResult,2,0,1);
 
 		// search archived by entry test 2
-		entryQuery = new Queries.SearchByEntryGuid().setEntryGuid(thread1_2.getEntryGuid().toString())
-				.setRequestType(RequestType.ARCHIVE).setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(false).setGetArchived(true);
-		searchResult = notesService.search(entryQuery);
+		entryQuery = new Queries.SearchArchived().setGuid(thread1_2.getEntryGuid().toString())
+				.setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(false);
 		searchResult = notesService.search(entryQuery);
 		validateAll(searchResult,1,0,0);
-
-		// search archived by entry test 3
-		entryQuery = new Queries.SearchByEntryGuid().setEntryGuid(thread1_2.getEntryGuid().toString())
-				.setRequestType(RequestType.ARCHIVE).setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(false).setGetArchived(false);
-		searchResult = notesService.search(entryQuery);
-		searchResult = notesService.search(entryQuery);
-		validateAll(searchResult,0,0,0);
 
 		// delete
 		notesService.delete(query,"all");
 		searchResult = notesService.search(query);
 		validateAll(searchResult,0,0,0);
 	}
-	
+
 	private NotesData createNewEntry(NotesData newExternalEntry) {
 		NotesData entryCreated = notesService.saveNew(newExternalEntry);
 		assertEquals(newExternalEntry.getExternalGuid(), entryCreated.getExternalGuid());
@@ -276,7 +236,7 @@ class EsNotesServiceTest {
 	@Test
 	void searchContent() {
 		List<NotesData> result = notesService.search(new Queries.SearchByContent().setContentToSearch("content")
-				.setRequestType(RequestType.CONTENT).setGetUpdateHistory(false).setGetArchived(false));
+				.setGetUpdateHistory(false).setGetArchived(false));
 		checkDuplicates(result);
 		assertEquals(11,result.size());
 	}
@@ -293,7 +253,7 @@ class EsNotesServiceTest {
 	void getByEntryGuid_all_test_1() {
 		List<NotesData> result = notesService.search(new Queries.SearchByEntryGuid().setEntryGuid("ba7a0762-935d-43f3-acb0-c33d86e7f350")
 				.setGetUpdateHistory(true).setGetArchived(true).setSearchField(ESIndexNotesFields.ENTRY));
-		
+
 		validateAll(result,8,5,2);
 	}
 
@@ -301,7 +261,7 @@ class EsNotesServiceTest {
 	void getByEntryGuid_all_test_2() {
 		List<NotesData> result = notesService.search(new Queries.SearchByEntryGuid().setEntryGuid("06a418c3-7475-473e-9e9d-3e952d672d4c")
 				.setGetUpdateHistory(true).setGetArchived(true).setSearchField(ESIndexNotesFields.ENTRY));
-		
+
 		validateAll(result,6,4,1);
 	}
 
@@ -309,7 +269,7 @@ class EsNotesServiceTest {
 	void getByEntryGuid_noHistories() {
 		List<NotesData> result = notesService.search(new Queries.SearchByEntryGuid().setEntryGuid("7f20d0eb-3907-4647-9584-3d7814cd3a55")
 				.setGetUpdateHistory(false).setGetArchived(true).setSearchField(ESIndexNotesFields.ENTRY));
-		
+
 		validateAll(result,3,2,0);
 	}
 
@@ -317,7 +277,7 @@ class EsNotesServiceTest {
 	void getByEntryGuid_noHistories_test_1() {
 		List<NotesData> result = notesService.search(new Queries.SearchByEntryGuid().setEntryGuid("ba7a0762-935d-43f3-acb0-c33d86e7f350")
 				.setGetUpdateHistory(false).setGetArchived(true).setSearchField(ESIndexNotesFields.ENTRY));
-		
+
 		validateAll(result,6,5,0);
 	}
 
@@ -346,7 +306,7 @@ class EsNotesServiceTest {
 	void getByEntryGuid_NoHistoriesAndArchives_test_1() {
 		List<NotesData> result = notesService.search(new Queries.SearchByEntryGuid().setEntryGuid("7f20d0eb-3907-4647-9584-3d7814cd3a55")
 				.setGetUpdateHistory(false).setGetArchived(false).setSearchField(ESIndexNotesFields.ENTRY));
-		
+
 		validateAll(result,0,0,0);
 	}
 
@@ -354,7 +314,7 @@ class EsNotesServiceTest {
 	void getByEntryGuid_NoHistoriesAndArchives_test_2() {
 		List<NotesData> result = notesService.search(new Queries.SearchByEntryGuid().setEntryGuid("ba7a0762-935d-43f3-acb0-c33d86e7f350")
 				.setGetUpdateHistory(false).setGetArchived(false).setSearchField(ESIndexNotesFields.ENTRY));
-		
+
 		validateAll(result,3,2,0);
 	}
 
@@ -501,5 +461,4 @@ class EsNotesServiceTest {
 			});
 		}
 	}
-
 }

@@ -11,7 +11,7 @@ public class Queries {
                 "          \"must_not\": [\n" +
                 "            {\n" +
                 "              \"exists\": {\n" +
-                "                \"field\": \"threadGuidParent\"\n" +
+                "                \"field\": \""+ESIndexNotesFields.PARENT_THREAD.getEsFieldName()+"\"\n" +
                 "              }\n" +
                 "            }\n" +
                 "          ]\n" +
@@ -19,7 +19,7 @@ public class Queries {
                 "      },\n" +
                 "      {\n" +
                 "        \"match_phrase\": {\n" +
-                "          \"externalGuid\": \"%s\"\n" +
+                "          \""+ESIndexNotesFields.EXTERNAL.getEsFieldName()+"\": \"%s\"\n" +
                 "        }\n" +
                 "      }\n" +
                 "    ]\n" +
@@ -29,7 +29,6 @@ public class Queries {
         private String externalGuid;
         private boolean getUpdateHistory;
         private boolean getArchived;
-        private RequestType requestType;
 
         public SearchByExternalGuid setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
@@ -51,16 +50,6 @@ public class Queries {
             return getArchived;
         }
 
-        @Override
-        public RequestType getRequestType() {
-            return requestType;
-        }
-
-        public SearchByExternalGuid setRequestType(RequestType requestType) {
-            this.requestType = requestType;
-            return this;
-        }
-
         public SearchByExternalGuid setExternalGuid(String externalGuid) {
             this.externalGuid = externalGuid;
             return this;
@@ -75,7 +64,7 @@ public class Queries {
     public static class SearchByContent implements IQuery {
         private static String QUERY_CONTENT_ENTRIES = "{\n" +
                 "    \"wildcard\": {\n" +
-                "      \"content\": {\n" +
+                "      \""+ESIndexNotesFields.CONTENT.getEsFieldName()+"\": {\n" +
                 "        \"value\": \"*%s*\",\n" +
                 "        \"boost\": 1.0,\n" +
                 "        \"rewrite\": \"constant_score\"\n" +
@@ -85,7 +74,6 @@ public class Queries {
         private String contentToSearch;
         private boolean getUpdateHistory;
         private boolean getArchived;
-        private RequestType requestType;
 
         public SearchByContent setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
@@ -95,6 +83,12 @@ public class Queries {
             this.getArchived = getArchived;
             return this;
         }
+
+        public SearchByContent setContentToSearch(String contentToSearch) {
+            this.contentToSearch = contentToSearch;
+            return this;
+        }
+        
         @Override
         public boolean getUpdateHistory() {
             return getUpdateHistory;
@@ -106,28 +100,13 @@ public class Queries {
         }
 
         @Override
-        public RequestType getRequestType() {
-            return requestType;
-        }
-
-        public SearchByContent setRequestType(RequestType requestType) {
-            this.requestType = requestType;
-            return this;
-        }
-        
-        public SearchByContent setContentToSearch(String contentToSearch) {
-            this.contentToSearch = contentToSearch;
-            return this;
-        }
-
-        @Override
         public String buildQuery() {
             return String.format(QUERY_CONTENT_ENTRIES,contentToSearch);
         }
     }
 
     public static class SearchByEntryGuid implements IQuery {
-        private static String QUERY_ENTRIES = "{\n" +
+        private static String QUERY = "{\n" +
                 "  \"bool\": {\n" +
                 "    \"must\": [\n" +
                 "      {\n" +
@@ -137,7 +116,7 @@ public class Queries {
                 "      },\n" +
                 "      {\n" +
                 "        \"range\": {\n" +
-                "          \"created\": {\n" +
+                "          \""+ESIndexNotesFields.CONTENT.getEsFieldName()+"\": {\n" +
                 "            \"gte\": \"%s\"\n" +
                 "          }\n" +
                 "        }\n" +
@@ -148,10 +127,8 @@ public class Queries {
         private ESIndexNotesFields searchField;
         private String entryGuid;
         private long createdDateTime;
-
         private boolean getUpdateHistory;
         private boolean getArchived;
-        private RequestType requestType;
 
         public SearchByEntryGuid setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
@@ -172,16 +149,6 @@ public class Queries {
         public boolean getArchived() {
             return getArchived;
         }
-
-        @Override
-        public RequestType getRequestType() {
-            return requestType;
-        }
-
-        public SearchByEntryGuid setRequestType(RequestType requestType) {
-            this.requestType = requestType;
-            return this;
-        }
         
         public SearchByEntryGuid setSearchField(ESIndexNotesFields searchField) {
             this.searchField = searchField;
@@ -200,29 +167,67 @@ public class Queries {
 
         @Override
         public String buildQuery() {
-            return String.format(QUERY_ENTRIES,searchField.getEsFieldName(),entryGuid,createdDateTime);
+            return String.format(QUERY,searchField.getEsFieldName(),entryGuid,createdDateTime);
         }
     }
-    public static String QUERY_ARCHIVED_ENTRIES = "{\n" +
-            "  \"bool\": {\n" +
-            "    \"must\": [\n" +
-            "      {\n" +
-            "        \"bool\": {\n" +
-            "          \"must\": [\n" +
-            "            {\n" +
-            "              \"exists\": {\n" +
-            "                \"field\": \"archived\"\n" +
-            "              }\n" +
-            "            }\n" +
-            "          ]\n" +
-            "        }\n" +
-            "      },\n" +
-            "      {\n" +
-            "        \"match_phrase\": {\n" +
-            "          \"%s\": \"%s\"\n" +
-            "        }\n" +
-            "      }\n" +
-            "    ]\n" +
-            "  }\n" +
-            "}";
+
+    public static class SearchArchived implements IQuery {
+        
+        private static String FILTER = ",\n" +
+                "    \"filter\": [\n" +
+                "      {\n" +
+                "        \"exists\": {\n" +
+                "          \"field\": \""+ESIndexNotesFields.ARCHIVED.getEsFieldName()+"\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]";
+        private static String QUERY = "{\n" +
+                "  \"bool\": {\n" +
+                "    \"must\": [\n" +
+                "      {\n" +
+                "        \"match_phrase\": {\n" +
+                "          \"%s\": \"%s\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]%s\n" +
+                "  }\n" +
+                "}";
+
+        private String guid;
+        private ESIndexNotesFields searchField;
+        private boolean getUpdateHistory;
+
+        public SearchArchived setGuid(String guid) {
+            this.guid = guid;
+            return this;
+        }
+
+        public SearchArchived setSearchField(ESIndexNotesFields searchField) {
+            this.searchField = searchField;
+            return this;
+        }
+
+        public SearchArchived setGetUpdateHistory(boolean getUpdateHistory) {
+            this.getUpdateHistory = getUpdateHistory;
+            return this;
+        }
+        
+        @Override
+        public String buildQuery() {
+            if (searchField  == ESIndexNotesFields.ENTRY) {
+                FILTER=""; // should be able to get archived results by entry which is not archived but their threads does
+            }
+            return String.format(QUERY,searchField.getEsFieldName(),guid,FILTER);
+        }
+
+        @Override
+        public boolean getUpdateHistory() {
+            return getUpdateHistory;
+        }
+
+        @Override
+        public boolean getArchived() {
+            return true;
+        }
+    }
 }

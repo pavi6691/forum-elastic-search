@@ -3,7 +3,6 @@ package com.freelance.forum.resource;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.Queries;
-import com.freelance.forum.elasticsearch.queries.RequestType;
 import com.freelance.forum.service.INotesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -56,31 +55,31 @@ public class ESResource {
                                                                 @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                                 @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
         return new ResponseEntity(notesService.search(new Queries.SearchByContent().setContentToSearch(search)
-                .setRequestType(RequestType.CONTENT).setGetUpdateHistory(getUpdateHistory).setGetArchived(getArchivedResponse)),HttpStatus.OK);
+                .setGetUpdateHistory(getUpdateHistory).setGetArchived(getArchivedResponse)),HttpStatus.OK);
     }
 
     @PutMapping("/archive/external")
     public ResponseEntity<List<NotesData>> archiveExternalGuid(@RequestParam String externalGuid) {
         return new ResponseEntity(notesService.archive(new Queries.SearchByExternalGuid().setExternalGuid(externalGuid)
-                .setGetUpdateHistory(false).setGetArchived(false)),HttpStatus.OK);
+                .setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
     }
 
     @PutMapping("/archive/entry")
     public ResponseEntity<List<NotesData>> archiveEntryGuid(@RequestParam String entryGuid) {
         return new ResponseEntity(notesService.archive(new Queries.SearchByEntryGuid().setSearchField(ESIndexNotesFields.ENTRY)
-                .setEntryGuid(entryGuid).setGetUpdateHistory(false).setGetArchived(false)),HttpStatus.OK);
+                .setEntryGuid(entryGuid).setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
     }
 
     @GetMapping("search/archive/external")
     public ResponseEntity<NotesData> searchArchivedEntriesByExternalGuid(@RequestParam String externalGuid) {
-        return new ResponseEntity(notesService.search(new Queries.SearchByExternalGuid().setExternalGuid(externalGuid)
-                .setGetUpdateHistory(true).setGetArchived(true).setRequestType(RequestType.ARCHIVE)),HttpStatus.OK);
+        return new ResponseEntity(notesService.search(new Queries.SearchArchived().setGuid(externalGuid)
+                .setGetUpdateHistory(true).setSearchField(ESIndexNotesFields.EXTERNAL)),HttpStatus.OK);
     }
 
     @GetMapping("search/archive/entry")
     public ResponseEntity<NotesData> searchArchivedEntriesByEntryGuid(@RequestParam String entryGuid) {
-        return new ResponseEntity(notesService.search(new Queries.SearchByEntryGuid().setEntryGuid(entryGuid)
-                .setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true).setGetArchived(true).setRequestType(RequestType.ARCHIVE))
+        return new ResponseEntity(notesService.search(new Queries.SearchArchived().setGuid(entryGuid)
+                .setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true))
                 ,HttpStatus.OK);
     }
 

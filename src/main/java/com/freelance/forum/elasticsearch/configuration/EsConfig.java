@@ -9,7 +9,7 @@ import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfig
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.freelance.forum.elasticsearch.repository")
+@EnableElasticsearchRepositories(basePackages = "com.freelance.forum.elasticsearch.esrepo")
 public class EsConfig extends AbstractElasticsearchConfiguration {
 
     @Value("${elasticsearch.host}")

@@ -7,33 +7,34 @@
   "settings": {
     "max_result_window" : 1000
   },
-  "properties": {
-    "guid": {
-      "type": "keyword"
-    },
-    "externalGuid": {
-      "type": "keyword"
-    },
-    "threadGuid": {
-      "type": "keyword"
-    },
-    "entryGuid": {
-      "type": "keyword"
-    },
-    "threadGuidParent": {
-      "type": "keyword"
-    },
-    "content": {
-      "type": "text",
-      "analyzer": "content_ngram_analyzer"
-    },
-    "created": {
-      "type": "date",
-      "pattern": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
-    },
-    "archived": {
-      "type": "date",
-      "pattern": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
+  "mappings" : {
+    "properties": {
+      "guid": {
+        "type": "keyword"
+      },
+      "externalGuid": {
+        "type": "keyword"
+      },
+      "threadGuid": {
+        "type": "keyword"
+      },
+      "entryGuid": {
+        "type": "keyword"
+      },
+      "threadGuidParent": {
+        "type": "keyword"
+      },
+      "content": {
+        "type": "text"
+      },
+      "created": {
+        "type": "date",
+        "pattern": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
+      },
+      "archived": {
+        "type": "date",
+        "pattern": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
+      }
     }
   }
 }
