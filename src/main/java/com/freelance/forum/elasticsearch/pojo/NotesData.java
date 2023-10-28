@@ -176,6 +176,12 @@ public class NotesData {
         this.history.add(history);
     }
 
+    public void addAllThreads(List<NotesData> threads) {
+        if( this.threads == null) {
+            this.threads  = new ArrayList<>();;
+        }
+        this.threads.addAll(threads);
+    }
     public void addAllHistory(List<NotesData> history) {
         if( this.history == null) {
             this.history  = new ArrayList<>();;

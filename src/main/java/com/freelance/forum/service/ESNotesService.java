@@ -14,6 +14,8 @@ import com.freelance.forum.elasticsearch.generics.ISearchNotes;
 import com.freelance.forum.util.ESUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
@@ -35,7 +37,7 @@ import java.util.*;
  */
 @Service
 public class ESNotesService implements INotesService {
-    @Qualifier("searchNotesV2")
+    @Qualifier("searchNotesV3")
     @Autowired
     private ISearchNotes iSearchNotes;
     @Autowired
@@ -43,6 +45,9 @@ public class ESNotesService implements INotesService {
     private ESNotesRepository esNotesRepository;
     private ElasticsearchOperations elasticsearchOperations;
     private EsConfig esConfig;
+
+    static Logger log = LogManager.getLogger(ESNotesService.class);
+    
     public ESNotesService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations, EsConfig esConfig) {
         this.esNotesRepository = esNotesRepository;
         this.elasticsearchOperations = elasticsearchOperations;

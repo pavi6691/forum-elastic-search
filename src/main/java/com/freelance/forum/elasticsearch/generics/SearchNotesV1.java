@@ -20,9 +20,9 @@ public class SearchNotesV1 extends AbstractSearchNotes {
      * elastic search until there are no more threads. Since there will be more network calls to elastic search with this approach V2 is done.
      * @param query - query containing search details
      * @return entries with all threads and histories
-     * - returns only archived
-     * - returns only history
-     * - returns both archived and histories
+     * - can return only archived
+     * - can return only history
+     * - can return both archived and histories
      */
     @Override
     public List<NotesData> search(IQuery query) {
@@ -38,15 +38,14 @@ public class SearchNotesV1 extends AbstractSearchNotes {
                     }
                     if (entry != null && (query.getArchived() || entry.getArchived() == null)/*do not search archived threads*/) {
                         if(!doNotSearchFurtherForHistory.contains(entry.getEntryGuid().toString())) {
-                            results.add(searchThreadsAndHistories(entry, new HashSet<>(), query.getUpdateHistory(),
-                                    query.getArchived()));
+                            results.add(searchThreadsAndHistories(query,entry, new HashSet<>()));
                             doNotSearchFurtherForHistory.add(entry.getEntryGuid().toString());
                         } 
                     }
                 }
             }
         if(query instanceof Queries.SearchArchived) {
-            filterArchived(results);
+            results = filterArchived(results);
         }
         if(results.isEmpty()) {
             System.out.println("No entries found");
@@ -64,28 +63,27 @@ public class SearchNotesV1 extends AbstractSearchNotes {
 
     /**
      * recursive function to build threads and histories
+     * @param query
      * @param threadRoot
      * @param entryThreadUuid
-     * @param getUpdateHistory
-     * @param getArchivedResponse
      * @return
      */
-    private NotesData searchThreadsAndHistories(NotesData threadRoot, Set<String> entryThreadUuid, boolean getUpdateHistory,
-                                       boolean getArchivedResponse) {
-        checkAndAddHistory(threadRoot,getUpdateHistory);
+    private NotesData searchThreadsAndHistories(IQuery query, NotesData threadRoot, Set<String> entryThreadUuid) {
+        checkAndAddHistory(threadRoot,query.getUpdateHistory());
         Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(new Queries.SearchByEntryGuid()
                 .setEntryGuid(threadRoot.getThreadGuid().toString())
                 .setSearchField(ESIndexNotesFields.PARENT_THREAD));
         while(searchResponseIterator.hasNext()) {
             NotesData thread = searchResponseIterator.next().getContent();
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
-            if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) { 
-                if(!getArchivedResponse && thread.getArchived() != null) {
-                    break; // do not search archived thread
+            if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) {
+                if ((!query.getArchived() && thread.getArchived() != null) ||
+                        (query instanceof Queries.SearchArchived && thread.getArchived() == null)) {
+                    break;
                 }
                 threadRoot.addThreads(thread);
                 entryThreadUuid.add(thread.getEntryGuid().toString());
-                searchThreadsAndHistories(thread,entryThreadUuid,getUpdateHistory, getArchivedResponse);
+                searchThreadsAndHistories(query,thread,entryThreadUuid);
             }
         }
         return threadRoot;
