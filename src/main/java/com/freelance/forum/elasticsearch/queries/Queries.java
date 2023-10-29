@@ -1,7 +1,5 @@
 package com.freelance.forum.elasticsearch.queries;
 
-import org.elasticsearch.search.sort.SortOrder;
-
 public class Queries {
 
     /**
@@ -140,7 +138,6 @@ public class Queries {
         private long createdDateTime;
         private boolean getUpdateHistory;
         private boolean getArchived;
-        private SortOrder sortOrder;
 
         public SearchByEntryGuid setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
@@ -150,16 +147,6 @@ public class Queries {
         public SearchByEntryGuid setGetArchived(boolean getArchived) {
             this.getArchived = getArchived;
             return this;
-        }
-
-        public SearchByEntryGuid setSortOrder(SortOrder sortOrder) {
-            this.sortOrder = sortOrder;
-            return this;
-        }
-
-        @Override
-        public SortOrder getSortOrder() {
-            return sortOrder;
         }
 
         @Override

@@ -4,7 +4,6 @@ import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.IQuery;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -33,13 +32,9 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
      * @return search result from elastics search response
      */
     protected SearchHits<NotesData> execSearchQuery(IQuery query) {
-        Sort.Order sortOrder = Sort.Order.desc(ESIndexNotesFields.CREATED.getEsFieldName());
-        if(query.getSortOrder() == SortOrder.ASC) {
-            sortOrder = Sort.Order.asc(ESIndexNotesFields.CREATED.getEsFieldName());
-        }
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
-                .withSort(Sort.by(sortOrder))
+                .withSort(Sort.by(Sort.Order.asc(ESIndexNotesFields.CREATED.getEsFieldName())))
                 .build();
         searchQuery.setMaxResults(max_number_of_history_and_threads);
         return elasticsearchOperations.search(searchQuery, NotesData.class);
@@ -51,20 +46,23 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
      * @param query
      * @return processed list of entries with threads and histories
      */
-    protected Map<UUID, Map<UUID,NotesData>> getRootEntries(IQuery query) {
+    protected Map<UUID, Map<UUID,List<NotesData>>> getRootEntries(IQuery query) {
         List<NotesData> results = new ArrayList<>();
         Iterator<SearchHit<NotesData>> rootEntries = null;
         SearchHits<NotesData> searchHits = execSearchQuery(query);
         if(searchHits != null)
             rootEntries = searchHits.stream().iterator();
-        Map<UUID, Map<UUID,NotesData>> rootEntriesMap = new HashMap<>();
+        Map<UUID, Map<UUID,List<NotesData>>> rootEntriesMap = new HashMap<>();
         if(rootEntries != null) {
             while (rootEntries.hasNext()) {
                 NotesData rootNotesData = rootEntries.next().getContent();
                 if (!rootEntriesMap.containsKey(rootNotesData.getExternalGuid())) {
                     rootEntriesMap.put(rootNotesData.getExternalGuid(), new HashMap<>());
                 }
-                rootEntriesMap.get(rootNotesData.getExternalGuid()).put(rootNotesData.getEntryGuid(), rootNotesData);
+                if(!rootEntriesMap.get(rootNotesData.getExternalGuid()).containsKey(rootNotesData.getEntryGuid())) {
+                    rootEntriesMap.get(rootNotesData.getExternalGuid()).put(rootNotesData.getEntryGuid(), new ArrayList<>());
+                }
+                rootEntriesMap.get(rootNotesData.getExternalGuid()).get(rootNotesData.getEntryGuid()).add(rootNotesData);
             }
         }
         return rootEntriesMap;

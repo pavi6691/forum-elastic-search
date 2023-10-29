@@ -4,7 +4,6 @@ import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.IQuery;
 import com.freelance.forum.elasticsearch.queries.Queries;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
@@ -32,20 +31,22 @@ public class SearchNotesV3 extends AbstractSearchNotes {
     @Override
     public List<NotesData> search(IQuery query) {
         List<NotesData> results = new ArrayList<>();
-        Map<UUID, Map<UUID,NotesData>> rootEntriesMap = getRootEntries(query);
-        for (Map<UUID, NotesData> entries : rootEntriesMap.values()) {
-            for (NotesData veryFirstEntry : entries.values()) {
-                if (query.getArchived() || veryFirstEntry.getArchived() == null) {
-                    // Since query is by external id, we only need results after first of entry these entries,
-                    IQuery entryQuery = new Queries.SearchByEntryGuid()
-                            .setGetArchived(query.getArchived())
-                            .setGetUpdateHistory(query.getUpdateHistory())
-                            .setEntryGuid(veryFirstEntry.getExternalGuid().toString())
-                            .setSearchField(ESIndexNotesFields.ENTRY).setSearchField(ESIndexNotesFields.EXTERNAL)
-                            .setSortOrder(SortOrder.ASC)
-                            .setCreatedDateTime(veryFirstEntry.getCreated().getTime());
-                    prepThreadsAndHistories(query,entryQuery, veryFirstEntry);
-                    results.add(veryFirstEntry);
+        Map<UUID, Map<UUID,List<NotesData>>> rootEntriesMap = getRootEntries(query);
+        for (Map<UUID, List<NotesData>> entries : rootEntriesMap.values()) {
+            for (List<NotesData> firstEntryAtIndexZero : entries.values()) {
+                if (!firstEntryAtIndexZero.isEmpty() && (query.getArchived() || firstEntryAtIndexZero.get(0).getArchived() == null)) {
+                    if (!(query instanceof Queries.SearchByContent)) {
+                        // Since query is by external id, we only need results after first of entry these entries,
+                        IQuery entryQuery = new Queries.SearchByEntryGuid()
+                                .setGetArchived(query.getArchived())
+                                .setGetUpdateHistory(query.getUpdateHistory())
+                                .setEntryGuid(firstEntryAtIndexZero.get(0).getExternalGuid().toString())
+                                .setSearchField(ESIndexNotesFields.ENTRY).setSearchField(ESIndexNotesFields.EXTERNAL)
+                                .setCreatedDateTime(firstEntryAtIndexZero.get(0).getCreated().getTime());
+                        results.add(prepThreadsAndHistories(query, entryQuery, firstEntryAtIndexZero.get(0)));
+                    } else {
+                        results.addAll(firstEntryAtIndexZero);
+                    }
                 }
             }
         }
@@ -76,7 +77,7 @@ public class SearchNotesV3 extends AbstractSearchNotes {
                 NotesData notesData = threads.next().getContent();
                 if ((!query.getArchived() && notesData.getArchived() != null) || 
                         (mainQuery instanceof Queries.SearchArchived && notesData.getArchived() == null)) {
-                    // Discard archived entries OR Select only archived entries
+                    // Either discard archived entries OR Select only archived entries
                     continue;
                 }
                 if (results.containsKey(notesData.getThreadGuid())) {

@@ -29,20 +29,23 @@ public class SearchNotesV2 extends AbstractSearchNotes {
     @Override
     public List<NotesData> search(IQuery query) {
         List<NotesData> results = new ArrayList<>();
-        Map<UUID, Map<UUID,NotesData>> rootEntriesMap = getRootEntries(query);
-        for (Map<UUID,NotesData> entries : rootEntriesMap.values()) {
-            for (NotesData veryFirstEntry : entries.values()) {
-                if (query.getArchived() || veryFirstEntry.getArchived() == null) {
-                    // Since query is by external id, we only need results after first of entry these entries,
-                    Map<UUID, Map<UUID, List<NotesData>>> threads = getThreads(new Queries.SearchByEntryGuid()
-                            .setEntryGuid(veryFirstEntry.getExternalGuid().toString())
-                            .setSearchField(ESIndexNotesFields.ENTRY).setSearchField(ESIndexNotesFields.EXTERNAL)
-                            .setCreatedDateTime(rootEntriesMap.get(veryFirstEntry.getExternalGuid())
-                                    .get(veryFirstEntry.getEntryGuid()).getCreated().getTime()));
-                    if (threads != null && !threads.isEmpty()) {
-                        buildThreads(veryFirstEntry, threads, new HashSet<>(), query);
+        Map<UUID, Map<UUID,List<NotesData>>> rootEntriesMap = getRootEntries(query);
+        for (Map<UUID,List<NotesData>> entries : rootEntriesMap.values()) {
+            for (List<NotesData> firstEntryAtIndexZero : entries.values()) {
+                if (!firstEntryAtIndexZero.isEmpty() && (query.getArchived() || firstEntryAtIndexZero.get(0).getArchived() == null)) {
+                    if(!(query instanceof Queries.SearchByContent)) {
+                        // Since query is by external id, we only need results after first of entry these entries,
+                        Map<UUID, Map<UUID, List<NotesData>>> threads = getThreads(new Queries.SearchByEntryGuid()
+                                .setEntryGuid(firstEntryAtIndexZero.get(0).getExternalGuid().toString())
+                                .setSearchField(ESIndexNotesFields.ENTRY).setSearchField(ESIndexNotesFields.EXTERNAL)
+                                .setCreatedDateTime(firstEntryAtIndexZero.get(0).getCreated().getTime()));
+                        if (threads != null && !threads.isEmpty()) {
+                            buildThreads(firstEntryAtIndexZero.get(0), threads, new HashSet<>(), query);
+                        }
+                        results.add(firstEntryAtIndexZero.get(0));
+                    } else {
+                        results.addAll(firstEntryAtIndexZero);
                     }
-                    results.add(veryFirstEntry);
                 }
             }
         }

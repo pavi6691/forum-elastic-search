@@ -235,7 +235,7 @@ public class EsNotesServiceTest {
 	@Test
 	void searchContent() {
 		List<NotesData> result = notesService.search(new Queries.SearchByContent().setContentToSearch("content")
-				.setGetUpdateHistory(false).setGetArchived(false));
+				.setGetUpdateHistory(true).setGetArchived(true));
 		checkDuplicates(result);
 		assertEquals(11,result.size());
 	}
