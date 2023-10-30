@@ -46,7 +46,7 @@ public class ESResource {
     public ResponseEntity<NotesData> searchByEntryGuid(@RequestParam String entryGuid,
                                                        @RequestParam(required = false, defaultValue = "false") boolean getUpdateHistory,
                                                        @RequestParam(required = false, defaultValue = "false") boolean getArchivedResponse) {
-        return new ResponseEntity(notesService.search(new Queries.SearchByEntryGuid().setEntryGuid(entryGuid)
+        return new ResponseEntity(notesService.search(new Queries.SearchByEntryGuid().setSearchBy(entryGuid)
                 .setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(getUpdateHistory).setGetArchived(getArchivedResponse)),HttpStatus.OK);
     }
 
@@ -67,19 +67,19 @@ public class ESResource {
     @PutMapping("/archive/entry")
     public ResponseEntity<List<NotesData>> archiveEntryGuid(@RequestParam String entryGuid) {
         return new ResponseEntity(notesService.archive(new Queries.SearchByEntryGuid().setSearchField(ESIndexNotesFields.ENTRY)
-                .setEntryGuid(entryGuid).setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
+                .setSearchBy(entryGuid).setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
     }
 
     @GetMapping("search/archive/external")
     public ResponseEntity<NotesData> searchArchivedEntriesByExternalGuid(@RequestParam String externalGuid) {
-        return new ResponseEntity(notesService.search(new Queries.SearchArchived().setGuid(externalGuid)
-                .setGetUpdateHistory(true).setSearchField(ESIndexNotesFields.EXTERNAL)),HttpStatus.OK);
+        return new ResponseEntity(notesService.search(new Queries.SearchArchivedByExternalGuid().setExternalGuid(externalGuid)
+                .setGetUpdateHistory(true)),HttpStatus.OK);
     }
 
     @GetMapping("search/archive/entry")
     public ResponseEntity<NotesData> searchArchivedEntriesByEntryGuid(@RequestParam String entryGuid) {
-        return new ResponseEntity(notesService.search(new Queries.SearchArchived().setGuid(entryGuid)
-                .setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true))
+        return new ResponseEntity(notesService.search(new Queries.SearchArchivedByEntryGuid().setEntryGuid(entryGuid)
+                .setGetUpdateHistory(true))
                 ,HttpStatus.OK);
     }
 
@@ -91,7 +91,7 @@ public class ESResource {
 
     @DeleteMapping("/delete/entry")
     public ResponseEntity<List<NotesData>> deleteEntryGuidGuid(@RequestParam String entryGuid, @RequestParam String entriesToDelete) {
-        return new ResponseEntity(notesService.delete(new Queries.SearchByEntryGuid().setEntryGuid(entryGuid)
+        return new ResponseEntity(notesService.delete(new Queries.SearchByEntryGuid().setSearchBy(entryGuid)
                 .setSearchField(ESIndexNotesFields.ENTRY).setGetUpdateHistory(true).setGetArchived(true),entriesToDelete),HttpStatus.OK);
     }
 

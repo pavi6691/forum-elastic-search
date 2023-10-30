@@ -46,7 +46,8 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
      * @param query
      * @return processed list of entries with threads and histories
      */
-    protected Map<UUID, Map<UUID,List<NotesData>>> getRootEntries(IQuery query) {
+    @Override
+    public Map<UUID, Map<UUID,List<NotesData>>> getRootEntries(IQuery query) {
         List<NotesData> results = new ArrayList<>();
         Iterator<SearchHit<NotesData>> rootEntries = null;
         SearchHits<NotesData> searchHits = execSearchQuery(query);
@@ -57,7 +58,7 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
             while (rootEntries.hasNext()) {
                 NotesData rootNotesData = rootEntries.next().getContent();
                 if (!rootEntriesMap.containsKey(rootNotesData.getExternalGuid())) {
-                    rootEntriesMap.put(rootNotesData.getExternalGuid(), new HashMap<>());
+                    rootEntriesMap.put(rootNotesData.getExternalGuid(), new LinkedHashMap<>());
                 }
                 if(!rootEntriesMap.get(rootNotesData.getExternalGuid()).containsKey(rootNotesData.getEntryGuid())) {
                     rootEntriesMap.get(rootNotesData.getExternalGuid()).put(rootNotesData.getEntryGuid(), new ArrayList<>());
@@ -80,20 +81,5 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
             existingEntry.setCreated(updatedEntry.getCreated());
             existingEntry.setArchived(updatedEntry.getArchived());
         }
-    }
-    /**
-     * filter and return only archived
-     * @param results
-     */
-    protected List<NotesData> filterArchived(List<NotesData> results) {
-        List<NotesData> archivedResults = new ArrayList<>();
-        for(NotesData result : results) {
-            if (result != null && result.getArchived() == null && result.getThreads() != null && !result.getThreads().isEmpty()) {
-                archivedResults.addAll(result.getThreads());
-            } else {
-                archivedResults.add(result);
-            }
-        }
-        return archivedResults;
     }
 }

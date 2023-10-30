@@ -126,7 +126,7 @@ public class Queries {
                 "      {\n" +
                 "        \"range\": {\n" +
                 "          \""+ESIndexNotesFields.CREATED.getEsFieldName()+"\": {\n" +
-                "            \"gt\": \"%s\"\n" +
+                "            \"gte\": \"%s\"\n" +
                 "          }\n" +
                 "        }\n" +
                 "      }\n" +
@@ -134,7 +134,7 @@ public class Queries {
                 "  }\n" +
                 "}";
         private ESIndexNotesFields searchField;
-        private String entryGuid;
+        private String guid;
         private long createdDateTime;
         private boolean getUpdateHistory;
         private boolean getArchived;
@@ -164,8 +164,8 @@ public class Queries {
             return this;
         }
 
-        public SearchByEntryGuid setEntryGuid(String entryGuid) {
-            this.entryGuid = entryGuid;
+        public SearchByEntryGuid setSearchBy(String guid) {
+            this.guid = guid;
             return this;
         }
 
@@ -176,62 +176,90 @@ public class Queries {
 
         @Override
         public String buildQuery() {
-            return String.format(QUERY,searchField.getEsFieldName(),entryGuid,createdDateTime);
+            return String.format(QUERY,searchField.getEsFieldName(),guid,createdDateTime);
         }
     }
 
     /**
-     * Query to search archived entries. If for externalGuid then returns only archived entries.
-     * For entryGuid, returns all entries even if they are not archived. filter is done in the code. 
-     * For any entryGuid(not archived), if their threads are archived, then return them
+     * Query to search archived entries. Returns only archived entries.
      */
-    public static class SearchArchived implements IQuery {
-        
-        private static String FILTER = ",\n" +
-                "    \"filter\": [\n" +
-                "      {\n" +
-                "        \"exists\": {\n" +
-                "          \"field\": \""+ESIndexNotesFields.ARCHIVED.getEsFieldName()+"\"\n" +
-                "        }\n" +
-                "      }\n" +
-                "    ]";
+    public static class SearchArchivedByExternalGuid implements IQuery {
         private static String QUERY = "{\n" +
                 "  \"bool\": {\n" +
                 "    \"must\": [\n" +
                 "      {\n" +
                 "        \"match_phrase\": {\n" +
-                "          \"%s\": \"%s\"\n" +
+                "          \""+ESIndexNotesFields.EXTERNAL.getEsFieldName()+"\": \"%s\"\n" +
                 "        }\n" +
                 "      }\n" +
-                "    ]%s\n" +
+                "    ],\n" +
+                "    \"filter\": [\n" +
+                "      {\n" +
+                "        \"exists\": {\n" +
+                "          \"field\": \"archived\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]\n" +
                 "  }\n" +
                 "}";
 
-        private String guid;
-        private ESIndexNotesFields searchField;
+        private String externalGuid;
         private boolean getUpdateHistory;
 
-        public SearchArchived setGuid(String guid) {
-            this.guid = guid;
+        public SearchArchivedByExternalGuid setExternalGuid(String externalGuid) {
+            this.externalGuid = externalGuid;
             return this;
         }
 
-        public SearchArchived setSearchField(ESIndexNotesFields searchField) {
-            this.searchField = searchField;
-            return this;
-        }
-
-        public SearchArchived setGetUpdateHistory(boolean getUpdateHistory) {
+        public SearchArchivedByExternalGuid setGetUpdateHistory(boolean getUpdateHistory) {
             this.getUpdateHistory = getUpdateHistory;
             return this;
         }
         
         @Override
         public String buildQuery() {
-            if (searchField  == ESIndexNotesFields.ENTRY) {
-                FILTER=""; // should be able to get archived results by entry which is not archived but their threads does
-            }
-            return String.format(QUERY,searchField.getEsFieldName(),guid,FILTER);
+            return String.format(QUERY,externalGuid);
+        }
+
+        @Override
+        public boolean getUpdateHistory() {
+            return getUpdateHistory;
+        }
+    }
+
+    /**
+     * Query to search archived entries by entryGuid. Returns all entries even if they are not archived. filter is done in the code. 
+     * For any entryGuid(not archived), if their threads are archived, then return them
+     */
+    public static class SearchArchivedByEntryGuid implements IQuery {
+        private static String QUERY = "{\n" +
+                "  \"bool\": {\n" +
+                "    \"must\": [\n" +
+                "      {\n" +
+                "        \"match_phrase\": {\n" +
+                "          \""+ESIndexNotesFields.ENTRY.getEsFieldName()+"\": \"%s\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+
+        private String entryGuid;
+        private boolean getUpdateHistory;
+
+        public SearchArchivedByEntryGuid setEntryGuid(String entryGuid) {
+            this.entryGuid = entryGuid;
+            return this;
+        }
+
+        public SearchArchivedByEntryGuid setGetUpdateHistory(boolean getUpdateHistory) {
+            this.getUpdateHistory = getUpdateHistory;
+            return this;
+        }
+
+        @Override
+        public String buildQuery() {
+            return String.format(QUERY,entryGuid);
         }
 
         @Override

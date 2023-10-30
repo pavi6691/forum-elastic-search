@@ -68,7 +68,7 @@ public class ESNotesService implements INotesService {
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
             List<NotesData> existingEntry = iSearchNotes.search(new Queries.SearchByEntryGuid()
-                    .setEntryGuid(notesData.getThreadGuidParent().toString())
+                    .setSearchBy(notesData.getThreadGuidParent().toString())
                     .setSearchField(ESIndexNotesFields.THREAD)
                     .setGetUpdateHistory(false).setGetArchived(false));
             if(existingEntry == null && !existingEntry.isEmpty()) {
@@ -111,7 +111,7 @@ public class ESNotesService implements INotesService {
             }
         } else if (notesData.getEntryGuid() != null) {
             List<NotesData> searchResult = iSearchNotes.search(new Queries.SearchByEntryGuid()
-                    .setEntryGuid(notesData.getEntryGuid().toString())
+                    .setSearchBy(notesData.getEntryGuid().toString())
                     .setSearchField(ESIndexNotesFields.ENTRY)
                     .setGetUpdateHistory(false).setGetArchived(false));
             if(searchResult == null || searchResult.isEmpty()) {
@@ -168,7 +168,7 @@ public class ESNotesService implements INotesService {
         List<NotesData> results = new ArrayList<>();
         if(result != null && !result.isEmpty()) {
             Set<NotesData> entriesToDelete = new HashSet<>();
-            ESUtil.flatten(result.get(0), entriesToDelete);
+            result.stream().forEach(e -> ESUtil.flatten(e, entriesToDelete));
             entriesToDelete.forEach(e -> {
                 if (StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ALL, deleteEntries) ||
                         (StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ONLY_ARCHIVED, deleteEntries) && e.getArchived() != null)) {

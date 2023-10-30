@@ -35,9 +35,9 @@ public class SearchNotesV2 extends AbstractSearchNotes {
                 if (!firstEntryAtIndexZero.isEmpty() && (query.getArchived() || firstEntryAtIndexZero.get(0).getArchived() == null)) {
                     if(!(query instanceof Queries.SearchByContent)) {
                         // Since query is by external id, we only need results after first of entry these entries,
-                        Map<UUID, Map<UUID, List<NotesData>>> threads = getThreads(new Queries.SearchByEntryGuid()
-                                .setEntryGuid(firstEntryAtIndexZero.get(0).getExternalGuid().toString())
-                                .setSearchField(ESIndexNotesFields.ENTRY).setSearchField(ESIndexNotesFields.EXTERNAL)
+                        Map<UUID, Map<UUID, List<NotesData>>> threads = getEntries(new Queries.SearchByEntryGuid()
+                                .setSearchField(ESIndexNotesFields.EXTERNAL)
+                                .setSearchBy(firstEntryAtIndexZero.get(0).getExternalGuid().toString())
                                 .setCreatedDateTime(firstEntryAtIndexZero.get(0).getCreated().getTime()));
                         if (threads != null && !threads.isEmpty()) {
                             buildThreads(firstEntryAtIndexZero.get(0), threads, new HashSet<>(), query);
@@ -48,9 +48,6 @@ public class SearchNotesV2 extends AbstractSearchNotes {
                     }
                 }
             }
-        }
-        if(query instanceof Queries.SearchArchived) {
-            results = filterArchived(results);
         }
         if(results.isEmpty()) {
             System.out.println("No entries found for given request");
@@ -63,7 +60,7 @@ public class SearchNotesV2 extends AbstractSearchNotes {
      * @param query
      * @return
      */
-    private Map<UUID,Map<UUID,List<NotesData>>> getThreads(IQuery query) {
+    private Map<UUID,Map<UUID,List<NotesData>>> getEntries(IQuery query) {
         Iterator<SearchHit<NotesData>> threads = null;
         SearchHits<NotesData> searchHits = execSearchQuery(query);
         if(searchHits != null)
@@ -110,7 +107,8 @@ public class SearchNotesV2 extends AbstractSearchNotes {
                 // entryThreadUuid set is to make sure to avoid history entries here as search Entry id will have history entries as well
                 if (!entryThreadUuid.contains(threads.get(i).getEntryGuid())) {
                     if ((!query.getArchived() && threads.get(i).getArchived() != null) ||
-                            (query instanceof Queries.SearchArchived && threads.get(i).getArchived() == null)) {
+                            (query instanceof Queries.SearchArchivedByEntryGuid && threads.get(i).getArchived() == null)) {
+                        // Either discard archived entries OR Select only archived entries
                         break;
                     }
                     threadEntry.addThreads(threads.get(i));

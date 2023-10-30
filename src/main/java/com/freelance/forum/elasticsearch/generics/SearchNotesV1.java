@@ -44,9 +44,6 @@ public class SearchNotesV1 extends AbstractSearchNotes {
                     }
                 }
             }
-        if(query instanceof Queries.SearchArchived) {
-            results = filterArchived(results);
-        }
         if(results.isEmpty()) {
             System.out.println("No entries found");
         }
@@ -71,14 +68,15 @@ public class SearchNotesV1 extends AbstractSearchNotes {
     private NotesData searchThreadsAndHistories(IQuery query, NotesData threadRoot, Set<String> entryThreadUuid) {
         checkAndAddHistory(threadRoot,query.getUpdateHistory());
         Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(new Queries.SearchByEntryGuid()
-                .setEntryGuid(threadRoot.getThreadGuid().toString())
+                .setSearchBy(threadRoot.getThreadGuid().toString())
                 .setSearchField(ESIndexNotesFields.PARENT_THREAD));
         while(searchResponseIterator.hasNext()) {
             NotesData thread = searchResponseIterator.next().getContent();
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
             if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) {
-                if ((!query.getArchived() && thread.getArchived() != null) ||
-                        (query instanceof Queries.SearchArchived && thread.getArchived() == null)) {
+                if ((!query.getArchived() && thread.getArchived() != null) || 
+                        (query instanceof Queries.SearchArchivedByEntryGuid && thread.getArchived() == null)) {
+                    // Either discard archived entries OR Select only archived entries
                     break;
                 }
                 threadRoot.addThreads(thread);
@@ -92,7 +90,7 @@ public class SearchNotesV1 extends AbstractSearchNotes {
     private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory) {
         if(getUpdateHistory && entry != null) {
             Iterator<SearchHit<NotesData>> historyIterator = getSearchResponse(new Queries.SearchByEntryGuid()
-                    .setEntryGuid(entry.getEntryGuid().toString())
+                    .setSearchBy(entry.getEntryGuid().toString())
                     .setSearchField(ESIndexNotesFields.ENTRY));
             if(historyIterator.hasNext()) {
                 historyIterator.next();
