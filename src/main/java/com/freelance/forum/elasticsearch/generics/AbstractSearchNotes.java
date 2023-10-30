@@ -103,4 +103,16 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
             existingEntry.setArchived(updatedEntry.getArchived());
         }
     }
+
+    /**
+     * Either discard archived entries OR Select only archived entries
+     * @param query
+     * @param entry
+     * @return true when not to select archived entry. And true for only archived request
+     */
+    protected boolean filterArchived(IQuery query, NotesData entry) {
+        return ((!query.getArchived() && entry.getArchived() != null) ||
+                ((query instanceof SearchArchivedByEntryGuid ||
+                        query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null));
+    }
 }

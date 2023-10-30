@@ -83,8 +83,7 @@ public class SearchNotesV1 extends AbstractSearchNotes {
             NotesData thread = searchResponseIterator.next().getContent();
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
             if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) {
-                if ((!query.getArchived() && thread.getArchived() != null) || 
-                        (query instanceof SearchArchivedByEntryGuid && thread.getArchived() == null)) {
+                if (filterArchived(query,thread)) {
                     // Either discard archived entries OR Select only archived entries
                     break;
                 }

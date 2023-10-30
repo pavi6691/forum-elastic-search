@@ -30,9 +30,7 @@ public class SearchNotesV3 extends AbstractSearchNotes {
         if(esResults != null) {
             while (esResults.hasNext()) {
                 NotesData notesData = esResults.next().getContent();
-                if ((!query.getArchived() && notesData.getArchived() != null) || 
-                        ((query instanceof SearchArchivedByEntryGuid ||
-                                query instanceof SearchArchivedByExternalGuid) && notesData.getArchived() == null)) {
+                if (filterArchived(query,notesData)) {
                     // Either discard archived entries OR Select only archived entries
                     continue;
                 }

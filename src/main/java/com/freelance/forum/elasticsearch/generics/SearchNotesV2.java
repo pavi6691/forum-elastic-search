@@ -33,9 +33,7 @@ public class SearchNotesV2 extends AbstractSearchNotes {
                 }
                 if (!onlyThreads.contains(notesData.getThreadGuid()) &&
                         !onlyThreads.contains(notesData.getThreadGuidParent())) {
-                    if ((!query.getArchived() && notesData.getArchived() != null) ||
-                            (query instanceof SearchArchivedByEntryGuid && notesData.getArchived() == null)) {
-                        // Either discard archived entries OR Select only archived entries
+                    if (filterArchived(query,notesData)) {
                         continue;
                     }
                     if(results.isEmpty() || !(query instanceof SearchByEntryGuid)) {
@@ -74,8 +72,7 @@ public class SearchNotesV2 extends AbstractSearchNotes {
             for(int i = 0; i < threads.size(); i++) {
                 // entryThreadUuid set is to make sure to avoid history entries here as search Entry id will have history entries as well
                 if (!entryThreadUuid.contains(threads.get(i).getEntryGuid())) {
-                    if ((!query.getArchived() && threads.get(i).getArchived() != null) ||
-                            (query instanceof SearchArchivedByEntryGuid && threads.get(i).getArchived() == null)) {
+                    if (filterArchived(query,threads.get(i))) {
                         // Either discard archived entries OR Select only archived entries
                         break;
                     }
