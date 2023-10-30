@@ -1,8 +1,7 @@
 package com.freelance.forum.elasticsearch.generics;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
-import com.freelance.forum.elasticsearch.queries.IQuery;
-import com.freelance.forum.elasticsearch.queries.Queries;
+import com.freelance.forum.elasticsearch.queries.*;
+import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
@@ -14,6 +13,17 @@ import java.util.*;
 @Service("searchNotesV1")
 public class SearchNotesV1 extends AbstractSearchNotes {
 
+
+    /**
+     * we have custom search here, so this doesn't need an implementation
+     * @param query
+     * @param esResults
+     * @return
+     */
+    @Override
+    List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
+        return null;
+    }
 
     /**
      * Strategy is to search for root entry first(for externalGuid/entryGuid), then build threads and history by incremental calls to 
@@ -32,7 +42,7 @@ public class SearchNotesV1 extends AbstractSearchNotes {
             if (searchResponseIterator != null) {
                 while (searchResponseIterator.hasNext()) {
                     NotesData entry = searchResponseIterator.next().getContent();
-                    if (query instanceof Queries.SearchByContent) {
+                    if (query instanceof SearchByContent) {
                         results.add(entry);
                         continue;
                     }
@@ -67,15 +77,14 @@ public class SearchNotesV1 extends AbstractSearchNotes {
      */
     private NotesData searchThreadsAndHistories(IQuery query, NotesData threadRoot, Set<String> entryThreadUuid) {
         checkAndAddHistory(threadRoot,query.getUpdateHistory());
-        Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(new Queries.SearchByEntryGuid()
-                .setSearchBy(threadRoot.getThreadGuid().toString())
-                .setSearchField(ESIndexNotesFields.PARENT_THREAD));
+        Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(new SearchByParentThreadGuid()
+                .setSearchBy(threadRoot.getThreadGuid().toString()));
         while(searchResponseIterator.hasNext()) {
             NotesData thread = searchResponseIterator.next().getContent();
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
             if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) {
                 if ((!query.getArchived() && thread.getArchived() != null) || 
-                        (query instanceof Queries.SearchArchivedByEntryGuid && thread.getArchived() == null)) {
+                        (query instanceof SearchArchivedByEntryGuid && thread.getArchived() == null)) {
                     // Either discard archived entries OR Select only archived entries
                     break;
                 }
@@ -89,9 +98,8 @@ public class SearchNotesV1 extends AbstractSearchNotes {
 
     private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory) {
         if(getUpdateHistory && entry != null) {
-            Iterator<SearchHit<NotesData>> historyIterator = getSearchResponse(new Queries.SearchByEntryGuid()
-                    .setSearchBy(entry.getEntryGuid().toString())
-                    .setSearchField(ESIndexNotesFields.ENTRY));
+            Iterator<SearchHit<NotesData>> historyIterator = getSearchResponse(new SearchByEntryGuid()
+                    .setSearchBy(entry.getEntryGuid().toString()));
             if(historyIterator.hasNext()) {
                 historyIterator.next();
             }

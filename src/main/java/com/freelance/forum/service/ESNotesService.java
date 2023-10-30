@@ -3,30 +3,23 @@ package com.freelance.forum.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freelance.forum.elasticsearch.configuration.Constants;
 import com.freelance.forum.elasticsearch.configuration.EsConfig;
-import com.freelance.forum.elasticsearch.configuration.IndexMetadataConfiguration;
 import com.freelance.forum.elasticsearch.configuration.ResourceFileReaderService;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
-import com.freelance.forum.elasticsearch.queries.IQuery;
-import com.freelance.forum.elasticsearch.queries.Queries;
+import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import com.freelance.forum.elasticsearch.generics.ISearchNotes;
+import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
+import com.freelance.forum.elasticsearch.queries.SearchByThreadGuid;
 import com.freelance.forum.util.ESUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.client.indices.GetIndexRequest;
-import org.elasticsearch.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
-import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -67,9 +60,8 @@ public class ESNotesService implements INotesService {
         notesData.setCreated(ESUtil.getCurrentDate());
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
-            List<NotesData> existingEntry = iSearchNotes.search(new Queries.SearchByEntryGuid()
+            List<NotesData> existingEntry = iSearchNotes.search(new SearchByThreadGuid()
                     .setSearchBy(notesData.getThreadGuidParent().toString())
-                    .setSearchField(ESIndexNotesFields.THREAD)
                     .setGetUpdateHistory(false).setGetArchived(false));
             if(existingEntry == null && !existingEntry.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
@@ -110,9 +102,8 @@ public class ESNotesService implements INotesService {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
         } else if (notesData.getEntryGuid() != null) {
-            List<NotesData> searchResult = iSearchNotes.search(new Queries.SearchByEntryGuid()
+            List<NotesData> searchResult = iSearchNotes.search(new SearchByEntryGuid()
                     .setSearchBy(notesData.getEntryGuid().toString())
-                    .setSearchField(ESIndexNotesFields.ENTRY)
                     .setGetUpdateHistory(false).setGetArchived(false));
             if(searchResult == null || searchResult.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");

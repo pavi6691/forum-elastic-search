@@ -1,7 +1,7 @@
 package com.freelance.forum.service;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.IQuery;
+import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 
 import java.util.List;
 import java.util.UUID;

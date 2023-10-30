@@ -1,83 +1,51 @@
 package com.freelance.forum.elasticsearch.generics;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
-import com.freelance.forum.elasticsearch.queries.IQuery;
-import com.freelance.forum.elasticsearch.queries.Queries;
+import com.freelance.forum.elasticsearch.queries.generics.IQuery;
+import com.freelance.forum.elasticsearch.queries.SearchArchivedByEntryGuid;
+import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
+
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 /**
- * Search and build response for thread of entries along with update histories. Version 2
+ * Search and build response for thread of entries along with update histories.
  */
 @Service("searchNotesV2")
 public class SearchNotesV2 extends AbstractSearchNotes {
 
-    /**
-     * Strategy is to search for root entry first(for externalGuid/entryGuid), then call for all subsequent entries created after for given guid.
-     * seconds call responses are store in temporary map and then processed to build threads and histories. This strategy only requires two calls
-     * elastic search for every search request made.
-     * @param query - query containing search details
-     * @return entries with all threads and histories
-     * - can return only archived
-     * - can return only history
-     * - can return both archived and histories
-     */
     @Override
-    public List<NotesData> search(IQuery query) {
+    List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
         List<NotesData> results = new ArrayList<>();
-        Map<UUID, Map<UUID,List<NotesData>>> rootEntriesMap = getRootEntries(query);
-        for (Map<UUID,List<NotesData>> entries : rootEntriesMap.values()) {
-            for (List<NotesData> firstEntryAtIndexZero : entries.values()) {
-                if (!firstEntryAtIndexZero.isEmpty() && (query.getArchived() || firstEntryAtIndexZero.get(0).getArchived() == null)) {
-                    if(!(query instanceof Queries.SearchByContent)) {
-                        // Since query is by external id, we only need results after first of entry these entries,
-                        Map<UUID, Map<UUID, List<NotesData>>> threads = getEntries(new Queries.SearchByEntryGuid()
-                                .setSearchField(ESIndexNotesFields.EXTERNAL)
-                                .setSearchBy(firstEntryAtIndexZero.get(0).getExternalGuid().toString())
-                                .setCreatedDateTime(firstEntryAtIndexZero.get(0).getCreated().getTime()));
-                        if (threads != null && !threads.isEmpty()) {
-                            buildThreads(firstEntryAtIndexZero.get(0), threads, new HashSet<>(), query);
-                        }
-                        results.add(firstEntryAtIndexZero.get(0));
-                    } else {
-                        results.addAll(firstEntryAtIndexZero);
+        Map<UUID,Map<UUID,List<NotesData>>> processMap = new HashMap<>();
+        Set<UUID> onlyThreads = new HashSet<>();
+        if(esResults != null) {
+            while (esResults.hasNext()) {
+                NotesData notesData = esResults.next().getContent();
+                if (!processMap.containsKey(notesData.getThreadGuidParent())) {
+                    // null key is allowed and holds root element
+                    processMap.put(notesData.getThreadGuidParent(), new LinkedHashMap<>());
+                }
+                if(!processMap.get(notesData.getThreadGuidParent()).containsKey(notesData.getEntryGuid())) {
+                    processMap.get(notesData.getThreadGuidParent()).put(notesData.getEntryGuid(), new ArrayList<>());
+                }
+                if (!onlyThreads.contains(notesData.getThreadGuid()) &&
+                        !onlyThreads.contains(notesData.getThreadGuidParent())) {
+                    if ((!query.getArchived() && notesData.getArchived() != null) ||
+                            (query instanceof SearchArchivedByEntryGuid && notesData.getArchived() == null)) {
+                        // Either discard archived entries OR Select only archived entries
+                        continue;
+                    }
+                    if(results.isEmpty() || !(query instanceof SearchByEntryGuid)) {
+                        results.add(notesData);   
                     }
                 }
+                onlyThreads.add(notesData.getThreadGuid());
+                processMap.get(notesData.getThreadGuidParent()).get(notesData.getEntryGuid()).add(notesData);
             }
-        }
-        if(results.isEmpty()) {
-            System.out.println("No entries found for given request");
-        }
-        return results;
-    }
-
-    /**
-     * Prepare map of all entries in such a way that, entry(or multiple external entries) with threads and history can be built
-     * @param query
-     * @return
-     */
-    private Map<UUID,Map<UUID,List<NotesData>>> getEntries(IQuery query) {
-        Iterator<SearchHit<NotesData>> threads = null;
-        SearchHits<NotesData> searchHits = execSearchQuery(query);
-        if(searchHits != null)
-            threads = searchHits.stream().iterator();
-        Map<UUID,Map<UUID,List<NotesData>>> results = new HashMap<>();
-        if(threads != null) {
-            while (threads.hasNext()) {
-                NotesData notesData = threads.next().getContent();
-                if (!results.containsKey(notesData.getThreadGuidParent())) {
-                    // null key is allowed and holds root element
-                    results.put(notesData.getThreadGuidParent(), new LinkedHashMap<>());
-                }
-                if(!results.get(notesData.getThreadGuidParent()).containsKey(notesData.getEntryGuid())) {
-                    results.get(notesData.getThreadGuidParent()).put(notesData.getEntryGuid(), new ArrayList<>());
-                }
-                results.get(notesData.getThreadGuidParent()).get(notesData.getEntryGuid()).add(notesData);
-            }
+            results.stream().forEach(e -> buildThreads(e,processMap,new HashSet<>(),query));
         }
         return results;
     }
@@ -107,7 +75,7 @@ public class SearchNotesV2 extends AbstractSearchNotes {
                 // entryThreadUuid set is to make sure to avoid history entries here as search Entry id will have history entries as well
                 if (!entryThreadUuid.contains(threads.get(i).getEntryGuid())) {
                     if ((!query.getArchived() && threads.get(i).getArchived() != null) ||
-                            (query instanceof Queries.SearchArchivedByEntryGuid && threads.get(i).getArchived() == null)) {
+                            (query instanceof SearchArchivedByEntryGuid && threads.get(i).getArchived() == null)) {
                         // Either discard archived entries OR Select only archived entries
                         break;
                     }

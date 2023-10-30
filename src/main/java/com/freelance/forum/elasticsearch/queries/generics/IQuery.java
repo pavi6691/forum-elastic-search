@@ -1,4 +1,4 @@
-package com.freelance.forum.elasticsearch.queries;
+package com.freelance.forum.elasticsearch.queries.generics;
 
 public interface IQuery {
     String buildQuery();

@@ -1,20 +1,23 @@
 package com.freelance.forum.elasticsearch.generics;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.ESIndexNotesFields;
-import com.freelance.forum.elasticsearch.queries.IQuery;
+import com.freelance.forum.elasticsearch.queries.*;
+import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.IQuery;
+import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * abstraction for executing search query.
@@ -25,6 +28,53 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
     private int max_number_of_history_and_threads;
     @Autowired
     ElasticsearchOperations elasticsearchOperations;
+
+
+    abstract List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults);
+    /**
+     * 1. Search for external entries and content straight away get all results. But It's not possible to search all entries by entryGuid. So
+     *     - Search for main(root) entry first(for externalGuid/entryGuid), 
+     *     - then call for all subsequent entries by externalGuid created after this main entry. 
+     *     - this allows to search all entries by entryGuid in single request.
+     *     - there will be other entries, but only consider entry requested. handled in process method
+     * 2. Process response and build threads and histories
+     *
+     * @param mainQuery - query containing search details
+     * @return After processing, entries with all threads and histories
+     * - return multiple individual entries with same external ID OR entries with different entryGuid
+     * - return only archived
+     * - return only history
+     * - return both archived and histories
+     */
+    @Override
+    public List<NotesData> search(IQuery mainQuery) {
+        SearchHits<NotesData> searchHits = null;
+        if(mainQuery instanceof SearchByContent || mainQuery instanceof SearchByExternalGuid) {
+            searchHits = execSearchQuery(mainQuery);
+        } else {
+            searchHits = execSearchQuery(mainQuery);
+            if (searchHits != null) {
+                Iterator<SearchHit<NotesData>> rootEntries = searchHits.stream().iterator();
+                if (rootEntries != null && rootEntries.hasNext()) {
+                    NotesData rootEntry = rootEntries.next().getContent();
+                    if (mainQuery.getArchived() || rootEntry.getArchived() == null) {
+                        // Need results after first of entry these entries,
+                        IQuery entryQuery = new SearchByExternalGuid()
+                                .setGetArchived(mainQuery.getArchived())
+                                .setGetUpdateHistory(mainQuery.getUpdateHistory())
+                                .setSearchBy(rootEntry.getExternalGuid().toString())
+                                .setCreatedDateTime(rootEntry.getCreated().getTime());
+                        searchHits = execSearchQuery(entryQuery);
+                    }
+                }
+            }
+        }
+        if(searchHits != null) {
+            return process(mainQuery,searchHits.stream().iterator());
+        } else {
+            throw new RestStatusException(HttpStatus.SC_NO_CONTENT,"No entries found from elastic search for given search criteria");
+        }
+    }
 
     /**
      * executes IQuery
@@ -38,35 +88,6 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
                 .build();
         searchQuery.setMaxResults(max_number_of_history_and_threads);
         return elasticsearchOperations.search(searchQuery, NotesData.class);
-    }
-
-    /**
-     * return very first entries for given search criteria. search criteria includes query by externalGuid/entryGuid.
-     * externalGuid can have more than one entry. entryGuid can have only entry
-     * @param query
-     * @return processed list of entries with threads and histories
-     */
-    @Override
-    public Map<UUID, Map<UUID,List<NotesData>>> getRootEntries(IQuery query) {
-        List<NotesData> results = new ArrayList<>();
-        Iterator<SearchHit<NotesData>> rootEntries = null;
-        SearchHits<NotesData> searchHits = execSearchQuery(query);
-        if(searchHits != null)
-            rootEntries = searchHits.stream().iterator();
-        Map<UUID, Map<UUID,List<NotesData>>> rootEntriesMap = new HashMap<>();
-        if(rootEntries != null) {
-            while (rootEntries.hasNext()) {
-                NotesData rootNotesData = rootEntries.next().getContent();
-                if (!rootEntriesMap.containsKey(rootNotesData.getExternalGuid())) {
-                    rootEntriesMap.put(rootNotesData.getExternalGuid(), new LinkedHashMap<>());
-                }
-                if(!rootEntriesMap.get(rootNotesData.getExternalGuid()).containsKey(rootNotesData.getEntryGuid())) {
-                    rootEntriesMap.get(rootNotesData.getExternalGuid()).put(rootNotesData.getEntryGuid(), new ArrayList<>());
-                }
-                rootEntriesMap.get(rootNotesData.getExternalGuid()).get(rootNotesData.getEntryGuid()).add(rootNotesData);
-            }
-        }
-        return rootEntriesMap;
     }
 
     protected void addHistory(NotesData existingEntry,NotesData updatedEntry, IQuery query) {
