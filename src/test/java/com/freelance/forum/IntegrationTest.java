@@ -6,6 +6,7 @@ import com.freelance.forum.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.SearchArchivedByExternalGuid;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.SearchByExternalGuid;
+import com.freelance.forum.elasticsearch.queries.generics.enums.Entries;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,7 +24,7 @@ import java.util.UUID;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IntegrationTest extends BaseTest {
 
-    // TODO	
+// TODO	
 //		@Value("${index.name}")
 //		private String indexName;
 //		private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
@@ -189,7 +190,7 @@ public class IntegrationTest extends BaseTest {
         validateAll(searchResult,2, 11, 7, 2);
 
         // delete
-        notesService.delete(query,"all");
+        notesService.delete(query, Entries.ALL);
         searchResult = notesService.search(query);
     }
 }

@@ -1,18 +1,16 @@
 package com.freelance.forum.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.freelance.forum.elasticsearch.metadata.Constants;
 import com.freelance.forum.elasticsearch.configuration.EsConfig;
 import com.freelance.forum.elasticsearch.metadata.ResourceFileReaderService;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.enums.Entries;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import com.freelance.forum.elasticsearch.generics.ISearchNotes;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.SearchByThreadGuid;
 import com.freelance.forum.util.ESUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -151,19 +149,18 @@ public class ESNotesService implements INotesService {
     /**
      * Deletes entries by either externalGuid/entryGuid
      * @param query - search entries for given externalGuid/entryGuid
-     * @param deleteEntries - "all" to delete all entries, "archived" to delete only archived entries
+     * @param entries - {@link Entries#ALL} to delete all entries, {@link Entries#ARCHIVED} to delete only archived entries
      * @return deleted entries
      */
     @Override
-    public List<NotesData> delete(IQuery query, String deleteEntries) {
+    public List<NotesData> delete(IQuery query, Entries entries) {
         List<NotesData> result = iSearchNotes.search(query);
         List<NotesData> results = new ArrayList<>();
         if(result != null && !result.isEmpty()) {
             Set<NotesData> entriesToDelete = new HashSet<>();
             result.stream().forEach(e -> ESUtil.flatten(e, entriesToDelete));
             entriesToDelete.forEach(e -> {
-                if (StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ALL, deleteEntries) ||
-                        (StringUtils.equalsAnyIgnoreCase(Constants.DELETE_ONLY_ARCHIVED, deleteEntries) && e.getArchived() != null)) {
+                if (Entries.ALL == entries || ((Entries.ARCHIVED == entries) && e.getArchived() != null)) {
                     esNotesRepository.deleteById(e.getGuid());
                     ESUtil.clearHistoryAndThreads(e);
                     results.add(e);

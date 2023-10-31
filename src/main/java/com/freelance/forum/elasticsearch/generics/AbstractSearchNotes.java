@@ -2,7 +2,7 @@ package com.freelance.forum.elasticsearch.generics;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.*;
-import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -83,7 +83,7 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
     protected SearchHits<NotesData> execSearchQuery(IQuery query) {
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
-                .withSort(Sort.by(Sort.Order.asc(ESIndexNotesFields.CREATED.getEsFieldName())))
+                .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())))
                 .build();
         searchQuery.setMaxResults(max_number_of_history_and_threads);
         return elasticsearchOperations.search(searchQuery, NotesData.class);

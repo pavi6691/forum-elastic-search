@@ -1,6 +1,6 @@
 package com.freelance.forum.elasticsearch.queries;
 
-import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 
 /**
@@ -9,7 +9,7 @@ import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 public class SearchByContent implements IQuery {
     private static String QUERY = "{\n" +
             "    \"wildcard\": {\n" +
-            "      \""+ ESIndexNotesFields.CONTENT.getEsFieldName()+"\": {\n" +
+            "      \""+ EsNotesFields.CONTENT.getEsFieldName()+"\": {\n" +
             "        \"value\": \"*%s*\",\n" +
             "        \"boost\": 1.0,\n" +
             "        \"rewrite\": \"constant_score\"\n" +

@@ -1,6 +1,6 @@
 package com.freelance.forum.elasticsearch.queries;
 
-import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 
 import java.util.Iterator;
@@ -16,7 +16,7 @@ public class SearchArchivedByExternalGuid implements IQuery {
             "    \"must\": [\n" +
             "      {\n" +
             "        \"match_phrase\": {\n" +
-            "          \""+ ESIndexNotesFields.EXTERNAL.getEsFieldName()+"\": \"%s\"\n" +
+            "          \""+ EsNotesFields.EXTERNAL.getEsFieldName()+"\": \"%s\"\n" +
             "        }\n" +
             "      }\n" +
             "    ],\n" +

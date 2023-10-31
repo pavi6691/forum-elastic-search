@@ -1,5 +1,7 @@
 package com.freelance.forum.elasticsearch.queries.generics;
 
+import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
+
 import java.util.Iterator;
 
 /**
@@ -18,7 +20,7 @@ public abstract class AbstractQuery implements IQuery {
             "      },\n" +
             "      {\n" +
             "        \"range\": {\n" +
-            "          \""+ESIndexNotesFields.CREATED.getEsFieldName()+"\": {\n" +
+            "          \""+ EsNotesFields.CREATED.getEsFieldName()+"\": {\n" +
             "            \"gte\": \"%s\"\n" +
             "          }\n" +
             "        }\n" +
@@ -26,7 +28,7 @@ public abstract class AbstractQuery implements IQuery {
             "    ]\n" +
             "  }\n" +
             "}";
-    protected ESIndexNotesFields searchField = ESIndexNotesFields.ENTRY;
+    protected EsNotesFields searchField = EsNotesFields.ENTRY;
     protected String guid;
     protected long createdDateTime;
     protected boolean getUpdateHistory;

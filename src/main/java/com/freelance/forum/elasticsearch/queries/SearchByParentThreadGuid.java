@@ -1,14 +1,14 @@
 package com.freelance.forum.elasticsearch.queries;
 
 import com.freelance.forum.elasticsearch.queries.generics.AbstractQuery;
-import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
 
 /**
- * Search query to fetch root entries by ESIndexNotesFields.PARENT_THREAD guid
+ * Search query to fetch root entries by EsNotesFields.PARENT_THREAD guid
  */
 public class SearchByParentThreadGuid extends AbstractQuery {
     @Override
     public String buildQuery() {
-        return String.format(QUERY, ESIndexNotesFields.PARENT_THREAD.getEsFieldName(),guid,createdDateTime);
+        return String.format(QUERY, EsNotesFields.PARENT_THREAD.getEsFieldName(),guid,createdDateTime);
     }
 }

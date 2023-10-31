@@ -1,7 +1,7 @@
 package com.freelance.forum.elasticsearch.queries;
 
 import com.freelance.forum.elasticsearch.queries.generics.AbstractQuery;
-import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
 
 /**
  * Search query to fetch entries by external guid
@@ -9,6 +9,6 @@ import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
 public class SearchByExternalGuid extends AbstractQuery {
     @Override
     public String buildQuery() {
-        return String.format(QUERY, ESIndexNotesFields.EXTERNAL.getEsFieldName(),guid,createdDateTime);
+        return String.format(QUERY, EsNotesFields.EXTERNAL.getEsFieldName(),guid,createdDateTime);
     }
 }

@@ -3,6 +3,7 @@ package com.freelance.forum;
 import com.freelance.forum.base.BaseTest;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.SearchByExternalGuid;
+import com.freelance.forum.elasticsearch.queries.generics.enums.Entries;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -45,7 +46,7 @@ public class PSRTest extends BaseTest {
     void deleteEntries() {
         IQuery query = new SearchByExternalGuid().setSearchBy(EXTERNAL_GUID)
                 .setGetUpdateHistory(true).setGetArchived(true);
-        List<NotesData> searchResult = notesService.delete(query,"all");
+        List<NotesData> searchResult = notesService.delete(query, Entries.ARCHIVED);
         validateAll(searchResult,0,0,0,0);
     }
 }

@@ -1,7 +1,7 @@
 package com.freelance.forum.service;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
+import com.freelance.forum.elasticsearch.queries.generics.enums.Entries;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 
 import java.util.List;
@@ -12,7 +12,7 @@ public interface INotesService {
     NotesData searchByGuid(UUID guid);
     NotesData update(NotesData notesData);
     List<NotesData> archive(IQuery iQuery);
-    List<NotesData> delete(IQuery iQuery, String deleteEntries);
+    List<NotesData> delete(IQuery iQuery, Entries entries);
     String createIndex(String indexName);
     NotesData delete(String keyGuid);
     List<NotesData> search(IQuery query);

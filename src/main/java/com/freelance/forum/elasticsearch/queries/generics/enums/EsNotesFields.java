@@ -1,6 +1,6 @@
-package com.freelance.forum.elasticsearch.queries.generics;
+package com.freelance.forum.elasticsearch.queries.generics.enums;
 
-public enum ESIndexNotesFields {
+public enum EsNotesFields {
     GUID("guid"),
     EXTERNAL("externalGuid"),
     ENTRY("entryGuid"),
@@ -11,7 +11,7 @@ public enum ESIndexNotesFields {
     CONTENT("content");
 
     private String indexFieldName ="";
-    ESIndexNotesFields(String indexFieldName) {
+    EsNotesFields(String indexFieldName) {
         this.indexFieldName = indexFieldName;
     }
 
