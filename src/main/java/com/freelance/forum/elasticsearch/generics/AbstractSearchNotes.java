@@ -32,36 +32,32 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
 
     abstract List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults);
     /**
-     * 1. Search for external entries and content straight away get all results. But It's not possible to search all entries by entryGuid. So
+     * 1. Gets all entries along with threads and histories for externalGuid and content field
+     * 2. It's not possible to search threads and histories by entryGuid. So
      *     - Search for main(root) entry first(for externalGuid/entryGuid), 
-     *     - then call for all subsequent entries by externalGuid created after this main entry. 
-     *     - this allows to search all entries by entryGuid in single request.
-     *     - there will be other entries, but only consider entry requested. handled in process method
-     * 2. Process response and build threads and histories
+     *     - then call for all subsequent entries by externalGuid and entries created after main entry that's requested.
+     *     - there will be some other entries created after and updated later, handled in process method
+     * 3. Process response and build threads and histories
      *
-     * @param mainQuery - query containing search details
-     * @return After processing, entries with all threads and histories
-     * - return multiple individual entries with same external ID OR entries with different entryGuid
-     * - return only archived
-     * - return only history
-     * - return both archived and histories
+     * @param query - query containing search details
+     * @return list of entries with threads and histories
+     * - filter only archived
+     * - filter only history
+     * - filter both archived and histories
      */
     @Override
-    public List<NotesData> search(IQuery mainQuery) {
-        SearchHits<NotesData> searchHits = null;
-        if(mainQuery instanceof SearchByContent || mainQuery instanceof SearchByExternalGuid) {
-            searchHits = execSearchQuery(mainQuery);
-        } else {
-            searchHits = execSearchQuery(mainQuery);
+    public List<NotesData> search(IQuery query) {
+        SearchHits<NotesData> searchHits = execSearchQuery(query);;
+        if(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
+            // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
             if (searchHits != null) {
                 Iterator<SearchHit<NotesData>> rootEntries = searchHits.stream().iterator();
                 if (rootEntries != null && rootEntries.hasNext()) {
                     NotesData rootEntry = rootEntries.next().getContent();
-                    if (mainQuery.getArchived() || rootEntry.getArchived() == null) {
-                        // Need results after first of entry these entries,
+                    if (query.getArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
                         IQuery entryQuery = new SearchByExternalGuid()
-                                .setGetArchived(mainQuery.getArchived())
-                                .setGetUpdateHistory(mainQuery.getUpdateHistory())
+                                .setGetArchived(query.getArchived())
+                                .setGetUpdateHistory(query.getUpdateHistory())
                                 .setSearchBy(rootEntry.getExternalGuid().toString())
                                 .setCreatedDateTime(rootEntry.getCreated().getTime());
                         searchHits = execSearchQuery(entryQuery);
@@ -70,7 +66,10 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
             }
         }
         if(searchHits != null) {
-            return process(mainQuery,searchHits.stream().iterator());
+            if(searchHits.getTotalHits() == 1) { // No need to process as its just one entry
+                return List.of(searchHits.stream().iterator().next().getContent());
+            }
+            return process(query,searchHits.stream().iterator());
         } else {
             throw new RestStatusException(HttpStatus.SC_NO_CONTENT,"No entries found from elastic search for given search criteria");
         }
@@ -112,7 +111,6 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
      */
     protected boolean filterArchived(IQuery query, NotesData entry) {
         return ((!query.getArchived() && entry.getArchived() != null) ||
-                ((query instanceof SearchArchivedByEntryGuid ||
-                        query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null));
+                ((query instanceof SearchArchivedByEntryGuid || query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null));
     }
 }

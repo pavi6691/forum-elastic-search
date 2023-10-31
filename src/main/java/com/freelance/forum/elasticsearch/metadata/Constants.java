@@ -1,4 +1,4 @@
-package com.freelance.forum.elasticsearch.configuration;
+package com.freelance.forum.elasticsearch.metadata;
 
 public class Constants {
 

@@ -1,4 +1,4 @@
-package com.freelance.forum.elasticsearch.configuration;
+package com.freelance.forum.elasticsearch.metadata;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -1,11 +1,12 @@
 package com.freelance.forum.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.freelance.forum.elasticsearch.configuration.Constants;
+import com.freelance.forum.elasticsearch.metadata.Constants;
 import com.freelance.forum.elasticsearch.configuration.EsConfig;
-import com.freelance.forum.elasticsearch.configuration.ResourceFileReaderService;
+import com.freelance.forum.elasticsearch.metadata.ResourceFileReaderService;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
+import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import com.freelance.forum.elasticsearch.generics.ISearchNotes;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
@@ -62,7 +63,7 @@ public class ESNotesService implements INotesService {
             // It's a thread that needs to created
             List<NotesData> existingEntry = iSearchNotes.search(new SearchByThreadGuid()
                     .setSearchBy(notesData.getThreadGuidParent().toString())
-                    .setGetUpdateHistory(false).setGetArchived(false));
+                    .setGetUpdateHistory(false).setGetArchived(true));
             if(existingEntry == null && !existingEntry.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
                         notesData.getThreadGuidParent()));
@@ -104,7 +105,7 @@ public class ESNotesService implements INotesService {
         } else if (notesData.getEntryGuid() != null) {
             List<NotesData> searchResult = iSearchNotes.search(new SearchByEntryGuid()
                     .setSearchBy(notesData.getEntryGuid().toString())
-                    .setGetUpdateHistory(false).setGetArchived(false));
+                    .setGetUpdateHistory(false).setGetArchived(true));
             if(searchResult == null || searchResult.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
             }
@@ -173,6 +174,19 @@ public class ESNotesService implements INotesService {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries found to delete");
         }
         return results;
+    }
+
+    @Override
+    public NotesData delete(String keyGuid) {
+        UUID guid = UUID.fromString(keyGuid);
+        NotesData notesData = esNotesRepository.findById(guid).orElse(null);
+        if(notesData != null) {
+            esNotesRepository.deleteById(guid);
+            if (!esNotesRepository.findById(guid).isPresent()) {
+                return notesData;
+            }
+        } 
+        throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"cannot delete. No entry found for given GUID");
     }
 
     /**

@@ -2,6 +2,7 @@ package com.freelance.forum.resource;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.*;
+import com.freelance.forum.elasticsearch.queries.generics.ESIndexNotesFields;
 import com.freelance.forum.service.INotesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -83,15 +84,20 @@ public class ESResource {
     }
 
     @DeleteMapping("/delete/external")
-    public ResponseEntity<List<NotesData>> deleteExternalGuid(@RequestParam String externalGuid, @RequestParam String entriesToDelete) {
+    public ResponseEntity<List<NotesData>> deleteByExternalGuid(@RequestParam String externalGuid, @RequestParam String entriesToDelete) {
         return new ResponseEntity(notesService.delete((new SearchByExternalGuid().setSearchBy(externalGuid)
                 .setGetUpdateHistory(true).setGetArchived(true)),entriesToDelete),HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/entry")
-    public ResponseEntity<List<NotesData>> deleteEntryGuidGuid(@RequestParam String entryGuid, @RequestParam String entriesToDelete) {
+    public ResponseEntity<List<NotesData>> deleteByEntryGuid(@RequestParam String entryGuid, @RequestParam String entriesToDelete) {
         return new ResponseEntity(notesService.delete(new SearchByEntryGuid().setSearchBy(entryGuid)
                 .setGetUpdateHistory(true).setGetArchived(true),entriesToDelete),HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/guid")
+    public ResponseEntity<List<NotesData>> deleteByGuid(@RequestParam String guid) {
+        return new ResponseEntity(notesService.delete(guid),HttpStatus.OK);
     }
 
     @PostMapping("/createIndex")

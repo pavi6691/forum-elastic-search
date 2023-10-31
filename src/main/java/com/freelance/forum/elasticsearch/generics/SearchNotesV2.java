@@ -2,7 +2,6 @@ package com.freelance.forum.elasticsearch.generics;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
-import com.freelance.forum.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import org.springframework.data.elasticsearch.core.SearchHit;
 

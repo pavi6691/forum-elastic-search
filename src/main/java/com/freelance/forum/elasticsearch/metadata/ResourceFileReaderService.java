@@ -1,4 +1,4 @@
-package com.freelance.forum.elasticsearch.configuration;
+package com.freelance.forum.elasticsearch.metadata;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
