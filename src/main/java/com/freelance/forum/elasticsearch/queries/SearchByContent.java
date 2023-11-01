@@ -1,12 +1,12 @@
 package com.freelance.forum.elasticsearch.queries;
 
+import com.freelance.forum.elasticsearch.queries.generics.AbstractQuery;
 import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
-import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 
 /**
  * Search for content
  */
-public class SearchByContent implements IQuery {
+public class SearchByContent extends AbstractQuery {
     private static String QUERY = "{\n" +
             "    \"wildcard\": {\n" +
             "      \""+ EsNotesFields.CONTENT.getEsFieldName()+"\": {\n" +

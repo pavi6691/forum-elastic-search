@@ -9,8 +9,6 @@ import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import com.freelance.forum.elasticsearch.generics.ISearchNotes;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.SearchByThreadGuid;
-import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
-import com.freelance.forum.exceptions.FieldValidationException;
 import com.freelance.forum.util.ESUtil;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -126,6 +124,7 @@ public class ESNotesService implements INotesService {
      * @param query - archive can be done by either externalGuid / entryGuid
      * @return archived entries
      */
+    // TODO when there are more than default number of records to archive? 1000 is max size
     @Override
     public List<NotesData> archive(IQuery query) {
         List<NotesData> result = iSearchNotes.search(query);
@@ -151,6 +150,7 @@ public class ESNotesService implements INotesService {
      * @param entries - {@link Entries#ALL} to delete all entries, {@link Entries#ARCHIVED} to delete only archived entries
      * @return deleted entries
      */
+    // TODO when there are more than default number of records to delete? 1000 is max size
     @Override
     public List<NotesData> delete(IQuery query, Entries entries) {
         List<NotesData> esResults = iSearchNotes.search(query);

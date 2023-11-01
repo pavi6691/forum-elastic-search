@@ -1,6 +1,8 @@
 package com.freelance.forum.elasticsearch.queries.generics;
 
 import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
 
@@ -33,15 +35,31 @@ public abstract class AbstractQuery implements IQuery {
     protected long createdDateTime;
     protected boolean getUpdateHistory;
     protected boolean getArchived;
+    protected Object searchAfter;
+    protected int size;
 
     public AbstractQuery setGetUpdateHistory(boolean getUpdateHistory) {
         this.getUpdateHistory = getUpdateHistory;
+        return this;
+    }
+    public AbstractQuery setSearchAfter(Object searchAfter) {
+        this.searchAfter = searchAfter;
         return this;
     }
 
     public AbstractQuery setGetArchived(boolean getArchived) {
         this.getArchived = getArchived;
         return this;
+    }
+
+    public AbstractQuery setSize(int size) {
+        this.size = size;
+        return this;
+    }
+
+    @Override
+    public int getSize() {
+        return size;
     }
 
     @Override
@@ -52,6 +70,11 @@ public abstract class AbstractQuery implements IQuery {
     @Override
     public boolean getArchived() {
         return getArchived;
+    }
+
+    @Override
+    public Object searchAfter() {
+        return searchAfter;
     }
 
     public AbstractQuery setSearchBy(String guid) {

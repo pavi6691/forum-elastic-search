@@ -16,6 +16,11 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,13 +29,16 @@ import java.util.List;
  */
 @Service
 public abstract class AbstractSearchNotes implements ISearchNotes {
-    @Value("${max.number.of.history.and.threads}")
-    private int max_number_of_history_and_threads;
+    @Value("${default.number.of.entries.to.return}")
+    private int default_size_configured;
     @Autowired
-    ElasticsearchOperations elasticsearchOperations;
+    private ElasticsearchOperations elasticsearchOperations;
 
+    private List<Object> sortValues = new ArrayList<>();
 
     abstract List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults);
+    
+    
     /**
      * 1. Gets all entries along with threads and histories for externalGuid and content field
      * 2. It's not possible to search threads and histories by entryGuid. So
@@ -81,11 +89,19 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
      * @return search result from elastics search response
      */
     protected SearchHits<NotesData> execSearchQuery(IQuery query) {
-        NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
-                .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())))
-                .build();
-        searchQuery.setMaxResults(max_number_of_history_and_threads);
+                .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
+        if(query.searchAfter() != null) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+            try {
+                searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(query.searchAfter().toString()).toInstant().toEpochMilli()));
+            } catch (ParseException e) {
+                throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"Incorrect date format on searchAfter param");
+            }
+        }
+        NativeSearchQuery searchQuery  = searchQueryBuilder.build();
+        searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
         return elasticsearchOperations.search(searchQuery, NotesData.class);
     }
 

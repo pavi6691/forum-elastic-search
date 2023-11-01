@@ -6,4 +6,6 @@ public interface IQuery {
     default boolean getArchived() {
         return true;
     }
+    Object searchAfter();
+    int getSize();
 }

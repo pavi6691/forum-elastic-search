@@ -1,5 +1,6 @@
 package com.freelance.forum.elasticsearch.queries;
 
+import com.freelance.forum.elasticsearch.queries.generics.AbstractQuery;
 import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 
@@ -10,7 +11,7 @@ import java.util.Iterator;
  * filter is done in {@link com.freelance.forum.elasticsearch.generics.AbstractSearchNotes#process(IQuery, Iterator)}
  * For any entryGuid(not archived), if their threads are archived, then return them too
  */
-public class SearchArchivedByExternalGuid implements IQuery {
+public class SearchArchivedByExternalGuid extends AbstractQuery {
     private static String QUERY = "{\n" +
             "  \"bool\": {\n" +
             "    \"must\": [\n" +
@@ -43,6 +44,11 @@ public class SearchArchivedByExternalGuid implements IQuery {
         return this;
     }
 
+    @Override
+    public boolean getArchived() {
+        return true;
+    }
+    
     @Override
     public String buildQuery() {
         return String.format(QUERY,externalGuid);
