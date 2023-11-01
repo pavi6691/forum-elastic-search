@@ -9,6 +9,8 @@ import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import com.freelance.forum.elasticsearch.generics.ISearchNotes;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.SearchByThreadGuid;
+import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
+import com.freelance.forum.exceptions.FieldValidationException;
 import com.freelance.forum.util.ESUtil;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;

@@ -1,5 +1,5 @@
 package com.freelance.forum.exceptions;
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,20 +13,29 @@ public class RestExceptionCA {
     
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RestStatusException.class)
-    public NoteRestException handleRestException(RestStatusException exception) {
-        return new NoteRestException(HttpStatus.resolve(exception.getStatus()).name(),exception.getMessage());
+    public BaseRestException handleRestException(RestStatusException exception) {
+        return new BaseRestException(HttpStatus.resolve(exception.getStatus()).name(),exception.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public NoteRestException handleArgTypeMisMatchException(MethodArgumentTypeMismatchException exception) {
-        return new NoteRestException(HttpStatus.BAD_REQUEST.name(),"Invalid request param value. fieldName = " + exception.getName());
+    public BaseRestException handleArgTypeMisMatchException(MethodArgumentTypeMismatchException exception) {
+        return new FieldValidationException(HttpStatus.BAD_REQUEST.name(), 
+                "Invalid request param value", 
+                exception.getName(),
+                exception.getValue().toString());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public NoteRestException handlePayloadFieldMisMatchException(HttpMessageNotReadableException exception) {
-        return new NoteRestException(HttpStatus.BAD_REQUEST.name(),"Invalid value in the payload. fieldName = " + 
-                StringUtils.substringBetween(exception.getMessage(), "[\"", "\"]"));
+    public BaseRestException handlePayloadFieldMisMatchException(HttpMessageNotReadableException exception) {
+        if(exception.getCause() instanceof InvalidFormatException) {
+            InvalidFormatException ex = (InvalidFormatException) exception.getCause();
+            return new FieldValidationException(HttpStatus.BAD_REQUEST.name(),
+                    "Invalid value in the payload", 
+                    ex.getPath().size() > 0 ?  ex.getPath().get(0).getFieldName() : "",
+                    ex.getValue().toString());
+        }
+        return null;
     }
 }
