@@ -1,19 +1,19 @@
-package com.freelance.forum.elasticsearch.exceptions;
+package com.freelance.forum.exceptions;
 
-public class NoFoundException {
+public class NoteRestException {
     
-    private int status;
+    private String status;
     private String msg;
-    public NoFoundException(int status, String msg) {
+    public NoteRestException(String status, String msg) {
         this.msg = msg;
         this.status = status;
     }
 
-    public int getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

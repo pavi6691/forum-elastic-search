@@ -1,7 +1,6 @@
 package com.freelance.forum.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.freelance.forum.elasticsearch.configuration.EsConfig;
 import com.freelance.forum.elasticsearch.metadata.ResourceFileReaderService;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
@@ -36,14 +35,12 @@ public class ESNotesService implements INotesService {
     private ResourceFileReaderService resourceFileReaderService;
     private ESNotesRepository esNotesRepository;
     private ElasticsearchOperations elasticsearchOperations;
-    private EsConfig esConfig;
 
     static Logger log = LogManager.getLogger(ESNotesService.class);
     
-    public ESNotesService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations, EsConfig esConfig) {
+    public ESNotesService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
         this.esNotesRepository = esNotesRepository;
         this.elasticsearchOperations = elasticsearchOperations;
-        this.esConfig = esConfig;
     }
 
     /**
@@ -154,23 +151,24 @@ public class ESNotesService implements INotesService {
      */
     @Override
     public List<NotesData> delete(IQuery query, Entries entries) {
-        List<NotesData> result = iSearchNotes.search(query);
-        List<NotesData> results = new ArrayList<>();
-        if(result != null && !result.isEmpty()) {
+        List<NotesData> esResults = iSearchNotes.search(query);
+        if(esResults != null && !esResults.isEmpty()) {
             Set<NotesData> entriesToDelete = new HashSet<>();
-            result.stream().forEach(e -> ESUtil.flatten(e, entriesToDelete));
-            entriesToDelete.forEach(e -> {
-                if (Entries.ALL == entries || ((Entries.ARCHIVED == entries) && e.getArchived() != null)) {
-                    esNotesRepository.deleteById(e.getGuid());
-                    ESUtil.clearHistoryAndThreads(e);
-                    results.add(e);
-                }
-            });
+            esResults.stream().forEach(e -> ESUtil.flatten(e, entriesToDelete));
+            try {
+                entriesToDelete.forEach(e -> {
+                    if (Entries.ALL == entries || ((Entries.ARCHIVED == entries) && e.getArchived() != null)) {
+                        esNotesRepository.deleteById(e.getGuid());
+                    }
+                });
+            } catch (Exception e) {
+                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while deleting entries. error=" + e.getMessage());
+            }
         }
-        if(result == null || results.isEmpty()) {
+        if(esResults == null) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries found to delete");
         }
-        return results;
+        return esResults;
     }
 
     @Override

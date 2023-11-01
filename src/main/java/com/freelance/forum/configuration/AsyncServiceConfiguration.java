@@ -1,4 +1,4 @@
-package com.freelance.forum.elasticsearch.configuration;
+package com.freelance.forum.configuration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

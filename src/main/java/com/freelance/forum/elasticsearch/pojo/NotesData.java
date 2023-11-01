@@ -21,6 +21,7 @@ public class NotesData {
     
     @Id
     @JsonDeserialize(using = UUIDDeserializer.class)
+    @Field(type = FieldType.Keyword, name = "guid")
     private UUID guid = UUID.randomUUID(); // Unique for the document and also the Elasticsearch key/id
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
