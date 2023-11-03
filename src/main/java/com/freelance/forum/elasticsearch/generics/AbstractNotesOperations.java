@@ -6,6 +6,7 @@ import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -13,13 +14,12 @@ import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.ByQueryResponse;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.List;
  * abstraction for executing search query.
  */
 @Service
-public abstract class AbstractSearchNotes implements ISearchNotes {
+public abstract class AbstractNotesOperations implements INotesOperations {
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
     @Autowired
@@ -55,7 +55,7 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
      */
     @Override
     public List<NotesData> search(IQuery query) {
-        SearchHits<NotesData> searchHits = execSearchQuery(query);;
+        SearchHits<NotesData> searchHits = execSearchQuery(query);
         if(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
             // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
             if (searchHits != null) {
@@ -64,6 +64,9 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
                     NotesData rootEntry = rootEntries.next().getContent();
                     if (query.getArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
                         IQuery entryQuery = new SearchByExternalGuid()
+                                .setSize(query.getSize())
+                                .setSortOrder(query.getSortOrder())
+                                .setSearchAfter(query.searchAfter())
                                 .setGetArchived(query.getArchived())
                                 .setGetUpdateHistory(query.getUpdateHistory())
                                 .setSearchBy(rootEntry.getExternalGuid().toString())
@@ -73,14 +76,13 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
                 }
             }
         }
-        if(searchHits != null) {
-            if(searchHits.getTotalHits() == 1) { // No need to process as its just one entry
+        if(searchHits != null && searchHits.getSearchHits().size() > 0) {
+            if(searchHits.getSearchHits().size() == 1) { // No need to process as its just one entry
                 return List.of(searchHits.stream().iterator().next().getContent());
             }
             return process(query,searchHits.stream().iterator());
-        } else {
-            throw new RestStatusException(HttpStatus.SC_NO_CONTENT,"No entries found from elastic search for given search criteria");
         }
+        return new ArrayList<>();
     }
 
     /**
@@ -92,7 +94,7 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
                 .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
-        if(query.searchAfter() != null) {
+        if(query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
             try {
                 searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(query.searchAfter().toString()).toInstant().toEpochMilli()));
@@ -108,14 +110,35 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
     protected void addHistory(NotesData existingEntry,NotesData updatedEntry, IQuery query) {
         if(!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.getUpdateHistory()) {
-                existingEntry.addHistory(new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
+                NotesData history = new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
                         existingEntry.getEntryGuid(), existingEntry.getThreadGuidParent(), existingEntry.getContent(), existingEntry.getCreated(),
-                        existingEntry.getArchived(), null, null));
+                        existingEntry.getArchived(), null, null);
+                if(query.getSortOrder() == SortOrder.ASC) {
+                    existingEntry.addHistory(history,existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
+                } else {
+                    existingEntry.addHistory(history,0);
+                }
             }
             existingEntry.setGuid(updatedEntry.getGuid());
             existingEntry.setContent(updatedEntry.getContent());
             existingEntry.setCreated(updatedEntry.getCreated());
             existingEntry.setArchived(updatedEntry.getArchived());
+        }
+    }
+
+    protected void addThreads(NotesData existingEntry,NotesData newEntry, IQuery query) {
+        if(query.getSortOrder() == SortOrder.ASC) {
+            existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);   
+        } else {
+            existingEntry.addThreads(newEntry,0);
+        }
+    }
+
+    protected void addEntries(List<NotesData> entries,NotesData newEntry, IQuery query) {
+        if(query.getSortOrder() == SortOrder.ASC) {
+            entries.add(newEntry);   
+        } else {
+            entries.add(0,newEntry);
         }
     }
 
@@ -125,8 +148,8 @@ public abstract class AbstractSearchNotes implements ISearchNotes {
      * @param entry
      * @return true when not to select archived entry. And true for only archived request
      */
-    protected boolean filterArchived(IQuery query, NotesData entry) {
+    protected boolean filterArchived(IQuery query, NotesData entry, List<NotesData> results) {
         return ((!query.getArchived() && entry.getArchived() != null) ||
-                ((query instanceof SearchArchivedByEntryGuid || query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null));
+                (query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null && !results.isEmpty());
     }
 }

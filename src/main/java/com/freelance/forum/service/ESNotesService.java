@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freelance.forum.elasticsearch.metadata.ResourceFileReaderService;
 import com.freelance.forum.elasticsearch.esrepo.ESNotesRepository;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
-import com.freelance.forum.elasticsearch.queries.generics.enums.Entries;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
-import com.freelance.forum.elasticsearch.generics.ISearchNotes;
+import com.freelance.forum.elasticsearch.generics.INotesOperations;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.SearchByThreadGuid;
 import com.freelance.forum.util.ESUtil;
@@ -28,9 +27,9 @@ import java.util.*;
  */
 @Service
 public class ESNotesService implements INotesService {
-    @Qualifier("searchNotesV3")
+    @Qualifier("notesProcessorV2")
     @Autowired
-    private ISearchNotes iSearchNotes;
+    private INotesOperations iNotesOperations;
     @Autowired
     private ResourceFileReaderService resourceFileReaderService;
     private ESNotesRepository esNotesRepository;
@@ -56,7 +55,7 @@ public class ESNotesService implements INotesService {
         notesData.setCreated(ESUtil.getCurrentDate());
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
-            List<NotesData> existingEntry = iSearchNotes.search(new SearchByThreadGuid()
+            List<NotesData> existingEntry = iNotesOperations.search(new SearchByThreadGuid()
                     .setSearchBy(notesData.getThreadGuidParent().toString())
                     .setGetUpdateHistory(false).setGetArchived(true));
             if(existingEntry == null && !existingEntry.isEmpty()) {
@@ -98,7 +97,7 @@ public class ESNotesService implements INotesService {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
         } else if (notesData.getEntryGuid() != null) {
-            List<NotesData> searchResult = iSearchNotes.search(new SearchByEntryGuid()
+            List<NotesData> searchResult = iNotesOperations.search(new SearchByEntryGuid()
                     .setSearchBy(notesData.getEntryGuid().toString())
                     .setGetUpdateHistory(false).setGetArchived(true));
             if(searchResult == null || searchResult.isEmpty()) {
@@ -127,7 +126,7 @@ public class ESNotesService implements INotesService {
     // TODO when there are more than default number of records to archive? 1000 is max size
     @Override
     public List<NotesData> archive(IQuery query) {
-        List<NotesData> result = iSearchNotes.search(query);
+        List<NotesData> result = iNotesOperations.search(query);
         Set<NotesData> entriesToArchive = new HashSet<>();
         if(result != null && !result.isEmpty())
             ESUtil.flatten(result.get(0),entriesToArchive);
@@ -135,34 +134,30 @@ public class ESNotesService implements INotesService {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entries found");
         }
         List<NotesData> response = new ArrayList<>();
+        Date dateTime = ESUtil.getCurrentDate();
         entriesToArchive.forEach(entryToArchive -> {
-            entryToArchive.setArchived(ESUtil.getCurrentDate());
+            entryToArchive.setArchived(dateTime);
             ESUtil.clearHistoryAndThreads(entryToArchive);// clean up as threads and history will be also stored in es
             esNotesRepository.save(entryToArchive);
             response.add(entryToArchive);
         });
-        return iSearchNotes.search(query);
+        return iNotesOperations.search(query);
     }
 
     /**
      * Deletes entries by either externalGuid/entryGuid
      * @param query - search entries for given externalGuid/entryGuid
-     * @param entries - {@link Entries#ALL} to delete all entries, {@link Entries#ARCHIVED} to delete only archived entries
      * @return deleted entries
      */
     // TODO when there are more than default number of records to delete? 1000 is max size
     @Override
-    public List<NotesData> delete(IQuery query, Entries entries) {
-        List<NotesData> esResults = iSearchNotes.search(query);
+    public List<NotesData> delete(IQuery query) {
+        List<NotesData> esResults = iNotesOperations.search(query);
         if(esResults != null && !esResults.isEmpty()) {
             Set<NotesData> entriesToDelete = new HashSet<>();
             esResults.stream().forEach(e -> ESUtil.flatten(e, entriesToDelete));
             try {
-                entriesToDelete.forEach(e -> {
-                    if (Entries.ALL == entries || ((Entries.ARCHIVED == entries) && e.getArchived() != null)) {
-                        esNotesRepository.deleteById(e.getGuid());
-                    }
-                });
+                esNotesRepository.deleteAll(entriesToDelete);
             } catch (Exception e) {
                 throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while deleting entries. error=" + e.getMessage());
             }
@@ -215,6 +210,6 @@ public class ESNotesService implements INotesService {
 
     @Override
     public List<NotesData> search(IQuery query) {
-        return iSearchNotes.search(query);
+        return iNotesOperations.search(query);
     }
 }

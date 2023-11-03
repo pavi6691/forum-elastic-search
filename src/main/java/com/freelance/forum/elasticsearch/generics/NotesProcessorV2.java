@@ -1,6 +1,7 @@
 package com.freelance.forum.elasticsearch.generics;
 
 import com.freelance.forum.elasticsearch.pojo.NotesData;
+import com.freelance.forum.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import com.freelance.forum.elasticsearch.queries.SearchByEntryGuid;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -12,8 +13,8 @@ import java.util.*;
 /**
  * Search and build response for thread of entries along with update histories.
  */
-@Service("searchNotesV2")
-public class SearchNotesV2 extends AbstractSearchNotes {
+@Service("notesProcessorV2")
+public class NotesProcessorV2 extends AbstractNotesOperations {
 
     @Override
     List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
@@ -22,25 +23,26 @@ public class SearchNotesV2 extends AbstractSearchNotes {
         Set<UUID> onlyThreads = new HashSet<>();
         if(esResults != null) {
             while (esResults.hasNext()) {
-                NotesData notesData = esResults.next().getContent();
-                if (!processMap.containsKey(notesData.getThreadGuidParent())) {
+                NotesData entry = esResults.next().getContent();
+                if (!processMap.containsKey(entry.getThreadGuidParent())) {
                     // null key is allowed and holds root element
-                    processMap.put(notesData.getThreadGuidParent(), new LinkedHashMap<>());
+                    processMap.put(entry.getThreadGuidParent(), new LinkedHashMap<>());
                 }
-                if(!processMap.get(notesData.getThreadGuidParent()).containsKey(notesData.getEntryGuid())) {
-                    processMap.get(notesData.getThreadGuidParent()).put(notesData.getEntryGuid(), new ArrayList<>());
+                if(!processMap.get(entry.getThreadGuidParent()).containsKey(entry.getEntryGuid())) {
+                    processMap.get(entry.getThreadGuidParent()).put(entry.getEntryGuid(), new ArrayList<>());
                 }
-                if (!onlyThreads.contains(notesData.getThreadGuid()) &&
-                        !onlyThreads.contains(notesData.getThreadGuidParent())) {
-                    if (filterArchived(query,notesData)) {
+                if (!onlyThreads.contains(entry.getThreadGuid()) &&
+                        !onlyThreads.contains(entry.getThreadGuidParent())) {
+                    if (filterArchived(query,entry,results)) {
                         continue;
                     }
-                    if(results.isEmpty() || !(query instanceof SearchByEntryGuid)) {
-                        results.add(notesData);   
+                    if(results.isEmpty() || !(query instanceof SearchByEntryGuid)
+                            || query.searchAfter() != null) {
+                        addEntries(results,entry,query);   
                     }
                 }
-                onlyThreads.add(notesData.getThreadGuid());
-                processMap.get(notesData.getThreadGuidParent()).get(notesData.getEntryGuid()).add(notesData);
+                onlyThreads.add(entry.getThreadGuid());
+                processMap.get(entry.getThreadGuidParent()).get(entry.getEntryGuid()).add(entry);
             }
             results.stream().forEach(e -> buildThreads(e,processMap,new HashSet<>(),query));
         }
@@ -53,7 +55,7 @@ public class SearchNotesV2 extends AbstractSearchNotes {
      * @param results
      * @param entryThreadUuid
      * @param query
-     * @return - Entries with threads and update histories
+     * @return - entries with threads and update histories
      */
     private NotesData buildThreads(NotesData threadEntry, Map<UUID,Map<UUID,List<NotesData>>> results, Set<UUID> entryThreadUuid, IQuery query) {
         if(query.getUpdateHistory() && threadEntry != null && results.containsKey(threadEntry.getThreadGuidParent()) &&
@@ -71,11 +73,11 @@ public class SearchNotesV2 extends AbstractSearchNotes {
             for(int i = 0; i < threads.size(); i++) {
                 // entryThreadUuid set is to make sure to avoid history entries here as search Entry id will have history entries as well
                 if (!entryThreadUuid.contains(threads.get(i).getEntryGuid())) {
-                    if (filterArchived(query,threads.get(i))) {
+                    if (filterArchived(query,threads.get(i),new ArrayList<>())) {
                         // Either discard archived entries OR Select only archived entries
                         break;
                     }
-                    threadEntry.addThreads(threads.get(i));
+                    addThreads(threadEntry,threads.get(i),query);
                     entryThreadUuid.add(threads.get(i).getEntryGuid());
                     buildThreads(threads.get(i), results, entryThreadUuid, query);
                 }

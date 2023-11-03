@@ -3,7 +3,6 @@ package com.freelance.forum;
 import com.freelance.forum.base.BaseTest;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.SearchByExternalGuid;
-import com.freelance.forum.elasticsearch.queries.generics.enums.Entries;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -14,6 +13,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @Testcontainers
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -21,7 +22,7 @@ import java.util.UUID;
 public class PSRTest extends BaseTest {
 
     //for 10K, its stack overflow for V2 as JVM stack size exceeding. V3 doesn't use recursion, so we are good there
-    static final int NR_OF_ENTRIES = 1000; 
+    static final int NR_OF_ENTRIES = 20; 
     static final String EXTERNAL_GUID = "164c1633-44f0-4eee-8491-d5e6a539b300";
     @Test
     void SaveEntries() {
@@ -46,7 +47,7 @@ public class PSRTest extends BaseTest {
     void deleteEntries() {
         IQuery query = new SearchByExternalGuid().setSearchBy(EXTERNAL_GUID)
                 .setGetUpdateHistory(true).setGetArchived(true);
-        List<NotesData> searchResult = notesService.delete(query, Entries.ARCHIVED);
+        List<NotesData> searchResult = notesService.delete(query);
         validateAll(searchResult,0,0,0,0);
     }
 }

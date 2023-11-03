@@ -1,11 +1,14 @@
 package com.freelance.forum.elasticsearch.queries.generics;
 
+import org.elasticsearch.search.sort.SortOrder;
+
 public interface IQuery {
+    
+    String getSearchId();
     String buildQuery();
     boolean getUpdateHistory();
-    default boolean getArchived() {
-        return true;
-    }
+    boolean getArchived();
     Object searchAfter();
     int getSize();
+    SortOrder getSortOrder();
 }

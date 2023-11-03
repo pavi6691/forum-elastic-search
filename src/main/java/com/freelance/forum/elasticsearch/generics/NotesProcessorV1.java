@@ -10,8 +10,8 @@ import java.util.*;
 /**
  * Search and build response for thread of entries along with update histories
  */
-@Service("searchNotesV1")
-public class SearchNotesV1 extends AbstractSearchNotes {
+@Service("notesProcessorV1")
+public class NotesProcessorV1 extends AbstractNotesOperations {
 
 
     /**
@@ -76,18 +76,18 @@ public class SearchNotesV1 extends AbstractSearchNotes {
      * @return
      */
     private NotesData searchThreadsAndHistories(IQuery query, NotesData threadRoot, Set<String> entryThreadUuid) {
-        checkAndAddHistory(threadRoot,query.getUpdateHistory());
+        checkAndAddHistory(threadRoot,query.getUpdateHistory(),query);
         Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(new SearchByParentThreadGuid()
                 .setSearchBy(threadRoot.getThreadGuid().toString()));
         while(searchResponseIterator.hasNext()) {
             NotesData thread = searchResponseIterator.next().getContent();
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
             if(!entryThreadUuid.contains(thread.getEntryGuid().toString())) {
-                if (filterArchived(query,thread)) {
+                if (filterArchived(query,thread,new ArrayList<>())) {
                     // Either discard archived entries OR Select only archived entries
                     break;
                 }
-                threadRoot.addThreads(thread);
+                addThreads(threadRoot,thread,query);
                 entryThreadUuid.add(thread.getEntryGuid().toString());
                 searchThreadsAndHistories(query,thread,entryThreadUuid);
             }
@@ -95,7 +95,7 @@ public class SearchNotesV1 extends AbstractSearchNotes {
         return threadRoot;
     }
 
-    private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory) {
+    private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory,IQuery query) {
         if(getUpdateHistory && entry != null) {
             Iterator<SearchHit<NotesData>> historyIterator = getSearchResponse(new SearchByEntryGuid()
                     .setSearchBy(entry.getEntryGuid().toString()));
@@ -104,7 +104,7 @@ public class SearchNotesV1 extends AbstractSearchNotes {
             }
             while(historyIterator.hasNext()) {
                 NotesData history = historyIterator.next().getContent();
-                entry.addHistory(history);
+                addHistory(entry,history,query);
             }
         }
     }

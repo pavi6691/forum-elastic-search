@@ -1,5 +1,6 @@
 package com.freelance.forum.exceptions;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.freelance.forum.elasticsearch.generics.AbstractNotesOperations;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -7,6 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.net.SocketTimeoutException;
 
 @RestControllerAdvice
 public class RestExceptionCA {
@@ -24,6 +27,12 @@ public class RestExceptionCA {
                 "Invalid request param value", 
                 exception.getName(),
                 exception.getValue().toString());
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(SocketTimeoutException.class)
+    public BaseRestException EsTimeOutException(SocketTimeoutException exception) {
+        return new BaseRestException(HttpStatus.BAD_REQUEST.name(), "Time out from elastic search. " + exception.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

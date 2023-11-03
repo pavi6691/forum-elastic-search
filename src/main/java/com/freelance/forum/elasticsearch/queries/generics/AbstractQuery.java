@@ -1,15 +1,15 @@
 package com.freelance.forum.elasticsearch.queries.generics;
 
+import com.freelance.forum.elasticsearch.generics.AbstractNotesOperations;
 import com.freelance.forum.elasticsearch.queries.generics.enums.EsNotesFields;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.Iterator;
 
 /**
  * Abstraction to search by any fields. returns entries created after passed time in millis.
  * ability to filter out historical/archived records or to select both. 
- * filter is not done on elastic search but in {@link com.freelance.forum.elasticsearch.generics.AbstractSearchNotes#process(IQuery, Iterator)}
+ * filter is not done on elastic search but in {@link AbstractNotesOperations#process(IQuery, Iterator)}
  */
 public abstract class AbstractQuery implements IQuery {
     protected static String QUERY = "{\n" +
@@ -34,9 +34,10 @@ public abstract class AbstractQuery implements IQuery {
     protected String guid;
     protected long createdDateTime;
     protected boolean getUpdateHistory;
-    protected boolean getArchived;
+    protected boolean getArchived = true;
     protected Object searchAfter;
     protected int size;
+    protected SortOrder sortOrder = SortOrder.ASC;
 
     public AbstractQuery setGetUpdateHistory(boolean getUpdateHistory) {
         this.getUpdateHistory = getUpdateHistory;
@@ -57,6 +58,16 @@ public abstract class AbstractQuery implements IQuery {
         return this;
     }
 
+    public AbstractQuery setSortOrder(SortOrder sortOrder) {
+        this.sortOrder = sortOrder;
+        return this;
+    }
+
+    @Override
+    public SortOrder getSortOrder() {
+        return sortOrder;
+    }
+
     @Override
     public int getSize() {
         return size;
@@ -75,6 +86,11 @@ public abstract class AbstractQuery implements IQuery {
     @Override
     public Object searchAfter() {
         return searchAfter;
+    }
+
+    @Override
+    public String getSearchId() {
+        return guid;
     }
 
     public AbstractQuery setSearchBy(String guid) {

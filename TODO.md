@@ -14,9 +14,13 @@
     internally. Both implementation can be kept with flag
 - [ ] Add logs, handle exceptions and other validations if any
 - [ ] Swagger. SpringDoc open api 3
-- [ ] pagination
-- [ ] JUnit Test Cases
+- [ ] pagination - make this searchAfter internal to backend with session timeout?
+- [ ] Sorting provision by DESC/ASC
+- [ ] delete only histories?
+- [ ] JUnit, Integration and PSR Test Cases 
 - [ ] POC on Logging and tracing
 - [ ] Authentication and authorization
 - [ ] Scalability - lstio API gateway?
-- [ ] Futurist code with open search API support, flag based to switch between rest hight level client and open search
+- [ ] open search API support, flag based to switch between rest high level client and open search?
+- [ ] do need an entry that represent an item? Ex: if youtube represents externalGuid, each video on it is an item. for every video,we may find list of entries with threads.
+      

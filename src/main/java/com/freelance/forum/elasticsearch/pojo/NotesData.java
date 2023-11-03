@@ -9,9 +9,8 @@ import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
 import com.freelance.forum.serialzation.CustomDateSerializer;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
-
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -164,30 +163,17 @@ public class NotesData {
         this.history = history;
     }
 
-    public void addThreads(NotesData threads) {
+    public void addThreads(NotesData threads, int index) {
         if( this.threads == null) {
-            this.threads  = new ArrayList<>();;
+            this.threads  = new LinkedList<>();;
         }
-        this.threads.add(threads);
+        this.threads.add(index,threads);
     }
-    public void addHistory(NotesData history) {
+    public void addHistory(NotesData history, int index) {
         if( this.history == null) {
-            this.history  = new ArrayList<>();;
+            this.history  = new LinkedList<>();;
         }
-        this.history.add(history);
-    }
-
-    public void addAllThreads(List<NotesData> threads) {
-        if( this.threads == null) {
-            this.threads  = new ArrayList<>();;
-        }
-        this.threads.addAll(threads);
-    }
-    public void addAllHistory(List<NotesData> history) {
-        if( this.history == null) {
-            this.history  = new ArrayList<>();;
-        }
-        this.history.addAll(history);
+        this.history.add(index,history);
     }
     
     public static NotesData fromJson(String json) {

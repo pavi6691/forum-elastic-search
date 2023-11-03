@@ -4,7 +4,6 @@ import com.freelance.forum.base.BaseTest;
 import com.freelance.forum.data.ElasticSearchData;
 import com.freelance.forum.elasticsearch.pojo.NotesData;
 import com.freelance.forum.elasticsearch.queries.*;
-import com.freelance.forum.elasticsearch.queries.generics.enums.Entries;
 import com.freelance.forum.elasticsearch.queries.generics.IQuery;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -64,48 +63,50 @@ public class IntegrationTest extends BaseTest {
         validateAll(searchResult,1, 3, 2, 0);
 
         // create Thread 3
-        createThread(newEntryCreated,"New External Entry-Thread-3");
+        NotesData thread3 = createThread(newEntryCreated,"New External Entry-Thread-3");
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,1, 4, 3, 0);
 
-        // create Thread 4
-        createThread(newEntryCreated,"New External Entry-Thread-4");
+        // create Thread 4,5,6 and archive 5
+        NotesData thread4 = createThread(newEntryCreated,"New External Entry-Thread-4");
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,1, 5, 4, 0);
-
+        NotesData thread5 = createThread(thread4,"New External Entry-Thread-5");
+        NotesData thread6 = createThread(thread5,"New External Entry-Thread-6");
+        notesService.archive(new SearchByEntryGuid().setSearchBy(thread5.getEntryGuid().toString())
+                .setGetUpdateHistory(true).setGetArchived(false));
+        
         // create Thread 1-1
         NotesData thread1_1 = createThread(thread1,"New External Entry-Thread-1-1");
         searchResult = notesService.search(querySearchByExternalGuid);
-        validateAll(searchResult,1, 6, 5, 0);
+        validateAll(searchResult,1, 8, 7, 0);
 
         // update guid 1
         updateGuid(thread1,"New External Entry-Thread-1-Updated");
         searchResult = notesService.search(querySearchByExternalGuid);
-        validateAll(searchResult,1, 7, 5, 1);
+        validateAll(searchResult,1, 9, 7, 1);
 
         // create Thread 1-2
         NotesData thread1_2 = createThread(thread1,"New External Entry-Thread-1-2");
         searchResult = notesService.search(querySearchByExternalGuid);
-        validateAll(searchResult,1, 8, 6, 1);
+        validateAll(searchResult,1, 10, 8, 1);
 
         // update by entryGuid thread 1-2
         thread1.setGuid(null); // if guid is null, entry will be updated by entryGuid
         updateGuid(thread1_2,"New External Entry-Thread-1-2-Updated");
         searchResult = notesService.search(querySearchByExternalGuid);
-        validateAll(searchResult,1, 9, 6, 2);
+        validateAll(searchResult,1, 11, 8, 2);
 
 
-        // Search by EntryId
+        // Search by EntryId for a thread
         IQuery querySearchByEntryGuid = new SearchByEntryGuid().setSearchBy(thread1.getEntryGuid().toString())
                 .setGetUpdateHistory(true).setGetArchived(true);
-
         searchResult = notesService.search(querySearchByEntryGuid);
         validateAll(searchResult,1, 5, 2, 2);
 
-
+        // Search by EntryId for a thread with no histories
         IQuery searchBy_Thread_1_Entry = new SearchByEntryGuid().setSearchBy(thread1.getEntryGuid().toString())
                 .setGetUpdateHistory(false).setGetArchived(true);
-
         searchResult = notesService.search(searchBy_Thread_1_Entry);
         validateAll(searchResult,1, 3, 2, 0);
 
@@ -113,28 +114,28 @@ public class IntegrationTest extends BaseTest {
                 .setGetUpdateHistory(true).setGetArchived(false);
         notesService.archive(searchBy_Thread_1_Entry);
 
-        // search archived by external entry test 1
-        IQuery querySearchArchived = new SearchArchivedByExternalGuid().setExternalGuid(thread1_2.getExternalGuid().toString())
+        // search archived by external entry 
+        IQuery querySearchArchived_thread1_2 = new SearchArchivedByExternalGuid().setSearchBy(thread1_2.getExternalGuid().toString())
                 .setGetUpdateHistory(true);
-        searchResult = notesService.search(querySearchArchived);
-        validateAll(searchResult,1,2,0,1);
+        searchResult = notesService.search(querySearchArchived_thread1_2);
+        validateAll(searchResult,2,4,1,1);
 
-        // search archived by external entry test 2
-        querySearchArchived = new SearchArchivedByExternalGuid().setExternalGuid(thread1_2.getExternalGuid().toString())
+        // search archived by external entry with no histories
+        IQuery querySearchArchived_thread1_2_no_histories = new SearchArchivedByExternalGuid().setSearchBy(thread1_2.getExternalGuid().toString())
                 .setGetUpdateHistory(false);
-        searchResult = notesService.search(querySearchArchived);
-        validateAll(searchResult,1,1,0,0);
+        searchResult = notesService.search(querySearchArchived_thread1_2_no_histories);
+        validateAll(searchResult,2,3,1,0);
 
         // search archived by entry test 1
-        querySearchArchived = new SearchArchivedByEntryGuid().setEntryGuid(thread1.getEntryGuid().toString())
+        IQuery thread1_query = new SearchArchivedByEntryGuid().setSearchBy(thread1.getEntryGuid().toString())
                 .setGetUpdateHistory(true);
-        searchResult = notesService.search(querySearchArchived);
+        searchResult = notesService.search(thread1_query);
         validateAll(searchResult,1,2,0,1);
 
         // search archived by entry test 2
-        querySearchArchived = new SearchArchivedByEntryGuid().setEntryGuid(thread1_2.getEntryGuid().toString())
+        IQuery thread1_2_query = new SearchArchivedByEntryGuid().setSearchBy(thread1_2.getEntryGuid().toString())
                 .setGetUpdateHistory(false);
-        searchResult = notesService.search(querySearchArchived);
+        searchResult = notesService.search(thread1_2_query);
         validateAll(searchResult,1,1,0,0);
 
 
@@ -142,7 +143,7 @@ public class IntegrationTest extends BaseTest {
         createThread(thread1_1,"New External Entry-Thread-1-1-1");
         searchResult = notesService.search(new SearchByExternalGuid().setSearchBy(newEntryCreated.getExternalGuid().toString())
                 .setGetUpdateHistory(true).setGetArchived(true));
-        validateAll(searchResult,1, 10, 7, 2);
+        validateAll(searchResult,1, 12, 9, 2);
 
         // Archive another entry (total two different threads archived), expected multiple results
         IQuery archive_1_1 = new SearchByEntryGuid().setSearchBy(thread1_1.getEntryGuid().toString())
@@ -150,62 +151,69 @@ public class IntegrationTest extends BaseTest {
         notesService.archive(archive_1_1);
 
         // search archived. by external guid
-        querySearchArchived = new SearchArchivedByExternalGuid().setExternalGuid(newEntryCreated.getExternalGuid().toString())
+        IQuery querySearchArchivedByExternal = new SearchArchivedByExternalGuid().setSearchBy(newEntryCreated.getExternalGuid().toString())
                 .setGetUpdateHistory(true);
-        searchResult = notesService.search(querySearchArchived);
-        validateAll(searchResult,2,4,1,1);
+        searchResult = notesService.search(querySearchArchivedByExternal);
+        validateAll(searchResult,3,6,2,1);
 
         // search archived. By entry guid
-        querySearchArchived = new SearchArchivedByEntryGuid().setEntryGuid(newEntryCreated.getEntryGuid().toString())
+        IQuery querySearchArchivedByEntry = new SearchArchivedByEntryGuid().setSearchBy(newEntryCreated.getEntryGuid().toString())
                 .setGetUpdateHistory(true);
-        searchResult = notesService.search(querySearchArchived);
-        validateAll(searchResult,2,4,1,1);
+        searchResult = notesService.search(querySearchArchivedByEntry);
+        validateAll(searchResult,3,6,2,1);
 
         // search multiple threads archived. both may have further threads. by entry guid
-        querySearchArchived = new SearchArchivedByEntryGuid().setEntryGuid(thread1.getEntryGuid().toString())
+        IQuery querySearchArchived_thread1 = new SearchArchivedByEntryGuid().setSearchBy(thread1.getEntryGuid().toString())
                 .setGetUpdateHistory(true);
-        searchResult = notesService.search(querySearchArchived);
+        searchResult = notesService.search(querySearchArchived_thread1);
         validateAll(searchResult,2,4,1,1);
 
-        List<NotesData> resultDelete = notesService.delete(new SearchByEntryGuid().setSearchBy(thread1_1.getEntryGuid().toString())
-                .setGetUpdateHistory(true).setGetArchived(true), Entries.ARCHIVED);
+        List<NotesData> resultDelete = notesService.delete(new SearchArchivedByEntryGuid().setSearchBy(thread1_1.getEntryGuid().toString())
+                .setGetUpdateHistory(true).setGetArchived(true));
         validateAll(resultDelete,1, 2, 1, 0);
         searchResult = notesService.search(querySearchByExternalGuid);
-        validateAll(searchResult,1, 8, 5, 2);
+        validateAll(searchResult,1, 10, 7, 2);
 
         // Archive another entry (total two different threads archived), expected multiple results
-        IQuery archive_thread1 = new SearchByEntryGuid().setSearchBy(thread1.getEntryGuid().toString())
+        IQuery query_thread1 = new SearchByEntryGuid().setSearchBy(thread1.getEntryGuid().toString())
+                .setGetUpdateHistory(true).setGetArchived(true);
+        searchResult = notesService.search(query_thread1);
+        validateAll(searchResult,1, 4, 1, 2);
+        notesService.archive(query_thread1);
+
+        // select one archived entry of many threads on the same layer. and some other is also archived
+        IQuery archive_thread3 = new SearchByEntryGuid().setSearchBy(thread3.getEntryGuid().toString())
                 .setGetUpdateHistory(true).setGetArchived(false);
-        notesService.archive(archive_thread1);
+        notesService.archive(archive_thread3);
+        IQuery search_archived_thread1 = new SearchArchivedByEntryGuid().setSearchBy(thread1.getEntryGuid().toString()).setGetUpdateHistory(true);
+        searchResult = notesService.search(search_archived_thread1);
+        validateAll(searchResult,1, 4, 1, 2);
+            
+        
+        // search multiple threads archived. both may have further threads. by External Guid
+        searchResult = notesService.search(querySearchArchivedByExternal);
+        validateAll(searchResult,3,7,2,2);
 
         // search multiple threads archived. both may have further threads. by External Guid
-        querySearchArchived = new SearchArchivedByExternalGuid().setExternalGuid(newEntryCreated.getExternalGuid().toString())
-                .setGetUpdateHistory(true);
-        searchResult = notesService.search(querySearchArchived);
-        validateAll(searchResult,1,4,1,2);
-
-        // search multiple threads archived. both may have further threads. by External Guid
-        querySearchArchived = new SearchArchivedByEntryGuid().setEntryGuid(newEntryCreated.getEntryGuid().toString())
-                .setGetUpdateHistory(true);
-        searchResult = notesService.search(querySearchArchived);
-        validateAll(searchResult,1,4,1,2);
+        searchResult = notesService.search(querySearchArchivedByEntry);
+        validateAll(searchResult,3,7,2,2);
 
 
         // crate Another ExternalEntry with same externalId
         createNewEntry(new NotesData.Builder().setExternalGuid(newEntryCreated.getExternalGuid())
                 .setContent("New External Entry - 2").build());
         searchResult = notesService.search(querySearchByExternalGuid);
-        validateAll(searchResult,2, 9, 5, 2);
+        validateAll(searchResult,2, 11, 7, 2);
 
-        resultDelete = notesService.delete(new SearchArchivedByExternalGuid().setExternalGuid(newEntryCreated.getExternalGuid().toString())
-                .setGetUpdateHistory(true), Entries.ARCHIVED);
-        validateAll(resultDelete,1, 4, 1, 2);
+        resultDelete = notesService.delete(new SearchArchivedByExternalGuid().setSearchBy(newEntryCreated.getExternalGuid().toString())
+                .setGetUpdateHistory(true));
+        validateAll(resultDelete,3, 7, 2, 2);
         searchResult = notesService.search(querySearchByExternalGuid);
-        validateAll(searchResult,2, 5, 3, 0);
+        validateAll(searchResult,2, 4, 2, 0);
         
         // delete
-        resultDelete = notesService.delete(querySearchByExternalGuid, Entries.ALL);
-        validateAll(resultDelete,2, 5, 3, 0);
+        resultDelete = notesService.delete(querySearchByExternalGuid);
+        validateAll(resultDelete,2, 4, 2, 0);
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,0, 0, 0, 0);
     }
