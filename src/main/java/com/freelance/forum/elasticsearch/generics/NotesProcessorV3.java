@@ -58,7 +58,8 @@ public class NotesProcessorV3 extends AbstractNotesOperations {
                                 || query.searchAfter() != null) {
                             threadMapping.put(entry.getThreadGuid(),entry);
                             addEntries(results,entry,query);
-                            if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getThreadGuidParent()))
+                            if(!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && 
+                                    !archivedEntries.containsKey(entry.getThreadGuidParent())))
                                 archivedEntries.put(entry.getThreadGuid(),entry);
                         }
                     }
@@ -66,8 +67,10 @@ public class NotesProcessorV3 extends AbstractNotesOperations {
                         threadMapping.put(entry.getThreadGuid(),entry);
                     } else if(threadMapping.containsKey(entry.getThreadGuidParent())) {
                         threadMapping.put(entry.getThreadGuid(),entry);
-                        if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getThreadGuidParent()))
-                            archivedEntries.put(entry.getThreadGuid(),entry);
+                        if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getThreadGuidParent())) {
+                            addEntries(results,entry,query);
+                            archivedEntries.put(entry.getThreadGuid(), entry);
+                        }
                     }
                 }
             }

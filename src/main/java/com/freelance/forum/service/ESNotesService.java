@@ -27,7 +27,7 @@ import java.util.*;
  */
 @Service
 public class ESNotesService implements INotesService {
-    @Qualifier("notesProcessorV2")
+    @Qualifier("notesProcessorV3")
     @Autowired
     private INotesOperations iNotesOperations;
     @Autowired
