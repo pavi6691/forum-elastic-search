@@ -40,6 +40,7 @@ public class NotesProcessorV3 extends AbstractNotesOperations {
         Map<UUID,NotesData> threadMapping = new HashMap<>();
         List<NotesData> results = new LinkedList<>();
         Map<UUID,NotesData> archivedEntries = new HashMap<>();
+        boolean firstEntry = true;
         if(esResults != null) {
             while (esResults.hasNext()) {
                 NotesData entry = esResults.next().getContent();
@@ -54,13 +55,15 @@ public class NotesProcessorV3 extends AbstractNotesOperations {
                 }
                 if(!threadMapping.containsKey(entry.getThreadGuid())) {
                     if(!threadMapping.containsKey(entry.getThreadGuidParent())) {
-                        if((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || results.isEmpty())
+                        if((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || firstEntry)
                                 || query.searchAfter() != null) {
+                            firstEntry = false;
                             threadMapping.put(entry.getThreadGuid(),entry);
-                            addEntries(results,entry,query);
                             if(!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && 
-                                    !archivedEntries.containsKey(entry.getThreadGuidParent())))
-                                archivedEntries.put(entry.getThreadGuid(),entry);
+                                    !archivedEntries.containsKey(entry.getThreadGuidParent()))) {
+                                addEntries(results, entry, query);
+                                archivedEntries.put(entry.getThreadGuid(), entry);
+                            }
                         }
                     }
                     if(!(query instanceof SearchArchivedByEntryGuid)) {
@@ -74,9 +77,6 @@ public class NotesProcessorV3 extends AbstractNotesOperations {
                     }
                 }
             }
-        }
-        if(query instanceof SearchArchivedByEntryGuid && !archivedEntries.isEmpty()) {
-           return archivedEntries.values().stream().toList();
         }
         return results;
     }
