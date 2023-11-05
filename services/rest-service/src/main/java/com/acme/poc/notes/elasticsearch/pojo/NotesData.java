@@ -1,5 +1,6 @@
 package com.acme.poc.notes.elasticsearch.pojo;
 
+import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.serialzation.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -50,12 +51,12 @@ public class NotesData {
     private String content;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date created;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Field(type = FieldType.Date, name = "archived", format = DateFormat.custom, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    @Field(type = FieldType.Date, name = "archived", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)
     private Date archived;
 
