@@ -46,6 +46,7 @@
 	</dependencyManagement>
 
 	<modules>
+		<module>clients</module>
 		<module>core</module>
 		<module>models</module>
 		<module>services/rest-service</module>
