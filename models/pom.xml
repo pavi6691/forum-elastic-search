@@ -1,0 +1,28 @@
+<project>
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.acme.poc.notes</groupId>
+		<artifactId>notes-parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>notes-models</artifactId>
+	<version>0.0.0-SNAPSHOT</version>
+
+	<name>Notes models</name>
+	<description>Notes models ...</description>
+
+	<build>
+
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+
+	</build>
+
+</project>
