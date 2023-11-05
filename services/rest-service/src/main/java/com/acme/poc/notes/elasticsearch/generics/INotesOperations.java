@@ -1,4 +1,5 @@
 package com.acme.poc.notes.elasticsearch.generics;
+
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 

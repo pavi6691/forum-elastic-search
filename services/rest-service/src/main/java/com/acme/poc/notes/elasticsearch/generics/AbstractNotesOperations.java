@@ -1,12 +1,12 @@
 package com.acme.poc.notes.elasticsearch.generics;
 
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
-import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
-import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByExternalGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
+import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
+import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -20,6 +20,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

@@ -6,9 +6,9 @@ import com.acme.poc.notes.elasticsearch.metadata.ResourceFileReaderService;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByThreadGuid;
+import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.util.ESUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +19,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.*;
 

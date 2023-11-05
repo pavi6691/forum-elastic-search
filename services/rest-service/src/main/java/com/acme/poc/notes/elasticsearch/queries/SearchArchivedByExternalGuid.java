@@ -2,8 +2,8 @@ package com.acme.poc.notes.elasticsearch.queries;
 
 import com.acme.poc.notes.elasticsearch.generics.AbstractNotesOperations;
 import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
-import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
 
 import java.util.Iterator;
 

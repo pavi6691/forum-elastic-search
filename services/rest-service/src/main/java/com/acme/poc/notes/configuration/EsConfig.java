@@ -1,4 +1,5 @@
 package com.acme.poc.notes.configuration;
+
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

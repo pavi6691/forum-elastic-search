@@ -1,4 +1,5 @@
 package com.acme.poc.notes.exceptions;
+
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.http.HttpStatus;
