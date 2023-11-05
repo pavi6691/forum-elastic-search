@@ -3,6 +3,7 @@
 
 ## Current phase
 
+- [ ] Replace getters/setters with Lombok's @Data or @Setter/@Getter and builders with Lombok's @Builder
 - [ ] First and foremost, refactor, simplify and optimize code and give design perspective to it. Use different
       strategy to consume data from elasticsearch and process it as:
   - [ ] Current implementation has incremental calls to elasticsearch for every thread. there are going to be
