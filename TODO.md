@@ -2,7 +2,7 @@
 
 - [x] In general use timestamps as `yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX`. Currently `"created"` value is stored with only 3 digits for milliseconds.
 - [x] When saving data to Elasticsearch:
-  - [x] Do not store `"_class" : "com.freelance.forum.elasticsearch.pojo.NotesData"`.
+  - [x] Do not store `"_class" : "com.acme.poc.notes.elasticsearch.pojo.NotesData"`.
   - [x] Do not store `"threads" : [ ]` when it has no content.
   - [x] Do not store `"history" : [ ]` when it has no content.
   - [x] Do not store null values. I haven't seen any yet, but just to make sure.
