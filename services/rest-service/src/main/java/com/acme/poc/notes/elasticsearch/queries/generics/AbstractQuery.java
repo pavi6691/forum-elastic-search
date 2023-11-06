@@ -1,7 +1,9 @@
 package com.acme.poc.notes.elasticsearch.queries.generics;
 
-import com.acme.poc.notes.elasticsearch.generics.AbstractNotesOperations;
+import com.acme.poc.notes.elasticsearch.generics.AbstractNotesProcessor;
 import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.Iterator;
@@ -9,8 +11,10 @@ import java.util.Iterator;
 /**
  * Abstraction to search by any fields. returns entries created after passed time in millis.
  * ability to filter out historical/archived records or to select both. 
- * filter is not done on elastic search but in {@link AbstractNotesOperations#process(IQuery, Iterator)}
+ * filter is not done on elastic search but in {@link AbstractNotesProcessor#process(IQuery, Iterator)}
  */
+@AllArgsConstructor
+@SuperBuilder
 public abstract class AbstractQuery implements IQuery {
     protected static String QUERY = "{\n" +
             "  \"bool\": {\n" +
@@ -30,37 +34,31 @@ public abstract class AbstractQuery implements IQuery {
             "    ]\n" +
             "  }\n" +
             "}";
+    @Getter
     protected EsNotesFields searchField = EsNotesFields.ENTRY;
-    protected String guid;
+    @Getter
+    protected String searchGuid;
+    @Getter
     protected long createdDateTime;
+    @Getter
     protected boolean getUpdateHistory;
+    @Getter
     protected boolean getArchived = true;
+    @Getter
     protected Object searchAfter;
+    @Getter
     protected int size;
+    @Getter
     protected SortOrder sortOrder = SortOrder.ASC;
 
-    public AbstractQuery setGetUpdateHistory(boolean getUpdateHistory) {
-        this.getUpdateHistory = getUpdateHistory;
-        return this;
-    }
-    public AbstractQuery setSearchAfter(Object searchAfter) {
-        this.searchAfter = searchAfter;
-        return this;
+    @Override
+    public boolean getUpdateHistory() {
+        return getUpdateHistory;
     }
 
-    public AbstractQuery setGetArchived(boolean getArchived) {
-        this.getArchived = getArchived;
-        return this;
-    }
-
-    public AbstractQuery setSize(int size) {
-        this.size = size;
-        return this;
-    }
-
-    public AbstractQuery setSortOrder(SortOrder sortOrder) {
-        this.sortOrder = sortOrder;
-        return this;
+    @Override
+    public boolean getArchived() {
+        return getArchived;
     }
 
     @Override
@@ -74,37 +72,12 @@ public abstract class AbstractQuery implements IQuery {
     }
 
     @Override
-    public boolean getUpdateHistory() {
-        return getUpdateHistory;
-    }
-
-    @Override
-    public boolean getArchived() {
-        return getArchived;
-    }
-
-    @Override
     public Object searchAfter() {
         return searchAfter;
     }
-
-    @Override
-    public String getSearchId() {
-        return guid;
-    }
-
-    public AbstractQuery setSearchBy(String guid) {
-        this.guid = guid;
-        return this;
-    }
-
-    public AbstractQuery setCreatedDateTime(long createdDateTime) {
-        this.createdDateTime = createdDateTime;
-        return this;
-    }
-
+    
     @Override
     public String buildQuery() {
-        return String.format(QUERY,searchField.getEsFieldName(),guid,createdDateTime);
+        return String.format(QUERY,searchField.getEsFieldName(),searchGuid,createdDateTime);
     }
 }

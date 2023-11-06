@@ -12,7 +12,7 @@ import java.util.*;
  * Search and build response for thread of entries along with update histories.
  */
 @Service("notesProcessorV2")
-public class NotesProcessorV2 extends AbstractNotesOperations {
+public class NotesProcessorV2 extends AbstractNotesProcessor {
 
     @Override
     List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {

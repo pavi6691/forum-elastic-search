@@ -13,7 +13,7 @@ import java.util.*;
  * Search and build response for thread of entries along with update histories. Version 3
  */
 @Service("notesProcessorV3")
-public class NotesProcessorV3 extends AbstractNotesOperations {
+public class NotesProcessorV3 extends AbstractNotesProcessor {
 
     /**
      * Out of all multiple entries and their threads and histories, figures out and process -

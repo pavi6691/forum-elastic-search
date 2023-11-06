@@ -1,5 +1,6 @@
 package com.acme.poc.notes.resource;
 
+import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.*;
 import com.acme.poc.notes.service.INotesService;
@@ -16,13 +17,13 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping(NotesConstants.API_ENDPOINT_PREFIX)
 public class ESResource {
     
     @Autowired
     INotesService notesService;
 
-    @PostMapping("/create")
+    @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
     public ResponseEntity<NotesData> saveNew(@Valid @RequestBody NotesData notesData) {
         return new ResponseEntity(notesService.saveNew(notesData),HttpStatus.OK);
     }
@@ -32,9 +33,14 @@ public class ESResource {
         return new ResponseEntity(notesService.searchByGuid(UUID.fromString(guid.toString())),HttpStatus.OK);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<NotesData> update(@RequestBody NotesData notesData) {
-        return new ResponseEntity(notesService.update(notesData),HttpStatus.OK);
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_GUID)
+    public ResponseEntity<NotesData> updateByGuid(@RequestBody NotesData notesData) {
+        return new ResponseEntity(notesService.updateByGuid(notesData),HttpStatus.OK);
+    }
+
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_ENTRY_GUID)
+    public ResponseEntity<NotesData> updateByEntryGuid(@RequestBody NotesData notesData) {
+        return new ResponseEntity(notesService.updateByEntryGuid(notesData),HttpStatus.OK);
     }
 
     @GetMapping("/search/external")
@@ -44,9 +50,9 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return new ResponseEntity(notesService.search(new SearchByExternalGuid().setSearchBy(externalGuid.toString())
-                .setGetUpdateHistory(getUpdateHistory).setGetArchived(getArchivedResponse).setSize(size)
-                .setSearchAfter(searchAfter).setSortOrder(sortOrder)),HttpStatus.OK);
+        return new ResponseEntity(notesService.search(SearchByExternalGuid.builder().searchGuid(externalGuid.toString()).
+                getUpdateHistory(getUpdateHistory).getArchived(getArchivedResponse).size(size)
+                .searchAfter(searchAfter).sortOrder(sortOrder).build()),HttpStatus.OK);
     }
 
     @GetMapping("/search/entry")
@@ -56,9 +62,9 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return new ResponseEntity(notesService.search(new SearchByEntryGuid().setSearchBy(entryGuid.toString())
-                .setGetUpdateHistory(getUpdateHistory).setGetArchived(getArchivedResponse)
-                .setSearchAfter(searchAfter).setSize(size).setSortOrder(sortOrder)),HttpStatus.OK);
+        return new ResponseEntity(notesService.search(SearchByEntryGuid.builder().searchGuid(entryGuid.toString())
+                .getUpdateHistory(getUpdateHistory).getArchived(getArchivedResponse)
+                .searchAfter(searchAfter).size(size).sortOrder(sortOrder).build()),HttpStatus.OK);
     }
 
     @GetMapping("/search/content")
@@ -68,21 +74,26 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return new ResponseEntity(notesService.search(new SearchByContent().setContentToSearch(search)
-                .setGetUpdateHistory(getUpdateHistory).setGetArchived(getArchivedResponse)
-                .setSearchAfter(searchAfter).setSize(size).setSortOrder(sortOrder)),HttpStatus.OK);
+        return new ResponseEntity(notesService.search(SearchByContent.builder().contentToSearch(search)
+                .getUpdateHistory(getUpdateHistory).getArchived(getArchivedResponse)
+                .searchAfter(searchAfter).size(size).sortOrder(sortOrder).build()),HttpStatus.OK);
     }
 
-    @PutMapping("/archive/external")
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_GUID)
+    public ResponseEntity<List<NotesData>> archiveByGuid(@RequestParam @JsonDeserialize(using = UUIDDeserializer.class) UUID guid) {
+        return new ResponseEntity(notesService.archive(guid),HttpStatus.OK);
+    }
+
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> archiveExternalGuid(@RequestParam @JsonDeserialize(using = UUIDDeserializer.class) UUID externalGuid) {
-        return new ResponseEntity(notesService.archive(new SearchByExternalGuid().setSearchBy(externalGuid.toString())
-                .setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
+        return new ResponseEntity(notesService.archive(SearchByExternalGuid.builder().searchGuid(externalGuid.toString())
+                .getUpdateHistory(true).getArchived(true).build()),HttpStatus.OK);
     }
 
-    @PutMapping("/archive/entry") 
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID) 
     public ResponseEntity<List<NotesData>> archiveEntryGuid(@RequestParam @JsonDeserialize(using = UUIDDeserializer.class) UUID entryGuid) {
-        return new ResponseEntity(notesService.archive(new SearchByEntryGuid()
-                .setSearchBy(entryGuid.toString()).setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
+        return new ResponseEntity(notesService.archive(SearchByEntryGuid.builder()
+                .searchGuid(entryGuid.toString()).getUpdateHistory(true).getArchived(true).build()),HttpStatus.OK);
     }
 
     @GetMapping("search/external/archived")
@@ -92,9 +103,9 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return new ResponseEntity(notesService.search(new SearchArchivedByExternalGuid().setSearchBy(externalGuid.toString())
-                .setGetUpdateHistory(true).setGetUpdateHistory(getUpdateHistory)
-                .setSearchAfter(searchAfter).setSize(size).setSortOrder(sortOrder)),HttpStatus.OK);
+        return new ResponseEntity(notesService.search(SearchArchivedByExternalGuid.builder().searchGuid(externalGuid.toString())
+                .getArchived(true).getUpdateHistory(getUpdateHistory)
+                .searchAfter(searchAfter).size(size).sortOrder(sortOrder).build()),HttpStatus.OK);
     }
 
     @GetMapping("search/entry/archived")
@@ -104,38 +115,37 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter, 
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return new ResponseEntity(notesService.search(new SearchArchivedByEntryGuid().setSearchBy(entryGuid.toString())
-                .setGetUpdateHistory(true).setGetUpdateHistory(getUpdateHistory)
-                .setSearchAfter(searchAfter).setSize(size).setSortOrder(sortOrder))
+        return new ResponseEntity(notesService.search(SearchArchivedByEntryGuid.builder().searchGuid(entryGuid.toString())
+                .getArchived(true).getUpdateHistory(getUpdateHistory).searchAfter(searchAfter).size(size).sortOrder(sortOrder).build())
                 ,HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/external")
     public ResponseEntity<List<NotesData>> deleteByExternalGuid(
             @RequestParam @JsonDeserialize(using = UUIDDeserializer.class) UUID externalGuid) {
-        return new ResponseEntity(notesService.delete((new SearchByExternalGuid().setSearchBy(externalGuid.toString())
-                .setGetUpdateHistory(true).setGetArchived(true))),HttpStatus.OK);
+        return new ResponseEntity(notesService.delete((SearchByExternalGuid.builder().searchGuid(externalGuid.toString())
+                .getUpdateHistory(true).getArchived(true)).build()),HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/entry")
     public ResponseEntity<List<NotesData>> deleteByEntryGuid(
             @RequestParam @JsonDeserialize(using = UUIDDeserializer.class) UUID entryGuid) {
-        return new ResponseEntity(notesService.delete(new SearchByEntryGuid().setSearchBy(entryGuid.toString())
-                .setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
+        return new ResponseEntity(notesService.delete(SearchByEntryGuid.builder().searchGuid(entryGuid.toString())
+                .getUpdateHistory(true).getArchived(true).build()),HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/external/archived")
     public ResponseEntity<List<NotesData>> deleteArchivedByExternalGuid(
             @RequestParam @JsonDeserialize(using = UUIDDeserializer.class) UUID externalGuid) {
-        return new ResponseEntity(notesService.delete((new SearchArchivedByExternalGuid().setSearchBy(externalGuid.toString())
-                .setGetUpdateHistory(true).setGetArchived(true))),HttpStatus.OK);
+        return new ResponseEntity(notesService.delete((SearchArchivedByExternalGuid.builder().searchGuid(externalGuid.toString())
+                .getUpdateHistory(true).getArchived(true)).build()),HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/entry/archived")
     public ResponseEntity<List<NotesData>> deleteArchivedByEntryGuid(
             @RequestParam @JsonDeserialize(using = UUIDDeserializer.class) UUID entryGuid) {
-        return new ResponseEntity(notesService.delete(new SearchArchivedByEntryGuid().setSearchBy(entryGuid.toString())
-                .setGetUpdateHistory(true).setGetArchived(true)),HttpStatus.OK);
+        return new ResponseEntity(notesService.delete(SearchArchivedByEntryGuid.builder().searchGuid(entryGuid.toString())
+                .getUpdateHistory(true).getArchived(true).build()),HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/guid")

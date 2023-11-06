@@ -56,9 +56,9 @@ public class ESNotesService implements INotesService {
         notesData.setCreated(ESUtil.getCurrentDate());
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
-            List<NotesData> existingEntry = iNotesOperations.search(new SearchByThreadGuid()
-                    .setSearchBy(notesData.getThreadGuidParent().toString())
-                    .setGetUpdateHistory(false).setGetArchived(true));
+            List<NotesData> existingEntry = iNotesOperations.search(SearchByThreadGuid.builder()
+                    .searchGuid(notesData.getThreadGuidParent().toString())
+                    .getUpdateHistory(false).getArchived(true).build());
             if(existingEntry == null && !existingEntry.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
                         notesData.getThreadGuidParent()));
@@ -84,51 +84,71 @@ public class ESNotesService implements INotesService {
     }
 
     /**
-     * Update entry by guid (key). if guid is not provided, then looks for entryGUID in payload. 
-     * fetches recent entry for given entryGuid and updates it and create a new entry with updated content
+     * Update entry by guid (key). if guid is not provided 
+     * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
+     * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
      * @param updatedEntry
      * @return updated entry
      */
     @Override
-    public NotesData update(NotesData updatedEntry) {
-        NotesData  notesDataToUpdate = null;
-        if(updatedEntry.getGuid() != null) {
-            notesDataToUpdate = searchByGuid(updatedEntry.getGuid());
-            if(notesDataToUpdate == null) {
+    public NotesData updateByGuid(NotesData updatedEntry) {
+        NotesData  existingEntry;
+        if (updatedEntry.getGuid() != null) {
+            existingEntry = searchByGuid(updatedEntry.getGuid());
+            if(existingEntry == null) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
-        } else if (updatedEntry.getEntryGuid() != null) {
-            List<NotesData> searchResult = iNotesOperations.search(new SearchByEntryGuid()
-                    .setSearchBy(updatedEntry.getEntryGuid().toString())
-                    .setGetUpdateHistory(false).setGetArchived(true));
-            if(searchResult == null || searchResult.isEmpty()) {
-                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
-            }
-            notesDataToUpdate = searchResult.get(0);
         } else {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"GUID is not provided,provide guid/entryGuid");
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"guid is not provided,provide");
         }
-        if(updatedEntry.getCreated() == null) {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "createdDate of entry being updated should be provided");
-        } else if(!updatedEntry.getCreated().equals(notesDataToUpdate.getCreated())) {
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry recently updated. please reload entry again and update");
-        }
-        if(notesDataToUpdate.getArchived() != null) {
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
-        }
-        ESUtil.clearHistoryAndThreads(notesDataToUpdate);
-        notesDataToUpdate.setGuid(UUID.randomUUID());
-        notesDataToUpdate.setCreated(ESUtil.getCurrentDate());
-        notesDataToUpdate.setContent(updatedEntry.getContent());
-        return esNotesRepository.save(notesDataToUpdate);
+        return update(existingEntry,updatedEntry);
     }
 
     /**
-     * Archive by updating existing entry. updates archived field on elastic search with current data and time.
-     * @param query - archive can be done by either externalGuid / entryGuid
+     * Update entry by entryGuid. if guid is not provided 
+     * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
+     * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
+     * @param updatedEntry
+     * @return updated entry
+     */
+    @Override
+    public NotesData updateByEntryGuid(NotesData updatedEntry) {
+        NotesData  existingEntry;
+        if (updatedEntry.getEntryGuid() != null) {
+            List<NotesData> searchResult = iNotesOperations.search(SearchByEntryGuid.builder()
+                    .searchGuid(updatedEntry.getEntryGuid().toString())
+                    .getUpdateHistory(false).getArchived(true).build());
+            if(searchResult == null || searchResult.isEmpty()) {
+                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
+            }
+            existingEntry = searchResult.get(0);
+        } else {
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided,provide");
+        }
+        return update(existingEntry,updatedEntry);
+    }
+    
+    private NotesData update(NotesData existingEntry, NotesData updatedEntry) {
+        if(updatedEntry.getCreated() == null) {
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "createdDate of entry being updated should be provided");
+        } else if(!updatedEntry.getCreated().equals(existingEntry.getCreated())) {
+            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry recently updated. please reload entry again and update");
+        }
+        if(existingEntry.getArchived() != null) {
+            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
+        }
+        ESUtil.clearHistoryAndThreads(existingEntry);
+        existingEntry.setGuid(UUID.randomUUID());
+        existingEntry.setCreated(ESUtil.getCurrentDate());
+        existingEntry.setContent(updatedEntry.getContent());
+        return esNotesRepository.save(existingEntry);
+    }
+
+    /**
+     * Archive by updating existing entry. updates archived field on elastic search with current date and time.
+     * @param query - archive is done querying by either externalGuid / entryGuid
      * @return archived entries
      */
-    // TODO when there are more than default number of records to archive? 1000 is max size
     @Override
     public List<NotesData> archive(IQuery query) {
         List<NotesData> result = iNotesOperations.search(query);
@@ -138,15 +158,34 @@ public class ESNotesService implements INotesService {
         if(result == null || entriesToArchive.isEmpty()) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entries found");
         }
-        List<NotesData> response = new ArrayList<>();
+        update(entriesToArchive);
+        return iNotesOperations.search(query);
+    }
+
+    /**
+     * Archive by updating existing entry. updates archived field on elastic search with current date and time.
+     * @param guid - archive is done querying by guid
+     * @return archived entries
+     */
+    @Override
+    public List<NotesData> archive(UUID guid) {
+        Optional<NotesData> result = esNotesRepository.findById(guid);
+        if (!result.isPresent()) {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entry found for given guid");
+        }
+        update(Set.of(result.get()));
+        return List.of(esNotesRepository.findById(guid).orElse(null));
+    }
+
+
+    // TODO when there are more than default number of records to archive? 1000 is max size
+    private void update(Set<NotesData> entriesToArchive) {
         Date dateTime = ESUtil.getCurrentDate();
         entriesToArchive.forEach(entryToArchive -> {
             entryToArchive.setArchived(dateTime);
             ESUtil.clearHistoryAndThreads(entryToArchive);// clean up as threads and history will be also stored in es
             esNotesRepository.save(entryToArchive);
-            response.add(entryToArchive);
         });
-        return iNotesOperations.search(query);
     }
 
     /**

@@ -6,6 +6,7 @@ import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByExternalGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
+import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
 import org.apache.http.HttpStatus;
@@ -32,7 +33,7 @@ import java.util.List;
  * abstraction for executing search query.
  */
 @Service
-public abstract class AbstractNotesOperations implements INotesOperations {
+public abstract class AbstractNotesProcessor implements INotesOperations {
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
     @Autowired
@@ -67,14 +68,14 @@ public abstract class AbstractNotesOperations implements INotesOperations {
                 if (rootEntries != null && rootEntries.hasNext()) {
                     NotesData rootEntry = rootEntries.next().getContent();
                     if (query.getArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
-                        IQuery entryQuery = new SearchByExternalGuid()
-                                .setSize(query.getSize())
-                                .setSortOrder(query.getSortOrder())
-                                .setSearchAfter(query.searchAfter())
-                                .setGetArchived(query.getArchived())
-                                .setGetUpdateHistory(query.getUpdateHistory())
-                                .setSearchBy(rootEntry.getExternalGuid().toString())
-                                .setCreatedDateTime(rootEntry.getCreated().getTime());
+                        IQuery entryQuery = SearchByExternalGuid.builder()
+                                .size(((AbstractQuery) query).getSize())
+                                .sortOrder(((AbstractQuery) query).getSortOrder())
+                                .searchAfter(((AbstractQuery) query).getSearchAfter())
+                                .getArchived(query.getArchived())
+                                .getUpdateHistory(query.getUpdateHistory())
+                                .searchGuid(rootEntry.getExternalGuid().toString())
+                                .createdDateTime(rootEntry.getCreated().getTime()).build();
                         searchHits = execSearchQuery(entryQuery);
                     }
                 }

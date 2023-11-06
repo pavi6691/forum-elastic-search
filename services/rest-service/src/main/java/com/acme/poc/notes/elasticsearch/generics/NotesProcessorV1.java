@@ -15,7 +15,7 @@ import java.util.*;
  * Search and build response for thread of entries along with update histories
  */
 @Service("notesProcessorV1")
-public class NotesProcessorV1 extends AbstractNotesOperations {
+public class NotesProcessorV1 extends AbstractNotesProcessor {
 
 
     /**
@@ -81,8 +81,8 @@ public class NotesProcessorV1 extends AbstractNotesOperations {
      */
     private NotesData searchThreadsAndHistories(IQuery query, NotesData threadRoot, Set<String> entryThreadUuid) {
         checkAndAddHistory(threadRoot,query.getUpdateHistory(),query);
-        Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(new SearchByParentThreadGuid()
-                .setSearchBy(threadRoot.getThreadGuid().toString()));
+        Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(SearchByParentThreadGuid.builder()
+                .searchGuid(threadRoot.getThreadGuid().toString()).build());
         while(searchResponseIterator.hasNext()) {
             NotesData thread = searchResponseIterator.next().getContent();
             // below if to make sure to avoid history entries here as search Entry id will have history entries as well
@@ -101,8 +101,8 @@ public class NotesProcessorV1 extends AbstractNotesOperations {
 
     private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory,IQuery query) {
         if(getUpdateHistory && entry != null) {
-            Iterator<SearchHit<NotesData>> historyIterator = getSearchResponse(new SearchByEntryGuid()
-                    .setSearchBy(entry.getEntryGuid().toString()));
+            Iterator<SearchHit<NotesData>> historyIterator = getSearchResponse(SearchByEntryGuid.builder()
+                    .searchGuid(entry.getEntryGuid().toString()).build());
             if(historyIterator.hasNext()) {
                 historyIterator.next();
             }

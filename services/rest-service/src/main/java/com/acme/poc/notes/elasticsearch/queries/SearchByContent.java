@@ -2,10 +2,13 @@ package com.acme.poc.notes.elasticsearch.queries;
 
 import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 /**
  * Search for content
  */
+@SuperBuilder
 public class SearchByContent extends AbstractQuery {
     private static String QUERY = "{\n" +
             "    \"wildcard\": {\n" +
@@ -16,23 +19,9 @@ public class SearchByContent extends AbstractQuery {
             "      }\n" +
             "    }\n" +
             "  }";
-    private String contentToSearch;
-    private boolean getUpdateHistory;
-    private boolean getArchived;
 
-    public SearchByContent setGetUpdateHistory(boolean getUpdateHistory) {
-        this.getUpdateHistory = getUpdateHistory;
-        return this;
-    }
-    public SearchByContent setGetArchived(boolean getArchived) {
-        this.getArchived = getArchived;
-        return this;
-    }
-
-    public SearchByContent setContentToSearch(String contentToSearch) {
-        this.contentToSearch = contentToSearch;
-        return this;
-    }
+    @Getter
+    protected String contentToSearch;
 
     @Override
     public boolean getUpdateHistory() {
