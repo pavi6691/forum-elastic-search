@@ -39,7 +39,6 @@ public class NotesProcessorV3 extends AbstractNotesOperations {
         Map<UUID,NotesData> threadMapping = new HashMap<>();
         List<NotesData> results = new LinkedList<>();
         Map<UUID,NotesData> archivedEntries = new HashMap<>();
-        boolean firstEntry = true;
         if(esResults != null) {
             while (esResults.hasNext()) {
                 NotesData entry = esResults.next().getContent();
@@ -54,9 +53,8 @@ public class NotesProcessorV3 extends AbstractNotesOperations {
                 }
                 if(!threadMapping.containsKey(entry.getThreadGuid())) {
                     if(!threadMapping.containsKey(entry.getThreadGuidParent())) {
-                        if((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || firstEntry)
+                        if((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty())
                                 || query.searchAfter() != null) {
-                            firstEntry = false;
                             threadMapping.put(entry.getThreadGuid(),entry);
                             if(!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && 
                                     !archivedEntries.containsKey(entry.getThreadGuidParent()))) {

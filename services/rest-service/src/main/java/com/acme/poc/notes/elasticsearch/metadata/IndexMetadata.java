@@ -3,6 +3,9 @@ package com.acme.poc.notes.elasticsearch.metadata;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Set;
 
@@ -11,86 +14,22 @@ import java.util.Set;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect
+@AllArgsConstructor
 public class IndexMetadata {
 
+    @Setter @Getter
     private String docType;
+    @Setter @Getter
     private String mappingFile;
+    @Setter @Getter
     private String templateFile;
+    @Setter @Getter
     private String policyFile;
+    @Setter @Getter
     private Set<String> cmd;
+    @Setter @Getter
     private IndexType indexType;
+    @Setter @Getter
     @JsonProperty("isEnableUpdate")
     private boolean enableUpdate;
-
-    public IndexMetadata(String docType, String mappingFile, String templateFile, String policyFile, Set<String> cmd,
-                         IndexType indexType, boolean enableUpdate) {
-        this.docType = docType;
-        this.mappingFile = mappingFile;
-        this.templateFile = templateFile;
-        this.policyFile = policyFile;
-        this.cmd = cmd;
-        this.indexType = indexType;
-        this.enableUpdate = enableUpdate;
-    }
-
-    public IndexMetadata() {
-    }
-
-    public String getDocType() {
-        return docType;
-    }
-
-    public void setDocType(String docType) {
-        this.docType = docType;
-    }
-
-    public String getMappingFile() {
-        return mappingFile;
-    }
-
-    public void setMappingFile(String mappingFile) {
-        this.mappingFile = mappingFile;
-    }
-
-    public String getTemplateFile() {
-        return templateFile;
-    }
-
-    public void setTemplateFile(String templateFile) {
-        this.templateFile = templateFile;
-    }
-
-    public String getPolicyFile() {
-        return policyFile;
-    }
-
-    public void setPolicyFile(String policyFile) {
-        this.policyFile = policyFile;
-    }
-
-    public Set<String> getCmd() {
-        return cmd;
-    }
-
-    public void setCmd(Set<String> cmd) {
-        this.cmd = cmd;
-    }
-
-    public IndexType getIndexType() {
-        return indexType;
-    }
-
-    public void setIndexType(IndexType indexType) {
-        this.indexType = indexType;
-    }
-
-    public boolean isEnableUpdate() {
-        return enableUpdate;
-    }
-
-    public void setEnableUpdate(boolean enableUpdate) {
-        this.enableUpdate = enableUpdate;
-    }
-
-
 }

@@ -1,5 +1,6 @@
 package com.acme.poc.notes.elasticsearch.pojo;
 
+import com.acme.poc.notes.serialzation.CustomDateDeserializer;
 import com.acme.poc.notes.serialzation.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -8,9 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,152 +21,59 @@ import java.util.UUID;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(indexName = "#{@indexName}", createIndex = false, writeTypeHint = WriteTypeHint.FALSE)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class NotesData {
     
     @Id
     @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Keyword, name = "guid")
-    private UUID guid = UUID.randomUUID(); // Unique for the document and also the Elasticsearch key/id
+    @Getter @Setter
+    private UUID guid; // Unique for the document and also the Elasticsearch key/id
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Keyword, name = "externalGuid")
-    private UUID externalGuid; // An external Guid
+    @NotNull
+    @Getter @Setter private UUID externalGuid; // An external Guid
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Keyword, name = "threadGuid")
-    private UUID threadGuid; // A thread Guid
+    @Getter @Setter private UUID threadGuid; // A thread Guid
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Keyword, name = "entryGuid")
-    private UUID entryGuid; // A Guid for this entry
+    @Getter @Setter private UUID entryGuid; // A Guid for this entry
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonDeserialize(using = UUIDDeserializer.class)
     @Field(type = FieldType.Keyword, name = "threadGuidParent")
-    private UUID threadGuidParent; // A Guid for this entry's parent
+    @Getter @Setter private UUID threadGuidParent; // A Guid for this entry's parent
     
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Text, name = "content")
-    private String content;
+    @Getter @Setter private String content;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
     @JsonSerialize(using = CustomDateSerializer.class)
-    private Date created;
+    @JsonDeserialize(using = CustomDateDeserializer.class)
+    @Getter @Setter private Date created;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Field(type = FieldType.Date, name = "archived", format = DateFormat.custom, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
     @JsonSerialize(using = CustomDateSerializer.class)
-    private Date archived;
+    @JsonDeserialize(using = CustomDateDeserializer.class)
+    @Getter @Setter private Date archived;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<NotesData> threads = null; // answers/responses to this answer
+    @Getter @Setter private List<NotesData> threads = null; // answers/responses to this answer
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by
-
-    public NotesData(UUID guid, UUID externalGuid, UUID threadGuid, UUID entryGuid, UUID threadGuidParent, 
-                     String content, Date created, Date archived, List<NotesData> threads, List<NotesData> history) {
-        this.guid = guid;
-        this.externalGuid = externalGuid;
-        this.threadGuid = threadGuid;
-        this.entryGuid = entryGuid;
-        this.threadGuidParent = threadGuidParent;
-        this.content = content;
-        this.created = created;
-        this.archived = archived;
-        this.threads = threads;
-        this.history = history;
-    }
-    
-    public NotesData(){}
-
-    public UUID getGuid() {
-        return guid;
-    }
-
-    public void setGuid(UUID guid) {
-        this.guid = guid;
-    }
-
-    public UUID getExternalGuid() {
-        return externalGuid;
-    }
-
-    public void setExternalGuid(UUID externalGuid) {
-        this.externalGuid = externalGuid;
-    }
-
-    public UUID getThreadGuid() {
-        return threadGuid;
-    }
-
-    public void setThreadGuid(UUID threadGuid) {
-        this.threadGuid = threadGuid;
-    }
-
-    public UUID getEntryGuid() {
-        return entryGuid;
-    }
-
-    public void setEntryGuid(UUID entryGuid) {
-        this.entryGuid = entryGuid;
-    }
-
-    public UUID getThreadGuidParent() {
-        return threadGuidParent;
-    }
-
-    public void setThreadGuidParent(UUID threadGuidParent) {
-        this.threadGuidParent = threadGuidParent;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public void setThreads(List<NotesData> threads) {
-        this.threads = threads;
-    }
-
-    public Date getCreated() {
-        return created;
-    }
-
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    public Date getArchived() {
-        return archived;
-    }
-
-    public void setArchived(Date archived) {
-        this.archived = archived;
-    }
-
-    public List<NotesData> getThreads() {
-        return threads;
-    }
-
-    public void setAnswers(List<NotesData> answers) {
-        this.threads = answers;
-    }
-
-    public List<NotesData> getHistory() {
-        return history;
-    }
-
-    public void setHistory(List<NotesData> history) {
-        this.history = history;
-    }
+    @Getter @Setter private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by
 
     public void addThreads(NotesData threads, int index) {
         if( this.threads == null) {
@@ -186,71 +96,4 @@ public class NotesData {
             throw new RuntimeException(e);
         }
     }
-    
-    public static class Builder {
-        private UUID guid = UUID.randomUUID(); // Unique for the document and also the Elasticsearch key/id
-        private UUID externalGuid; // An external Guid
-        private UUID threadGuid; // A thread Guid
-        private UUID entryGuid; // A Guid for this entry
-        private UUID threadGuidParent; // A Guid for this entry's parent
-        private String content;
-        private Date created;
-        private Date archived;
-        private List<NotesData> threads = null; // answers/responses to this answer
-        private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by
-
-        public Builder setGuid(UUID guid) {
-            this.guid = guid;
-            return this;
-        }
-
-        public Builder setExternalGuid(UUID externalGuid) {
-            this.externalGuid = externalGuid;
-            return this;
-        }
-
-        public Builder setThreadGuid(UUID threadGuid) {
-            this.threadGuid = threadGuid;
-            return this;
-        }
-
-        public Builder setEntryGuid(UUID entryGuid) {
-            this.entryGuid = entryGuid;
-            return this;
-        }
-
-        public Builder setThreadGuidParent(UUID threadGuidParent) {
-            this.threadGuidParent = threadGuidParent;
-            return this;
-        }
-
-        public Builder setContent(String content) {
-            this.content = content;
-            return this;
-        }
-
-        public Builder setCreated(Date created) {
-            this.created = created;
-            return this;
-        }
-
-        public Builder setArchived(Date archived) {
-            this.archived = archived;
-            return this;
-        }
-
-        public Builder setThreads(List<NotesData> threads) {
-            this.threads = threads;
-            return this;
-        }
-
-        public Builder setHistory(List<NotesData> history) {
-            this.history = history;
-            return this;
-        }
-        
-        public NotesData build() {
-            return new NotesData(guid,externalGuid,threadGuid,entryGuid,threadGuidParent,content,created,archived,threads,history);
-        }
-    } 
 }

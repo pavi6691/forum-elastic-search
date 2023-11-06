@@ -25,9 +25,9 @@ public class PSRTest extends BaseTest {
     static final String EXTERNAL_GUID = "164c1633-44f0-4eee-8491-d5e6a539b300";
     @Test
     void SaveEntries() {
-        NotesData entry = createNewEntry(new NotesData.Builder()
-                .setExternalGuid(UUID.fromString(EXTERNAL_GUID))
-                .setContent("New External Entry-1").build());
+        NotesData entry = createNewEntry(NotesData.builder()
+                .externalGuid(UUID.fromString(EXTERNAL_GUID))
+                .content("New External Entry-1").build());
         // create Threads
         for(int i = 0; i < NR_OF_ENTRIES; i++) {
             entry = createThread(entry, "New External Entry-Thread-" + i);

@@ -86,20 +86,20 @@ public class ESNotesService implements INotesService {
     /**
      * Update entry by guid (key). if guid is not provided, then looks for entryGUID in payload. 
      * fetches recent entry for given entryGuid and updates it and create a new entry with updated content
-     * @param notesData
+     * @param updatedEntry
      * @return updated entry
      */
     @Override
-    public NotesData update(NotesData notesData) {
+    public NotesData update(NotesData updatedEntry) {
         NotesData  notesDataToUpdate = null;
-        if(notesData.getGuid() != null) {
-            notesDataToUpdate = searchByGuid(notesData.getGuid());
+        if(updatedEntry.getGuid() != null) {
+            notesDataToUpdate = searchByGuid(updatedEntry.getGuid());
             if(notesDataToUpdate == null) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
-        } else if (notesData.getEntryGuid() != null) {
+        } else if (updatedEntry.getEntryGuid() != null) {
             List<NotesData> searchResult = iNotesOperations.search(new SearchByEntryGuid()
-                    .setSearchBy(notesData.getEntryGuid().toString())
+                    .setSearchBy(updatedEntry.getEntryGuid().toString())
                     .setGetUpdateHistory(false).setGetArchived(true));
             if(searchResult == null || searchResult.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
@@ -108,14 +108,18 @@ public class ESNotesService implements INotesService {
         } else {
             throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"GUID is not provided,provide guid/entryGuid");
         }
+        if(updatedEntry.getCreated() == null) {
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "createdDate of entry being updated should be provided");
+        } else if(!updatedEntry.getCreated().equals(notesDataToUpdate.getCreated())) {
+            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry recently updated. please reload entry again and update");
+        }
         if(notesDataToUpdate.getArchived() != null) {
             throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
         }
         ESUtil.clearHistoryAndThreads(notesDataToUpdate);
         notesDataToUpdate.setGuid(UUID.randomUUID());
         notesDataToUpdate.setCreated(ESUtil.getCurrentDate());
-        notesDataToUpdate.setEntryGuid(notesData.getEntryGuid());
-        notesDataToUpdate.setContent(notesData.getContent());
+        notesDataToUpdate.setContent(updatedEntry.getContent());
         return esNotesRepository.save(notesDataToUpdate);
     }
 

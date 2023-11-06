@@ -45,7 +45,7 @@ public class IntegrationTest extends BaseTest {
 
     @Test
     void crud() {
-        NotesData newEntryCreated = createNewEntry(new NotesData.Builder().setExternalGuid(UUID.randomUUID()).setContent("New External Entry - 1").build());
+        NotesData newEntryCreated = createNewEntry(NotesData.builder().externalGuid(UUID.randomUUID()).content("New External Entry - 1").build());
 
         IQuery querySearchByExternalGuid = new SearchByExternalGuid().setSearchBy(newEntryCreated.getExternalGuid().toString())
                 .setGetUpdateHistory(true).setGetArchived(true);
@@ -200,8 +200,8 @@ public class IntegrationTest extends BaseTest {
 
 
         // crate Another ExternalEntry with same externalId
-        createNewEntry(new NotesData.Builder().setExternalGuid(newEntryCreated.getExternalGuid())
-                .setContent("New External Entry - 2").build());
+        createNewEntry(NotesData.builder().externalGuid(newEntryCreated.getExternalGuid())
+                .content("New External Entry - 2").build());
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,2, 11, 7, 2);
 

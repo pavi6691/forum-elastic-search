@@ -59,6 +59,7 @@ public class BaseTest {
         newEntry.setGuid(existingEntry.getGuid());
         newEntry.setContent(content);
         newEntry.setEntryGuid(existingEntry.getEntryGuid());
+        newEntry.setCreated(existingEntry.getCreated());
         NotesData newThreadUpdated = notesService.update(newEntry);
         assertEquals(existingEntry.getExternalGuid(), newThreadUpdated.getExternalGuid());
         assertEquals(existingEntry.getEntryGuid(), newThreadUpdated.getEntryGuid());

@@ -1,16 +1,14 @@
 package com.acme.poc.notes.exceptions;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@RequiredArgsConstructor
 public class FieldValidationException extends BaseRestException {
-    Map<String,String> fields = new HashMap<>();
-    public FieldValidationException(String status, String message, String fieldName, String value) {
+    @Getter private Map<String,String> fields = new HashMap<>();
+    public FieldValidationException(String status, String message) {
         super(status, message);
-        fields.put(fieldName,value);
-    }
-
-    public Map<String, String> getFields() {
-        return fields;
     }
 }
