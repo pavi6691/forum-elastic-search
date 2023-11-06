@@ -1,5 +1,6 @@
 package com.acme.poc.notes.serialzation;
 
+import com.acme.poc.notes.core.NotesConstants;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -14,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class CustomDateDeserializer extends JsonDeserializer<Date> {
-    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+    private final SimpleDateFormat formatter = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
 
     @Override
     public Date deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JacksonException {

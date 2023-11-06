@@ -29,11 +29,11 @@
       },
       "created": {
         "type": "date",
-        "pattern": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
+        "pattern": "uuuu-MM-dd'T'HH:mm:ss.SSSSSSXXX"
       },
       "archived": {
         "type": "date",
-        "pattern": "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX"
+        "pattern": "uuuu-MM-dd'T'HH:mm:ss.SSSSSSXXX"
       }
     }
   }

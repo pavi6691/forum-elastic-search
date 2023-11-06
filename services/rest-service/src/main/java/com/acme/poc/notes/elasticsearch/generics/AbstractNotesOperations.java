@@ -1,5 +1,6 @@
 package com.acme.poc.notes.elasticsearch.generics;
 
+import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByExternalGuid;
@@ -98,7 +99,7 @@ public abstract class AbstractNotesOperations implements INotesOperations {
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
                 .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
         if(query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
             try {
                 searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(query.searchAfter().toString()).toInstant().toEpochMilli()));
             } catch (ParseException e) {

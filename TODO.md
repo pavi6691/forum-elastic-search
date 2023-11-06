@@ -35,7 +35,7 @@
 
 ## Fixed
 
-- [x] In general use timestamps as `yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX`. Currently `"created"` value is stored
+- [x] In general use timestamps as `uuuu-MM-dd'T'HH:mm:ss.SSSSSSXXX`. Currently `"created"` value is stored
       with only 3 digits for milliseconds.
 - [x] When saving data to Elasticsearch:
   - [x] Do not store `"_class" : "com.acme.poc.notes.elasticsearch.pojo.NotesData"`.
