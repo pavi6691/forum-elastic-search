@@ -20,17 +20,13 @@
 - [ ] Open search API support, flag based to switch between rest high level client and open search?
 - [ ] Do need an entry that represent an item? Ex: if YouTube represents externalGuid, each video on it is an
       item. for every video,we may find list of entries with threads.
-
+- Below two uses cases are covered with same fix
+  - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads. 
+  - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
 
 ## Later phase(s)
 
-- [ ] Create index at startup if not exists, should use mapping from configs.
-- [ ] Delete/archive - These operations are performed on selected entries when queried by ExternalGuid/EntryGuid. Fixed number entries are returned from es to perform these operation, run a loop
-- [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual 
 - [ ] SpringDoc open search
-- [ ] Pagination - make this searchAfter internal to backend with session timeout?
-- [ ] Sorting provision by DESC/ASC
-- [ ] provision for size in queryParam, if not provided, default 1K records are returned
 - [ ] delete only histories?
 - [ ] JUnit, Integration and PSR Test Cases
 - [ ] POC on Logging and tracing
@@ -52,3 +48,18 @@
     documents that has that `externalGuid`.
 - [X] Addressed corner cases for search archived entries by entryGuid
 - [X] Validation for update API to make sure latest version of entry is being modified. if entry is updated by other user, an error is shown
+
+- [X] When searched archived entries by entry, there are multiple corner cases to handle 
+- [X] Pagination - make this searchAfter internal to backend with session timeout?
+- [X] Sorting provision by DESC/ASC
+- [X] Create index at startup if not exists, should use mapping from configs.
+- [X] Delete/archive - These operations are performed on selected entries when queried by ExternalGuid/EntryGuid. Fixed number of entries are returned from es to perform these operation, run a loop
+- [X] provision for size in queryParam, if not provided, default 1K records are returned
+- [X] validation on update multiple user modifying same entry at the same time
+- [X] For request by entryGuid, query gets all entries that are created after the requested one. so result set from elasticsearch may contain
+      other entries that not belongs to requested entry thread. as they may have been created/updated for others but after this entry is created.
+  So further filter is done as below -
+   - [X] For entry request, exclude all other entries that doesn't belongs to the request one. only one record stored in results list
+         and threadMapping is done only for this record
+   - [X] For selection of multi entries within requested entry due to some criteria(Ex - only archived entries),
+         then map(archived - for archived filter) that will have only archived entries. these entries are presented within the requested entry thread.

@@ -20,13 +20,13 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
      * 1. Individual entry - which has no parent
      * 2. Threads - which has parent
      * 3. Histories - which has already an older entry, replace it with new and add the current one to histories
-     * 4. For single entry request, query is done for all entries created after the requested one. so result set from elasticsearch may contain 
-     *    other entries that not belongs to requested entry threads, as they may have been created/updated for others but after this entry is created. 
+     * 4. For request by entryGuid, query gets all entries that are created after the requested one. so result set from elasticsearch may contain 
+     *    other entries that not belongs to requested entry thread. as they may have been created/updated for others but after this entry is created. 
      *    So further filter is done as below -
-     *      - For Single entry request, exclude all other entries that doesn't belongs to the request one. only one record stored in results list
+     *      - For entry request, exclude all other entries that doesn't belongs to the request one. only one record stored in results list
      *        and threadMapping is done only for this record
      *      - For selection of multi entries within requested entry due to some criteria(Ex - only archived entries), 
-     *        then create map(archived - for archived filter) that will have only archived entries. 
+     *        then map(archived - for archived filter) that will have only archived entries. 
      *        these entries are presented within the requested entry thread.
      *
      * This method takes O(n) linear time
