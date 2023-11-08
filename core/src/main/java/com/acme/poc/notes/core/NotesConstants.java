@@ -6,7 +6,7 @@ public class NotesConstants {
 
 
     // Timestamps
-    public static final String TIMESTAMP_ISO8601 = "uuuu-MM-dd'T'HH:mm:ss.SSSSSSXXX";
+    public static final String TIMESTAMP_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX";
 
     // Timeouts
     public static final long TIMEOUT_ARCHIVE = TimeUnit.SECONDS.toMillis(10);
@@ -20,7 +20,9 @@ public class NotesConstants {
 
     // REST query string parameters
     public static final String API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME = "indexName";
-    public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED = "archived";
+    public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS = "includeVersions";
+    public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED = "includeArchived";
+    public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_DELETED = "includeDeleted";
 
     // REST API endpoints
     public static final String API_ENDPOINT_PREFIX = "/api/v1";
@@ -52,8 +54,8 @@ public class NotesConstants {
     public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID = "/search/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
     public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID = "/search/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     // PUT
-    public static final String API_ENDPOINT_NOTES_UPDATE_BY_GUID = "/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
-    public static final String API_ENDPOINT_NOTES_UPDATE_BY_ENTRY_GUID = "/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_UPDATE_BY_GUID = "/guid";
+    public static final String API_ENDPOINT_NOTES_UPDATE_BY_ENTRY_GUID = "/entryguid";
     public static final String API_ENDPOINT_NOTES_ARCHIVE_BY_GUID = "/archive/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
     public static final String API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID = "/archive/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     public static final String API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID = "/archive/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
