@@ -3,6 +3,8 @@
 
 ## Current phase
 
+- [ ] Change query string parameter `getUpdateHistory` to `includeVersions`
+- [ ] Change query string parameter `getArchivedResponse` to ... ehh... how is this different from `getUpdateHistory`? If relevant then change its name to `includeXXXX` where XXXX is something descriptive.
 - [ ] Replace getters/setters with Lombok's @Data or @Setter/@Getter and builders with Lombok's @Builder
 - [ ] First and foremost, refactor, simplify and optimize code and give design perspective to it. Use different
       strategy to consume data from elasticsearch and process it as:
