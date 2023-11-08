@@ -2,6 +2,7 @@
 
 
 ## Current phase
+- [ ] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed.
 - [ ] Add logs, handle exceptions and other validations if any
   - [ ] Use default Logback instead of Log4j2
 - [ ] record class
