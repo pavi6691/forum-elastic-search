@@ -2,7 +2,7 @@
 
 
 ## Current phase
-- [ ] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed.
+- [ ] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
 - [ ] Add logs, handle exceptions and other validations if any
   - [ ] Use default Logback instead of Log4j2
 - [ ] record class
