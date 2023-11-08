@@ -3,9 +3,14 @@ package com.acme.poc.notes.util;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 public class ESUtil {
+
+    public static void flatten(List<NotesData> results, Set<NotesData> entries) {
+        results.forEach(e -> flatten(e,entries));
+    }
 
     public static void flatten(NotesData root, Set<NotesData> entries) {
         entries.add(root);

@@ -1,11 +1,13 @@
 package com.acme.poc.notes.service;
 
+import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.elasticsearch.esrepo.ESNotesRepository;
 import com.acme.poc.notes.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.elasticsearch.metadata.ResourceFileReaderService;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByThreadGuid;
+import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.util.ESUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,14 +16,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service to perform elastic search operations
@@ -36,6 +42,9 @@ public class ESNotesService implements INotesService {
     private ESNotesRepository esNotesRepository;
     private ElasticsearchOperations elasticsearchOperations;
 
+    @Value("${default.number.of.entries.to.return}")
+    private int default_number_of_entries;
+    
     static Logger log = LogManager.getLogger(ESNotesService.class);
     
     public ESNotesService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
@@ -56,7 +65,7 @@ public class ESNotesService implements INotesService {
         notesData.setCreated(ESUtil.getCurrentDate());
         if(notesData.getThreadGuidParent() != null) {
             // It's a thread that needs to created
-            List<NotesData> existingEntry = iNotesOperations.search(SearchByThreadGuid.builder()
+            List<NotesData> existingEntry = iNotesOperations.fetchAndProcessEsResults(SearchByThreadGuid.builder()
                     .searchGuid(notesData.getThreadGuidParent().toString())
                     .getUpdateHistory(false).getArchived(true).build());
             if(existingEntry == null && !existingEntry.isEmpty()) {
@@ -115,7 +124,7 @@ public class ESNotesService implements INotesService {
     public NotesData updateByEntryGuid(NotesData updatedEntry) {
         NotesData  existingEntry;
         if (updatedEntry.getEntryGuid() != null) {
-            List<NotesData> searchResult = iNotesOperations.search(SearchByEntryGuid.builder()
+            List<NotesData> searchResult = iNotesOperations.fetchAndProcessEsResults(SearchByEntryGuid.builder()
                     .searchGuid(updatedEntry.getEntryGuid().toString())
                     .getUpdateHistory(false).getArchived(true).build());
             if(searchResult == null || searchResult.isEmpty()) {
@@ -151,15 +160,18 @@ public class ESNotesService implements INotesService {
      */
     @Override
     public List<NotesData> archive(IQuery query) {
-        List<NotesData> result = iNotesOperations.search(query);
-        Set<NotesData> entriesToArchive = new HashSet<>();
-        if(result != null && !result.isEmpty())
-            ESUtil.flatten(result.get(0),entriesToArchive);
-        if(result == null || entriesToArchive.isEmpty()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entries found");
+        List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
+        List<NotesData> processed = iNotesOperations.process(query,searchHitList.stream().iterator());
+        try {
+            Set<NotesData> flatten = new HashSet<>();
+            ESUtil.flatten(processed,flatten);
+            archive(flatten);
+        } catch (Exception e) {
+            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while archiving entries. error = " + e.getMessage());
         }
-        update(entriesToArchive);
-        return iNotesOperations.search(query);
+        AbstractQuery getArchived = ((AbstractQuery)query);
+        getArchived.setGetArchived(true);
+        return iNotesOperations.process(getArchived,getAllEntries(getArchived).stream().iterator());
     }
 
     /**
@@ -173,18 +185,22 @@ public class ESNotesService implements INotesService {
         if (!result.isPresent()) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entry found for given guid");
         }
-        update(Set.of(result.get()));
+        archive(Set.of(result.get()));
         return List.of(esNotesRepository.findById(guid).orElse(null));
     }
-
-
-    // TODO when there are more than default number of records to archive? 1000 is max size
-    private void update(Set<NotesData> entriesToArchive) {
+    
+    private void archive(Set<NotesData> entriesToArchive) {
         Date dateTime = ESUtil.getCurrentDate();
         entriesToArchive.forEach(entryToArchive -> {
-            entryToArchive.setArchived(dateTime);
-            ESUtil.clearHistoryAndThreads(entryToArchive);// clean up as threads and history will be also stored in es
-            esNotesRepository.save(entryToArchive);
+            esNotesRepository.save(NotesData.builder()
+                    .archived(dateTime)
+                    .externalGuid(entryToArchive.getExternalGuid())
+                    .entryGuid(entryToArchive.getEntryGuid())
+                    .guid(entryToArchive.getGuid())
+                    .threadGuid(entryToArchive.getThreadGuid())
+                    .threadGuidParent(entryToArchive.getThreadGuidParent())
+                    .content(entryToArchive.getContent())
+                    .created(entryToArchive.getCreated()).build());
         });
     }
 
@@ -193,23 +209,18 @@ public class ESNotesService implements INotesService {
      * @param query - search entries for given externalGuid/entryGuid
      * @return deleted entries
      */
-    // TODO when there are more than default number of records to delete? 1000 is max size
     @Override
     public List<NotesData> delete(IQuery query) {
-        List<NotesData> esResults = iNotesOperations.search(query);
-        if(esResults != null && !esResults.isEmpty()) {
-            Set<NotesData> entriesToDelete = new HashSet<>();
-            esResults.stream().forEach(e -> ESUtil.flatten(e, entriesToDelete));
-            try {
-                esNotesRepository.deleteAll(entriesToDelete);
-            } catch (Exception e) {
-                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while deleting entries. error=" + e.getMessage());
-            }
+        List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
+        List<NotesData> processed = iNotesOperations.process(query,searchHitList.stream().iterator());
+        try {
+            Set<NotesData> flatten = new HashSet<>();
+            ESUtil.flatten(processed,flatten);
+            esNotesRepository.deleteAll(flatten);
+        } catch (Exception e) {
+            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while deleting entries. error = " + e.getMessage());
         }
-        if(esResults == null) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries found to delete");
-        }
-        return esResults;
+        return processed;
     }
 
     @Override
@@ -237,6 +248,7 @@ public class ESNotesService implements INotesService {
 //            IndexMetadataConfiguration indexMetadataConfiguration =
 //            resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
 //            Template template = resourceFileReaderService.getTemplateFile(Constants.NOTE_V1_INDEX_TEMPLATE,this.getClass());
+//            mapping = String.format(mapping, NotesConstants.TIMESTAMP_ISO8601,NotesConstants.TIMESTAMP_ISO8601);
 //            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
 //            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
             IndexOperations indexOperations = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
@@ -254,6 +266,28 @@ public class ESNotesService implements INotesService {
 
     @Override
     public List<NotesData> search(IQuery query) {
-        return iNotesOperations.search(query);
+        return iNotesOperations.fetchAndProcessEsResults(query);
+    }
+    
+    private List<SearchHit<NotesData>> getAllEntries(IQuery query) {
+        long startTime = System.currentTimeMillis();
+        boolean timeout = false;
+        List<SearchHit<NotesData>> searchHitList = new ArrayList<>();
+        SearchHits<NotesData> searchHits = iNotesOperations.getEsResults(query);
+        searchHitList.addAll(searchHits.getSearchHits());
+        while(searchHits != null && !searchHits.isEmpty() && !timeout && searchHits.getSearchHits().size() == default_number_of_entries) {
+            searchHitList.addAll(searchHits.getSearchHits());
+            List<Object> sortValues = searchHits.getSearchHits().get(searchHits.getSearchHits().size()-1).getSortValues();
+            query.searchAfter(sortValues.size() > 0 ? sortValues.get(0) : null);
+            searchHits = iNotesOperations.getEsResults(query);
+            timeout = (System.currentTimeMillis() - startTime) >= NotesConstants.DELETE_ENTRIES_TIME_OUT;
+        }
+        if(timeout) {
+            throw new RestStatusException(HttpStatus.SC_REQUEST_TIMEOUT,"delete entries operation timed out");
+        }
+        if(searchHitList == null || searchHitList.isEmpty()) {
+            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"No entries found to perform this operation");
+        }
+        return searchHitList;
     }
 }

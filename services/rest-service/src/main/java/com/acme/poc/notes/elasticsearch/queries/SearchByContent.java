@@ -10,7 +10,7 @@ import lombok.experimental.SuperBuilder;
  */
 @SuperBuilder
 public class SearchByContent extends AbstractQuery {
-    private static String QUERY = "{\n" +
+    private static final String QUERY = "{\n" +
             "    \"wildcard\": {\n" +
             "      \""+ EsNotesFields.CONTENT.getEsFieldName()+"\": {\n" +
             "        \"value\": \"*%s*\",\n" +

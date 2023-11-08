@@ -15,7 +15,7 @@ import java.util.*;
 public class NotesProcessorV2 extends AbstractNotesProcessor {
 
     @Override
-    List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
+    public List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
         List<NotesData> results = new ArrayList<>();
         Map<UUID,Map<UUID,List<NotesData>>> processMap = new HashMap<>();
         Set<UUID> onlyThreads = new HashSet<>();

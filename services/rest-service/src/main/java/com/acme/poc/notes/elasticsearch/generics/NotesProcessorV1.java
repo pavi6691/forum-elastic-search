@@ -25,7 +25,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
      * @return
      */
     @Override
-    List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
+    public List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
         return null;
     }
 
@@ -39,7 +39,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
      * - can return both archived and histories
      */
     @Override
-    public List<NotesData> search(IQuery query) {
+    public List<NotesData> fetchAndProcessEsResults(IQuery query) {
         List<NotesData> results = new ArrayList<>();
         Set<String> doNotSearchFurtherForHistory = new HashSet<>();
             Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(query);

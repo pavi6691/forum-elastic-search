@@ -12,6 +12,7 @@
         get the response in one go and process them internally. Both implementation can be kept with flag
 - [ ] Add logs, handle exceptions and other validations if any
   - [ ] Use default Logback instead of Log4j2
+- [ ] record class
 
 
 ## Under consideration
@@ -23,9 +24,13 @@
 
 ## Later phase(s)
 
-- [ ] SpringDoc OpenAPI 3
+- [ ] Create index at startup if not exists, should use mapping from configs.
+- [ ] Delete/archive - These operations are performed on selected entries when queried by ExternalGuid/EntryGuid. Fixed number entries are returned from es to perform these operation, run a loop
+- [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual 
+- [ ] SpringDoc open search
 - [ ] Pagination - make this searchAfter internal to backend with session timeout?
 - [ ] Sorting provision by DESC/ASC
+- [ ] provision for size in queryParam, if not provided, default 1K records are returned
 - [ ] delete only histories?
 - [ ] JUnit, Integration and PSR Test Cases
 - [ ] POC on Logging and tracing
@@ -45,3 +50,5 @@
 - [x] GET `/api/v1/search/external?externalGuid=...`
   - When searching for an `externalGuid` it only returns the first document found. It should return all
     documents that has that `externalGuid`.
+- [X] Addressed corner cases for search archived entries by entryGuid
+- [X] Validation for update API to make sure latest version of entry is being modified. if entry is updated by other user, an error is shown

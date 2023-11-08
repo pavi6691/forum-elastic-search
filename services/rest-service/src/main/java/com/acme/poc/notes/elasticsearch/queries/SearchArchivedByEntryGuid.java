@@ -15,7 +15,7 @@ import java.util.Iterator;
  */
 @SuperBuilder
 public class SearchArchivedByEntryGuid extends AbstractQuery {
-    private static String QUERY = "{\n" +
+    private static final String QUERY = "{\n" +
             "  \"bool\": {\n" +
             "    \"must\": [\n" +
             "      {\n" +

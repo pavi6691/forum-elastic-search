@@ -67,7 +67,8 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
                         threadMapping.put(entry.getThreadGuid(),entry);
                     } else if(threadMapping.containsKey(entry.getThreadGuidParent())) {
                         threadMapping.put(entry.getThreadGuid(),entry);
-                        if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getThreadGuidParent())) {
+                        if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getThreadGuidParent()) &&
+                                threadMapping.get(entry.getThreadGuidParent()).getArchived() == null) {
                             addEntries(results,entry,query);
                             archivedEntries.put(entry.getThreadGuid(), entry);
                         }

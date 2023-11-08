@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * abstraction for executing search query.
@@ -40,8 +41,6 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     private ElasticsearchOperations elasticsearchOperations;
 
     private List<Object> sortValues = new ArrayList<>();
-
-    abstract List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults);
     
     
     /**
@@ -59,7 +58,16 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      * - filter both archived and histories
      */
     @Override
-    public List<NotesData> search(IQuery query) {
+    public List<NotesData> fetchAndProcessEsResults(IQuery query) {
+        SearchHits<NotesData> searchHits = getEsResults(query);
+        if(searchHits != null && searchHits.getSearchHits().size() > 0) {
+            return process(query,searchHits.stream().iterator());
+        }
+        return new ArrayList<>();
+    }
+    
+    @Override
+    public SearchHits<NotesData> getEsResults(IQuery query) {
         SearchHits<NotesData> searchHits = execSearchQuery(query);
         if(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
             // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
@@ -69,8 +77,8 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                     NotesData rootEntry = rootEntries.next().getContent();
                     if (query.getArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
                         IQuery entryQuery = SearchByExternalGuid.builder()
-                                .size(((AbstractQuery) query).getSize())
-                                .sortOrder(((AbstractQuery) query).getSortOrder())
+                                .size(query.getSize())
+                                .sortOrder(query.getSortOrder())
                                 .searchAfter(((AbstractQuery) query).getSearchAfter())
                                 .getArchived(query.getArchived())
                                 .getUpdateHistory(query.getUpdateHistory())
@@ -81,13 +89,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                 }
             }
         }
-        if(searchHits != null && searchHits.getSearchHits().size() > 0) {
-            if(searchHits.getSearchHits().size() == 1) { // No need to process as its just one entry
-                return List.of(searchHits.stream().iterator().next().getContent());
-            }
-            return process(query,searchHits.stream().iterator());
-        }
-        return new ArrayList<>();
+        return searchHits;
     }
 
     /**
@@ -102,7 +104,11 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         if(query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
             SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
             try {
-                searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(query.searchAfter().toString()).toInstant().toEpochMilli()));
+                if(getTimeUnit(Long.valueOf(query.searchAfter().toString()))) {
+                    searchQueryBuilder.withSearchAfter(List.of(query.searchAfter().toString()));
+                } else {
+                    searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(query.searchAfter().toString()).toInstant().toEpochMilli()));
+                }
             } catch (ParseException e) {
                 throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"Incorrect date format on searchAfter param");
             }
@@ -156,5 +162,13 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     protected boolean filterArchived(IQuery query, NotesData entry, List<NotesData> results) {
         return ((!query.getArchived() && entry.getArchived() != null) ||
                 (query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null && !results.isEmpty());
+    }
+
+    private static boolean getTimeUnit(long timeValue) {
+        long millisInUnit = TimeUnit.MILLISECONDS.toMillis(1);
+        if (timeValue % millisInUnit == 0) {
+            return true;
+        }
+        return false; // Unknown time unit
     }
 }

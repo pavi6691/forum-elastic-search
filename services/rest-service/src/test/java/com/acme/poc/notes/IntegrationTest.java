@@ -58,7 +58,7 @@ public class IntegrationTest extends BaseTest {
         validateAll(searchResult, 1,2, 1, 0);
 
         // create Thread 2
-        createThread(newEntryCreated,"New External Entry-Thread-2");
+        NotesData thread2 = createThread(newEntryCreated,"New External Entry-Thread-2");
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,1, 3, 2, 0);
 
@@ -207,15 +207,38 @@ public class IntegrationTest extends BaseTest {
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,2, 11, 7, 2);
 
-        resultDelete = notesService.delete(SearchArchivedByExternalGuid.builder().searchGuid(newEntryCreated.getExternalGuid().toString())
-                .getUpdateHistory(true).build());
+        
+        IQuery queryArchivedRootEntry = SearchArchivedByEntryGuid.builder().searchGuid(newEntryCreated.getEntryGuid().toString())
+                .getUpdateHistory(true).build();
+        resultDelete = notesService.delete(queryArchivedRootEntry);
         validateAll(resultDelete,3, 7, 2, 2);
+
+        
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,2, 4, 2, 0);
+        NotesData thread_4_1 = createThread(thread4,"New External Entry-Thread-4-1");
+        searchResult = notesService.archive(SearchByEntryGuid.builder().searchGuid(thread_4_1.getEntryGuid().toString())
+                .getUpdateHistory(true).getArchived(false).build());
+        validateAll(searchResult,1, 1, 0, 0);
+        searchResult = notesService.archive(SearchByEntryGuid.builder().searchGuid(thread2.getEntryGuid().toString())
+                .getUpdateHistory(true).getArchived(false).build());
+        validateAll(searchResult,1, 1, 0, 0);
+        searchResult = notesService.search(queryArchivedRootEntry);
+        validateAll(searchResult,2, 2, 0, 0);
+
+        // this make sure it archives entire entry. where some thread entry have already been archived. 
+        // so when searched results should contain one entry with all threads
+        searchResult = notesService.archive(SearchByEntryGuid.builder().searchGuid(newEntryCreated.getEntryGuid().toString())
+                .getUpdateHistory(true).getArchived(false).build());
+        validateAll(searchResult,1, 4, 3, 0);
+        searchResult = notesService.search(queryArchivedRootEntry);
+        validateAll(searchResult,1, 4, 3, 0);
+        resultDelete = notesService.delete(queryArchivedRootEntry);
+        validateAll(resultDelete,1, 4, 3, 0);
         
         // delete
         resultDelete = notesService.delete(querySearchByExternalGuid);
-        validateAll(resultDelete,2, 4, 2, 0);
+        validateAll(resultDelete,1, 1, 0, 0);
         searchResult = notesService.search(querySearchByExternalGuid);
         validateAll(searchResult,0, 0, 0, 0);
     }

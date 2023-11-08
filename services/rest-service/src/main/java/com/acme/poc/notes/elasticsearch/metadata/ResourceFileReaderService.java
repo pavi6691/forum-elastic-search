@@ -52,7 +52,8 @@ public class ResourceFileReaderService {
     public String getMappingFromFile(String mappingFile, Class resourceClass) throws IOException {
         String mappingString;
         try {
-            mappingString =  getFileFromResources(mappingFile, resourceClass);
+            String filePath = Constants.MAPPING_DIR + mappingFile;
+            mappingString =  getFileFromResources(filePath, resourceClass);
         } catch (IOException | NullPointerException e) {
             throw new RuntimeException("mapping file does not exist"+resourceClass.toString());
         }
