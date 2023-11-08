@@ -5,6 +5,8 @@
 
 - [ ] Change query string parameter `getUpdateHistory` to `includeVersions`
 - [ ] Change query string parameter `getArchivedResponse` to ... ehh... how is this different from `getUpdateHistory`? If relevant then change its name to `includeXXXX` where XXXX is something descriptive.
+- [ ] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed.
+- [ ] Implement AdminResource (currently commented out code)
 - [ ] Replace getters/setters with Lombok's @Data or @Setter/@Getter and builders with Lombok's @Builder
 - [ ] First and foremost, refactor, simplify and optimize code and give design perspective to it. Use different
       strategy to consume data from elasticsearch and process it as:
