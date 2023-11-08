@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.RestStatusException;
@@ -27,17 +26,16 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Service to perform elastic search operations
  */
 @Service
 public class ESNotesService implements INotesService {
-    @Qualifier("notesProcessorV3")
-    @Autowired
+
+    static Logger log = LogManager.getLogger(ESNotesService.class);
+
     private INotesOperations iNotesOperations;
-    @Autowired
     private ResourceFileReaderService resourceFileReaderService;
     private ESNotesRepository esNotesRepository;
     private ElasticsearchOperations elasticsearchOperations;
@@ -45,39 +43,39 @@ public class ESNotesService implements INotesService {
     @Value("${default.number.of.entries.to.return}")
     private int default_number_of_entries;
     
-    static Logger log = LogManager.getLogger(ESNotesService.class);
-    
-    public ESNotesService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
+
+    public ESNotesService(@Qualifier("notesProcessorV3") INotesOperations iNotesOperations, ResourceFileReaderService resourceFileReaderService, ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
+        this.iNotesOperations = iNotesOperations;
+        this.resourceFileReaderService = resourceFileReaderService;
         this.esNotesRepository = esNotesRepository;
         this.elasticsearchOperations = elasticsearchOperations;
     }
 
     /**
-     * creates new entry, or a thread if threadGuidParent is provided
-     * @param notesData
-     * @return Entry that's created and stored in elastic search
+     * Create new entry or a thread if threadGuidParent is provided
+     *
+     * @param notesData Data for creating a new note entry
+     * @return NotesData that is created and stored in Elasticsearch
      */
     @Override
-    public NotesData saveNew(NotesData notesData) {
+    public NotesData create(NotesData notesData) {
         notesData.setGuid(UUID.randomUUID());
         notesData.setEntryGuid(UUID.randomUUID());
         notesData.setThreadGuid(UUID.randomUUID());
         notesData.setCreated(ESUtil.getCurrentDate());
-        if(notesData.getThreadGuidParent() != null) {
-            // It's a thread that needs to created
+
+        if (notesData.getThreadGuidParent() != null) {  // It's a thread that needs to created
             List<NotesData> existingEntry = iNotesOperations.fetchAndProcessEsResults(SearchByThreadGuid.builder()
                     .searchGuid(notesData.getThreadGuidParent().toString())
                     .getUpdateHistory(false).getArchived(true).build());
-            if(existingEntry == null && !existingEntry.isEmpty()) {
-                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,String.format("Cannot create new thread. No entry found for threadGuid=%s",
-                        notesData.getThreadGuidParent()));
-            } else if(existingEntry.get(0).getArchived() != null) {
-                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,
-                        String.format("Entry is archived cannot add thread. ExternalGuid=%s, EntryGuid=%s",
-                                existingEntry.get(0).getExternalGuid(), existingEntry.get(0).getEntryGuid()));
-            } else {
-                notesData.setExternalGuid(existingEntry.get(0).getExternalGuid());
+            if (existingEntry == null) {
+                throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot create new response. No entry found for threadGuid=%s", notesData.getThreadGuidParent()));
             }
+            NotesData existingEntryFirst = existingEntry.get(0);
+            if (existingEntryFirst.getArchived() != null) {
+                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, String.format("Entry is archived cannot add thread. ExternalGuid=%s, EntryGuid=%s", existingEntryFirst.getExternalGuid(), existingEntryFirst.getEntryGuid()));
+            }
+            notesData.setExternalGuid(existingEntryFirst.getExternalGuid());
         }
         return esNotesRepository.save(notesData);
     }
@@ -88,7 +86,7 @@ public class ESNotesService implements INotesService {
      * @return Entry from elasticsearch for given guid (key)
      */
     @Override
-    public NotesData searchByGuid(UUID guid) {
+    public NotesData getByGuid(UUID guid) {
         return esNotesRepository.findById(guid).orElse(null);
     }
 
@@ -103,7 +101,7 @@ public class ESNotesService implements INotesService {
     public NotesData updateByGuid(NotesData updatedEntry) {
         NotesData  existingEntry;
         if (updatedEntry.getGuid() != null) {
-            existingEntry = searchByGuid(updatedEntry.getGuid());
+            existingEntry = getByGuid(updatedEntry.getGuid());
             if(existingEntry == null) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
             }
@@ -280,7 +278,7 @@ public class ESNotesService implements INotesService {
             List<Object> sortValues = searchHits.getSearchHits().get(searchHits.getSearchHits().size()-1).getSortValues();
             query.searchAfter(sortValues.size() > 0 ? sortValues.get(0) : null);
             searchHits = iNotesOperations.getEsResults(query);
-            timeout = (System.currentTimeMillis() - startTime) >= NotesConstants.DELETE_ENTRIES_TIME_OUT;
+            timeout = (System.currentTimeMillis() - startTime) >= NotesConstants.TIMEOUT_DELETE;
         }
         if(timeout) {
             throw new RestStatusException(HttpStatus.SC_REQUEST_TIMEOUT,"delete entries operation timed out");

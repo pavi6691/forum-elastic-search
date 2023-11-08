@@ -43,7 +43,7 @@
   - [x] Do not store `"threads" : [ ]` when it has no content.
   - [x] Do not store `"history" : [ ]` when it has no content.
   - [x] Do not store null values. I haven't seen any yet, but just to make sure.
-- [x] GET `/api/v1/search/external?externalGuid=...`
+- [x] GET `/api/v1/notes/externalguid/{externalGuid}`
   - When searching for an `externalGuid` it only returns the first document found. It should return all
     documents that has that `externalGuid`.
 - [X] Addressed corner cases for search archived entries by entryGuid

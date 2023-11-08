@@ -36,7 +36,7 @@
 #### Create thread entry
 
   ```http
-  POST /api/v1/create
+  POST /api/v1/notes
   ```
   | Field              | Type     | Description                                                  |
   |--------------------|----------|--------------------------------------------------------------|
@@ -47,7 +47,7 @@
 #### Update entry either by entryGuid / guid. Either of them needs to be provided
 
   ```http
-  PUT /api/v1/update
+  PUT /api/v1/notes
   ```
   | Field       | Type     | Description                                                                     |
   |-------------|----------|---------------------------------------------------------------------------------|
@@ -59,62 +59,65 @@
 #### Search by externalGuid
 
   ```http
-  GET /api/v1/search/external?externalGuid=External-ID&getUpdateHistory=true&getArchivedResponse=true
+  GET /api/v1/notes/externalguid/{externalGuid}?getUpdateHistory=true&getArchivedResponse=true
   ```
-  | QueryParams           | Type      | Description                                                                      |
-  |-----------------------|-----------|----------------------------------------------------------------------------------|
-  | `externalGuid`        | `UUID`    | **Required**. GUID of an external system                                         |
-  | `getUpdateHistory`    | `boolean` | **Optional**. **default false** true to Include history of this entry            |
-  | `getArchivedResponse` | `boolean` | **Optional**. **default false** true to Include archived entries if exists       |
+  | Part  | Param                 | Type      | Description                                                                      |
+  |-------|-----------------------|-----------|----------------------------------------------------------------------------------|
+  | Path  | `externalGuid`        | `UUID`    | **Required**. GUID of an external system                                         |
+  | Query | `getUpdateHistory`    | `boolean` | **Optional**. **default false** true to Include history of this entry            |
+  | Query | `getArchivedResponse` | `boolean` | **Optional**. **default false** true to Include archived entries if exists       |
 
 
 #### Search by entryGuid
 
   ```http
-  GET /api/v1/search/entry?entryGuid=EntryID&getUpdateHistory=true&getArchivedResponse=true
+  GET /api/v1/notes/entryguid/{entryGuid}?getUpdateHistory=true&getArchivedResponse=true
   ```
-  | QueryParams           | Type      | Description                                                                   |
-  |-----------------------|-----------|-------------------------------------------------------------------------------|
-  | `entryGuid`           | `UUID`    | **Required**. GUID of an entry                                                |
-  | `getUpdateHistory`    | `boolean` | **Optional**. **default false** true to include all history of this entry     |
-  | `getArchivedResponse` | `boolean` | **Optional**. **default false** true to include all archived entries if exits |
+  | Part  | Param                 | Type      | Description                                                                   |
+  |-------|-----------------------|-----------|-------------------------------------------------------------------------------|
+  | Path  | `entryGuid`           | `UUID`    | **Required**. GUID of an entry                                                |
+  | Query | `getUpdateHistory`    | `boolean` | **Optional**. **default false** true to include all history of this entry     |
+  | Query | `getArchivedResponse` | `boolean` | **Optional**. **default false** true to include all archived entries if exits |
 
 
-#### Archive by ExternalGuid
+#### Archive by externalGuid
 
   ```http
-  PUT /api/v1/archive/external?externalGuid=
+  PUT /api/v1/notes/archive/externalguid/{externalGuid}
   ```
-  | QueryParams    | Type   | Description                            |
-  |----------------|--------|----------------------------------------|
-  | `externalGuid` | `UUID` | **Required**. GUID of external system  |
+  | Part | Param          | Type   | Description                            |
+  |------|----------------|--------|----------------------------------------|
+  | Path | `externalGuid` | `UUID` | **Required**. GUID of external system  |
 
 
 #### Archive by entryGuid
 
   ```http
-  PUT /api/v1/archive/entry?entryGuid=
+  PUT /api/v1/notes/archive/entryguid/{entryGuid}
   ```
-  | QueryParams | Type     | Description                        |
+  | PathParam   | Type     | Description                        |
   |-------------|----------|------------------------------------|
   | `entryGuid` | `string` | **Required**. GUID of an entryGuid |
 
 
 #### Search archived entries by externalGuid
+<mark>Q: Is this a search or just a retrieval?</mark>
 
   ```http
-  GET /api/v1/search/archive/external?externalGuid=
+  GET /api/v1/notes/search/archived/externalguid/{externalGuid}
   ```
-  | QueryParams    | Type   | Description                            |
+  | PathParams     | Type   | Description                            |
   |----------------|--------|----------------------------------------|
   | `externalGuid` | `UUID` | **Required**. GUID of external system  |
 
+
 #### Search archived entries by entryGuid
+<mark>Q: Is this a search or just a retrieval?</mark>
 
   ```http
-  GET /api/v1/search/archive/entry?entryGuid=
+  GET /api/v1/notes/search/archived/entryguid/{entryGuid}
   ```
-  | QueryParams | Type   | Description                        |
+  | PathParams  | Type   | Description                        |
   |-------------|--------|------------------------------------|
   | `entryGuid` | `UUID` | **Required**. GUID of an entryGuid |
 
@@ -122,20 +125,20 @@
 #### Delete by externalGuid
 
   ```http
-  DELETE /api/v1/delete/external?externalGuid=&entriesToDelete=archived
+  DELETE /api/v1/notes/externalguid/{externalGuid}?entriesToDelete=archived
   ```
-  | QueryParams       | Type     | Description                                                                      |
-  |-------------------|----------|----------------------------------------------------------------------------------|
-  | `externalGuid`    | `UUID`   | **Required**. GUID of external system                                            |
-  | `entriesToDelete` | `string` | **Required**. "all" to delete all entries and "archived" to delete only archived |
+  | Part  | QueryParams       | Type     | Description                                                                      |
+  |-------|-------------------|----------|----------------------------------------------------------------------------------|
+  | Path  | `externalGuid`    | `UUID`   | **Required**. GUID of external system                                            |
+  | Query | `entriesToDelete` | `string` | **Required**. "all" to delete all entries and "archived" to delete only archived |
 
 
 #### Delete by entryGuid
 
   ```http
-  DELETE /api/v1/delete/entry?entryGuid=&entriesToDelete=archived
+  DELETE /api/v1/notes/entryguid/{entryGuid}?entriesToDelete=archived
   ```
-  | QueryParams       | Type     | Description                                                                      |
-  |-------------------|----------|----------------------------------------------------------------------------------|
-  | `entryGuid`       | `UUID`   | **Required**. GUID of an entry                                                   |
-  | `entriesToDelete` | `string` | **Required**. "all" to delete all entries and "archived" to delete only archived |
+  | Part  | QueryParams       | Type     | Description                                                                      |
+  |-------|-------------------|----------|----------------------------------------------------------------------------------|
+  | Path  | `entryGuid`       | `UUID`   | **Required**. GUID of an entry                                                   |
+  | Query | `entriesToDelete` | `string` | **Required**. "all" to delete all entries and "archived" to delete only archived |

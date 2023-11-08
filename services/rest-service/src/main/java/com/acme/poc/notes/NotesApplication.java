@@ -11,7 +11,9 @@ public class NotesApplication {
 
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(NotesApplication.class, args);
-        INotesService esNotesService = context.getBean(ESNotesService.class);
-        esNotesService.createIndex(context.getEnvironment().getProperty("index.name"));
+
+//        INotesService esNotesService = context.getBean(ESNotesService.class);
+//        esNotesService.createIndex(context.getEnvironment().getProperty("index.name"));
     }
+
 }

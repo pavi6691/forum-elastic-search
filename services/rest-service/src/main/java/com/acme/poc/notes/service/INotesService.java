@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface INotesService {
-    NotesData saveNew(NotesData notesData);
-    NotesData searchByGuid(UUID guid);
+    NotesData create(NotesData notesData);
+    NotesData getByGuid(UUID guid);
     NotesData updateByGuid(NotesData notesData);
     NotesData updateByEntryGuid(NotesData notesData);
     List<NotesData> archive(IQuery iQuery);

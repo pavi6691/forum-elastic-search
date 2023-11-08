@@ -23,7 +23,7 @@ public class BaseTest {
     protected ESNotesRepository repository;
 
     protected NotesData createNewEntry(NotesData newExternalEntry) {
-        NotesData entryCreated = notesService.saveNew(newExternalEntry);
+        NotesData entryCreated = notesService.create(newExternalEntry);
         assertEquals(newExternalEntry.getExternalGuid(), entryCreated.getExternalGuid());
         assertEquals(newExternalEntry.getContent(), entryCreated.getContent());
         assertEquals(null, entryCreated.getHistory());
@@ -41,7 +41,7 @@ public class BaseTest {
         NotesData newThread = new NotesData();
         newThread.setContent(content);
         newThread.setThreadGuidParent(existingEntry.getThreadGuid());
-        NotesData newThreadCreated = notesService.saveNew(newThread);
+        NotesData newThreadCreated = notesService.create(newThread);
         assertEquals(newThread.getExternalGuid(), newThreadCreated.getExternalGuid());
         assertEquals(null, newThreadCreated.getHistory());
         assertEquals(null, newThreadCreated.getThreads());
