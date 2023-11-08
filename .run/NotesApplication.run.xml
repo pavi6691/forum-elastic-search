@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="NotesApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <module name="notes-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.acme.poc.notes.NotesApplication" />
+    <option name="VM_PARAMETERS" value="-Dlogging.level.root=INFO -Dlogging.level.org.springframework=DEBUG -Dlogging.level.com.acme=TRACE" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
