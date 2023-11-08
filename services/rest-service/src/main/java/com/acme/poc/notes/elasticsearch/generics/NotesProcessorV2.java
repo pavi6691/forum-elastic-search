@@ -56,7 +56,7 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
      * @return - entries with threads and update histories
      */
     private NotesData buildThreads(NotesData threadEntry, Map<UUID,Map<UUID,List<NotesData>>> results, Set<UUID> entryThreadUuid, IQuery query) {
-        if(query.getUpdateHistory() && threadEntry != null && results.containsKey(threadEntry.getThreadGuidParent()) &&
+        if(query.includeVersions() && threadEntry != null && results.containsKey(threadEntry.getThreadGuidParent()) &&
                 results.get(threadEntry.getThreadGuidParent()).containsKey(threadEntry.getEntryGuid())) {
             int nrOfUpdates = results.get(threadEntry.getThreadGuidParent()).get(threadEntry.getEntryGuid()).size();
             for(int i = 0; i < nrOfUpdates; i++) { 

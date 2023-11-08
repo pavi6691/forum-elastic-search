@@ -59,25 +59,25 @@
 #### Search by externalGuid
 
   ```http
-  GET /api/v1/notes/externalguid/{externalGuid}?getUpdateHistory=true&getArchivedResponse=true
+  GET /api/v1/notes/externalguid/{externalGuid}?includeVersions=true&includeArchived=true
   ```
-  | Part  | Param                 | Type      | Description                                                                      |
-  |-------|-----------------------|-----------|----------------------------------------------------------------------------------|
-  | Path  | `externalGuid`        | `UUID`    | **Required**. GUID of an external system                                         |
-  | Query | `getUpdateHistory`    | `boolean` | **Optional**. **default false** true to Include history of this entry            |
-  | Query | `getArchivedResponse` | `boolean` | **Optional**. **default false** true to Include archived entries if exists       |
+  | Part  | Param               | Type      | Description                                                                      |
+  |-------|---------------------|-----------|----------------------------------------------------------------------------------|
+  | Path  | `externalGuid`      | `UUID`    | **Required**. GUID of an external system                                         |
+  | Query | `includeVersions`   | `boolean` | **Optional**. **default false** true to Include history of this entry            |
+  | Query | `includeArchived`   | `boolean` | **Optional**. **default false** true to Include archived entries if exists       |
 
 
 #### Search by entryGuid
 
   ```http
-  GET /api/v1/notes/entryguid/{entryGuid}?getUpdateHistory=true&getArchivedResponse=true
+  GET /api/v1/notes/entryguid/{entryGuid}?includeVersions=true&includeArchived=true
   ```
-  | Part  | Param                 | Type      | Description                                                                   |
-  |-------|-----------------------|-----------|-------------------------------------------------------------------------------|
-  | Path  | `entryGuid`           | `UUID`    | **Required**. GUID of an entry                                                |
-  | Query | `getUpdateHistory`    | `boolean` | **Optional**. **default false** true to include all history of this entry     |
-  | Query | `getArchivedResponse` | `boolean` | **Optional**. **default false** true to include all archived entries if exits |
+  | Part  | Param               | Type      | Description                                                                   |
+  |-------|---------------------|-----------|-------------------------------------------------------------------------------|
+  | Path  | `entryGuid`         | `UUID`    | **Required**. GUID of an entry                                                |
+  | Query | `includeVersions`   | `boolean` | **Optional**. **default false** true to include all history of this entry     |
+  | Query | `includeArchived`   | `boolean` | **Optional**. **default false** true to include all archived entries if exits |
 
 
 #### Archive by externalGuid

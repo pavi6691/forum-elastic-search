@@ -67,7 +67,7 @@ public class ESNotesService implements INotesService {
         if (notesData.getThreadGuidParent() != null) {  // It's a thread that needs to created
             List<NotesData> existingEntry = iNotesOperations.fetchAndProcessEsResults(SearchByThreadGuid.builder()
                     .searchGuid(notesData.getThreadGuidParent().toString())
-                    .getUpdateHistory(false).getArchived(true).build());
+                    .includeVersions(false).includeArchived(true).build());
             if (existingEntry == null) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot create new response. No entry found for threadGuid=%s", notesData.getThreadGuidParent()));
             }
@@ -124,7 +124,7 @@ public class ESNotesService implements INotesService {
         if (updatedEntry.getEntryGuid() != null) {
             List<NotesData> searchResult = iNotesOperations.fetchAndProcessEsResults(SearchByEntryGuid.builder()
                     .searchGuid(updatedEntry.getEntryGuid().toString())
-                    .getUpdateHistory(false).getArchived(true).build());
+                    .includeVersions(false).includeArchived(true).build());
             if(searchResult == null || searchResult.isEmpty()) {
                 throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
             }
@@ -168,7 +168,7 @@ public class ESNotesService implements INotesService {
             throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while archiving entries. error = " + e.getMessage());
         }
         AbstractQuery getArchived = ((AbstractQuery)query);
-        getArchived.setGetArchived(true);
+        getArchived.setIncludeArchived(true);
         return iNotesOperations.process(getArchived,getAllEntries(getArchived).stream().iterator());
     }
 

@@ -75,13 +75,13 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                 Iterator<SearchHit<NotesData>> rootEntries = searchHits.stream().iterator();
                 if (rootEntries != null && rootEntries.hasNext()) {
                     NotesData rootEntry = rootEntries.next().getContent();
-                    if (query.getArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
+                    if (query.includeArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
                         IQuery entryQuery = SearchByExternalGuid.builder()
                                 .size(query.getSize())
                                 .sortOrder(query.getSortOrder())
                                 .searchAfter(((AbstractQuery) query).getSearchAfter())
-                                .getArchived(query.getArchived())
-                                .getUpdateHistory(query.getUpdateHistory())
+                                .includeArchived(query.includeArchived())
+                                .includeVersions(query.includeVersions())
                                 .searchGuid(rootEntry.getExternalGuid().toString())
                                 .createdDateTime(rootEntry.getCreated().getTime()).build();
                         searchHits = execSearchQuery(entryQuery);
@@ -120,7 +120,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
 
     protected void addHistory(NotesData existingEntry,NotesData updatedEntry, IQuery query) {
         if(!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
-            if (query.getUpdateHistory()) {
+            if (query.includeVersions()) {
                 NotesData history = new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
                         existingEntry.getEntryGuid(), existingEntry.getThreadGuidParent(), existingEntry.getContent(), existingEntry.getCreated(),
                         existingEntry.getArchived(), null, null);
@@ -160,7 +160,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      * @return true when not to select archived entry. And true for only archived request
      */
     protected boolean filterArchived(IQuery query, NotesData entry, List<NotesData> results) {
-        return ((!query.getArchived() && entry.getArchived() != null) ||
+        return ((!query.includeArchived() && entry.getArchived() != null) ||
                 (query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null && !results.isEmpty());
     }
 

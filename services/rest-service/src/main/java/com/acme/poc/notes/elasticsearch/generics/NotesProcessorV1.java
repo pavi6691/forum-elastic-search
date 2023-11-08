@@ -50,7 +50,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
                         results.add(entry);
                         continue;
                     }
-                    if (entry != null && (query.getArchived() || entry.getArchived() == null)/*do not search archived threads*/) {
+                    if (entry != null && (query.includeArchived() || entry.getArchived() == null)/*do not search archived threads*/) {
                         if(!doNotSearchFurtherForHistory.contains(entry.getEntryGuid().toString())) {
                             results.add(searchThreadsAndHistories(query,entry, new HashSet<>()));
                             doNotSearchFurtherForHistory.add(entry.getEntryGuid().toString());
@@ -80,7 +80,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
      * @return
      */
     private NotesData searchThreadsAndHistories(IQuery query, NotesData threadRoot, Set<String> entryThreadUuid) {
-        checkAndAddHistory(threadRoot,query.getUpdateHistory(),query);
+        checkAndAddHistory(threadRoot,query.includeVersions(),query);
         Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(SearchByParentThreadGuid.builder()
                 .searchGuid(threadRoot.getThreadGuid().toString()).build());
         while(searchResponseIterator.hasNext()) {
@@ -99,8 +99,8 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
         return threadRoot;
     }
 
-    private void checkAndAddHistory(NotesData entry, boolean getUpdateHistory,IQuery query) {
-        if(getUpdateHistory && entry != null) {
+    private void checkAndAddHistory(NotesData entry, boolean includeVersions,IQuery query) {
+        if(includeVersions && entry != null) {
             Iterator<SearchHit<NotesData>> historyIterator = getSearchResponse(SearchByEntryGuid.builder()
                     .searchGuid(entry.getEntryGuid().toString()).build());
             if(historyIterator.hasNext()) {

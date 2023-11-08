@@ -24,13 +24,13 @@ public class SearchByContent extends AbstractQuery {
     protected String contentToSearch;
 
     @Override
-    public boolean getUpdateHistory() {
-        return getUpdateHistory;
+    public boolean includeVersions() {
+        return includeVersions;
     }
 
     @Override
-    public boolean getArchived() {
-        return getArchived;
+    public boolean includeArchived() {
+        return includeArchived;
     }
 
     @Override

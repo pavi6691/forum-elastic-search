@@ -2,16 +2,6 @@
 
 
 ## Current phase
-
-- [ ] Change query string parameter `getUpdateHistory` to `includeVersions`
-- [ ] Change query string parameter `getArchivedResponse` to ... ehh... how is this different from `getUpdateHistory`? If relevant then change its name to `includeXXXX` where XXXX is something descriptive.
-- [ ] Replace getters/setters with Lombok's @Data or @Setter/@Getter and builders with Lombok's @Builder
-- [ ] First and foremost, refactor, simplify and optimize code and give design perspective to it. Use different
-      strategy to consume data from elasticsearch and process it as:
-  - [ ] Current implementation has incremental calls to elasticsearch for every thread. there are going to be
-        many call in single searchRequest.
-  - [ ] Provide different strategy, where there will be 1 or 2 calls/search searchRequest to elastic search and
-        get the response in one go and process them internally. Both implementation can be kept with flag
 - [ ] Add logs, handle exceptions and other validations if any
   - [ ] Use default Logback instead of Log4j2
 - [ ] record class
@@ -30,7 +20,6 @@
 
 - [ ] SpringDoc open search
 - [ ] delete only histories?
-- [ ] JUnit, Integration and PSR Test Cases
 - [ ] POC on Logging and tracing
 - [ ] Authentication and authorization
 - [ ] Scalability - lstio API gateway?
@@ -50,7 +39,13 @@
     documents that has that `externalGuid`.
 - [X] Addressed corner cases for search archived entries by entryGuid
 - [X] Validation for update API to make sure latest version of entry is being modified. if entry is updated by other user, an error is shown
-
+- [X] Replace getters/setters with Lombok's @Data or @Setter/@Getter and builders with Lombok's @Builder
+- [X] First and foremost, refactor, simplify and optimize code and give design perspective to it. Use different
+  strategy to consume data from elasticsearch and process it as:
+    - [X] Current implementation has incremental calls to elasticsearch for every thread. there are going to be
+      many call in single searchRequest.
+    - [X] Provide different strategy, where there will be 1 or 2 calls/search searchRequest to elastic search and
+      get the response in one go and process them internally. Both implementation can be kept with flag
 - [X] When searched archived entries by entry, there are multiple corner cases to handle 
 - [X] Pagination - make this searchAfter internal to backend with session timeout?
 - [X] Sorting provision by DESC/ASC
@@ -65,3 +60,6 @@
          and threadMapping is done only for this record
    - [X] For selection of multi entries within requested entry due to some criteria(Ex - only archived entries),
          then map(archived - for archived filter) that will have only archived entries. these entries are presented within the requested entry thread.
+- [X] JUnit, Integration and PSR Test Cases
+- [X] Change query string parameter `getUpdateHistory` to `includeVersions`
+- [X] Change query string parameter `getArchivedResponse` to `includeArchived` ehh... how is this different from `getUpdateHistory`? - it is to include entries archived. if false archived entries are discarded. archived entries are those with archived timestamp set.

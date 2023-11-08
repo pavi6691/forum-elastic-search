@@ -37,7 +37,7 @@ public class PSRTest extends BaseTest {
     @Test
     void searchEntries() {
         IQuery query = SearchByExternalGuid.builder().searchGuid(EXTERNAL_GUID)
-                .getUpdateHistory(true).getArchived(true).build();
+                .includeVersions(true).includeArchived(true).build();
         List<NotesData> searchResult = notesService.search(query);
         validateAll(searchResult,1,NR_OF_ENTRIES+1,NR_OF_ENTRIES,0);
     }
@@ -45,7 +45,7 @@ public class PSRTest extends BaseTest {
     @Test
     void deleteEntries() {
         IQuery query = SearchByExternalGuid.builder().searchGuid(EXTERNAL_GUID)
-                .getUpdateHistory(true).getArchived(true).build();
+                .includeVersions(true).includeArchived(true).build();
         List<NotesData> searchResult = notesService.delete(query);
         validateAll(searchResult,0,0,0,0);
     }

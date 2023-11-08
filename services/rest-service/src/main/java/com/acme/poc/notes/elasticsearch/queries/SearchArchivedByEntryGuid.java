@@ -28,7 +28,7 @@ public class SearchArchivedByEntryGuid extends AbstractQuery {
             "}";
     
     @Override
-    public boolean getArchived() {
+    public boolean includeArchived() {
         return true;
     }
 
@@ -38,7 +38,7 @@ public class SearchArchivedByEntryGuid extends AbstractQuery {
     }
 
     @Override
-    public boolean getUpdateHistory() {
-        return getUpdateHistory;
+    public boolean includeVersions() {
+        return includeVersions;
     }
 }

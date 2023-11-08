@@ -43,9 +43,9 @@ public abstract class AbstractQuery implements IQuery {
     @Getter
     protected long createdDateTime;
     @Getter
-    protected boolean getUpdateHistory;
+    protected boolean includeVersions;
     @Getter @Setter
-    protected boolean getArchived = true;
+    protected boolean includeArchived = true;
     @Getter
     protected Object searchAfter;
     @Getter
@@ -54,13 +54,13 @@ public abstract class AbstractQuery implements IQuery {
     protected SortOrder sortOrder = SortOrder.ASC;
 
     @Override
-    public boolean getUpdateHistory() {
-        return getUpdateHistory;
+    public boolean includeVersions() {
+        return includeVersions;
     }
 
     @Override
-    public boolean getArchived() {
-        return getArchived;
+    public boolean includeArchived() {
+        return includeArchived;
     }
 
     @Override
