@@ -4,6 +4,9 @@
 ## Current phase
 - [X] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
 - [X] Implement AdminResource (currently commented out code)
+- [ ] An endpoint (API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID) for returning everything related to an externalGuid is missing
+- [ ] Use TestContainers for ElasticSearch in tests instead of relying on an existing Elasticsearch being available
+- [ ] NotesData uses Date's. Shouldn't it use ZonedDateTime or similar?
 - [ ] Add logs, handle exceptions and other validations if any
 - [ ] record class
 
@@ -16,13 +19,14 @@
 - Below two uses cases are covered with same fix
   - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads. 
   - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
-- [ ] handling more than 1k thread entries? 
+- [ ] Handling more than 1k thread entries? Wasn't this solved by V3?
 
 ## Later phase(s)
 
 - [ ] Restrict size of content?
+- [ ] Actuator health and info endpoints
 - [ ] SpringDoc open search
-- [ ] delete only histories?
+- [ ] Delete only histories?
 - [ ] POC on Logging and tracing
 - [ ] Authentication and authorization
 - [ ] Scalability - lstio API gateway?
