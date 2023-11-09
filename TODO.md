@@ -2,7 +2,6 @@
 
 
 ## Current phase
-- [X] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
 - [X] Implement AdminResource (currently commented out code)
 - [ ] An endpoint (API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID) for returning everything related to an externalGuid is missing
 - [ ] Use TestContainers for ElasticSearch in tests instead of relying on an existing Elasticsearch being available
@@ -23,6 +22,7 @@
 
 ## Later phase(s)
 
+- [ ] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
 - [ ] Restrict size of content?
 - [ ] Actuator health and info endpoints
 - [ ] SpringDoc open search
