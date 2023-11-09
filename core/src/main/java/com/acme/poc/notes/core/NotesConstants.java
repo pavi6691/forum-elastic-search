@@ -27,7 +27,13 @@ public class NotesConstants {
     // REST API endpoints
     public static final String API_ENDPOINT_PREFIX = "/api/v1";
     public static final String API_ENDPOINT_DELETE = "/DELETE";
+    public static final String API_ENDPOINT_DEVOPS = "/devops";
     public static final String API_ENDPOINT_ADMIN = "/admin";
+
+    //
+    // /api/v1/devops/...
+    //
+    public static final String API_ENDPOINT_DEVOPS_ERRORS = "/errors";
 
     //
     // /api/v1/admin/...
