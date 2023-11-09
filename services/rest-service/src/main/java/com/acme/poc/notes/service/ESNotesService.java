@@ -1,4 +1,6 @@
 package com.acme.poc.notes.service;
+
+import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.elasticsearch.esrepo.ESNotesRepository;
 import com.acme.poc.notes.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.elasticsearch.metadata.ResourceFileReaderService;
@@ -10,13 +12,14 @@ import com.acme.poc.notes.service.generics.AbstractESService;
 import com.acme.poc.notes.util.ESUtil;
 import com.acme.poc.notes.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
+
+import static com.acme.poc.notes.util.ExceptionUtil.throwRestError;
 
 /**
  * Service to perform elastic search operations
@@ -29,8 +32,9 @@ public class ESNotesService extends AbstractESService implements INotesService {
     public ESNotesService(@Qualifier("notesProcessorV3") INotesOperations iNotesOperations,
                           ESNotesRepository esNotesRepository, 
                           ElasticsearchOperations elasticsearchOperations,
-                          ResourceFileReaderService resourceFileReaderService) {
-        super(iNotesOperations,esNotesRepository,elasticsearchOperations,resourceFileReaderService);
+                          ResourceFileReaderService resourceFileReaderService
+    ) {
+        super(iNotesOperations, esNotesRepository, elasticsearchOperations, resourceFileReaderService);
     }
 
     /**
@@ -46,36 +50,40 @@ public class ESNotesService extends AbstractESService implements INotesService {
         notesData.setEntryGuid(UUID.randomUUID());
         notesData.setThreadGuid(UUID.randomUUID());
         notesData.setCreated(ESUtil.getCurrentDate());
-        if (notesData.getThreadGuidParent() != null) {  // It's a thread that needs to created
+
+        if (notesData.getThreadGuidParent() != null) {  // It's a thread that needs to be created
             List<NotesData> existingEntry = iNotesOperations.fetchAndProcessEsResults(SearchByThreadGuid.builder()
                     .searchGuid(notesData.getThreadGuidParent().toString())
-                    .includeVersions(false).includeArchived(true).build());
+                    .includeVersions(false)
+                    .includeArchived(true)
+                    .build());
             if (existingEntry == null) {
-                throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot create new response. No entry found for threadGuid=%s", 
-                        notesData.getThreadGuidParent()));
+                throwRestError(NotesAPIError.ERROR_NEW_RESPONSE_NO_THREAD_GUID, notesData.getThreadGuidParent());
+                return null;
             }
             NotesData existingEntryFirst = existingEntry.get(0);
             if (existingEntryFirst.getArchived() != null) {
-                throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, 
-                        String.format("Entry is archived cannot add thread. ExternalGuid=%s, EntryGuid=%s", 
-                                existingEntryFirst.getExternalGuid(), existingEntryFirst.getEntryGuid()));
+                throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD, existingEntryFirst.getExternalGuid(), existingEntryFirst.getEntryGuid());
+                return null;
             }
             notesData.setExternalGuid(existingEntryFirst.getExternalGuid());
-            log.debug("creating a thread for external guid={} and entry guid = {}", notesData.getExternalGuid().toString(), 
-                    notesData.getEntryGuid().toString());
+            log.debug("Creating a thread for externalGuid: {}, entryGuid: {}", notesData.getExternalGuid().toString(), notesData.getEntryGuid().toString());
         } else {
-            log.debug("creating a new entry for external guid = {}", notesData.getExternalGuid().toString());
+            log.debug("Creating a new entry for externalGuid: {}", notesData.getExternalGuid().toString());
         }
         NotesData newEntry = esNotesRepository.save(notesData);
-        if(newEntry != null)
-            log.debug("Successfully created a new entry entryGuid = {} ", newEntry.getEntryGuid());
+        if (newEntry == null) {
+            // TODO What should happen in case of failure?
+        }
+        log.debug("Successfully created a new entry entryGuid: {} ", newEntry.getEntryGuid());
         return newEntry;
     }
 
     /**
-     * Search entry by key GUID
+     * Search entry by guid
+     *
      * @param guid
-     * @return Entry from elasticsearch for given guid (key)
+     * @return Entry from Elasticsearch for given guid
      */
     @Override
     public NotesData getByGuid(UUID guid) {
@@ -84,7 +92,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
     }
 
     /**
-     * Update entry by guid (key). if guid is not provided 
+     * Update entry by guid. if guid is not provided
      * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
      * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
      * @param updatedEntry
@@ -93,16 +101,16 @@ public class ESNotesService extends AbstractESService implements INotesService {
     @Override
     public NotesData updateByGuid(NotesData updatedEntry) {
         log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid());
-        NotesData  existingEntry;
-        if (updatedEntry.getGuid() != null) {
-            existingEntry = getByGuid(updatedEntry.getGuid());
-            if(existingEntry == null) {
-                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"guid provided is not exists, cannot update");
-            }
-        } else {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"guid is not provided,provide");
+        if (updatedEntry.getGuid() == null) {
+            throwRestError(NotesAPIError.ERROR_MISSING_GUID);
         }
-        return update(existingEntry,updatedEntry);
+
+        NotesData existingEntry = getByGuid(updatedEntry.getGuid());
+        if (existingEntry == null) {
+            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, updatedEntry.getGuid());
+        }
+
+        return update(existingEntry, updatedEntry);
     }
 
     /**
@@ -115,40 +123,45 @@ public class ESNotesService extends AbstractESService implements INotesService {
     @Override
     public NotesData updateByEntryGuid(NotesData updatedEntry) {
         log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid());
-        NotesData  existingEntry;
-        if (updatedEntry.getEntryGuid() != null) {
-            List<NotesData> searchResult = iNotesOperations.fetchAndProcessEsResults(SearchByEntryGuid.builder()
-                    .searchGuid(updatedEntry.getEntryGuid().toString())
-                    .includeVersions(false).includeArchived(true).build());
-            if(searchResult == null || searchResult.isEmpty()) {
-                throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"entryGuid provided is not exists, cannot update");
-            }
-            existingEntry = searchResult.get(0);
-        } else {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"entryGuid is not provided,provide");
+        if (updatedEntry.getEntryGuid() == null) {
+            throwRestError(NotesAPIError.ERROR_MISSING_ENTRY_GUID);
         }
-        return update(existingEntry,updatedEntry);
+
+        List<NotesData> searchResult = iNotesOperations.fetchAndProcessEsResults(SearchByEntryGuid.builder()
+                .searchGuid(updatedEntry.getEntryGuid().toString())
+                .includeVersions(false)
+                .includeArchived(true)
+                .build());
+        if (searchResult == null || searchResult.isEmpty()) {
+            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, updatedEntry.getEntryGuid());
+        }
+        NotesData existingEntry = searchResult.get(0);
+        return update(existingEntry, updatedEntry);
     }
     
     private NotesData update(NotesData existingEntry, NotesData updatedEntry) {
         log.debug("{}", LogUtil.method());
-        if(updatedEntry.getCreated() == null) {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "createdDate of entry being updated should be provided");
-        } else if(!updatedEntry.getCreated().equals(existingEntry.getCreated())) {
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry recently updated. please reload entry again and update");
+        if (updatedEntry.getCreated() == null) {
+            throwRestError(NotesAPIError.ERROR_MISSING_CREATED);
         }
-        if(existingEntry.getArchived() != null) {
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Entry is archived cannot be updated");
+        if (!updatedEntry.getCreated().equals(existingEntry.getCreated())) {
+            throwRestError(NotesAPIError.ERROR_ENTRY_HAS_BEEN_MODIFIED, existingEntry.getCreated());    // TODO Make sure we format all timestamps in {@link NotesConstants.TIMESTAMP_ISO8601} format (not here, but in throwRestError method)
         }
-        String currentContent = existingEntry.getContent();
+        if (existingEntry.getArchived() != null) {
+            throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_NO_UPDATE);
+        }
+
         ESUtil.clearHistoryAndThreads(existingEntry);
         existingEntry.setGuid(UUID.randomUUID());
         existingEntry.setCreated(ESUtil.getCurrentDate());
         existingEntry.setContent(updatedEntry.getContent());
         NotesData updated = esNotesRepository.save(existingEntry);
-        if(updated != null)
-            log.debug("Successfully updated! externalGuid = {}, entryGuid ={}, changed content from ={} to ={}",
-                    updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid(), currentContent , updatedEntry.getContent());
+        if (updated == null) {
+            // TODO What should happen in case of failure?
+            return null;
+        }
+
+        log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid(), existingEntry.getContent(), updatedEntry.getContent());
         return updated;
     }
 
@@ -161,17 +174,17 @@ public class ESNotesService extends AbstractESService implements INotesService {
     public List<NotesData> archive(IQuery query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
-        List<NotesData> processed = iNotesOperations.process(query,searchHitList.stream().iterator());
+        List<NotesData> processed = iNotesOperations.process(query, searchHitList.stream().iterator());
         Set<NotesData> flatten = new HashSet<>();
         try {
             ESUtil.flatten(processed,flatten);
             archive(flatten);
         } catch (Exception e) {
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while archiving entries. error = " + e.getMessage());
+            throwRestError(NotesAPIError.ERROR_ARCHIVING, e.getMessage());
         }
-        AbstractQuery getArchived = ((AbstractQuery)query);
+        AbstractQuery getArchived = (AbstractQuery)query;
         getArchived.setIncludeArchived(true);
-        return iNotesOperations.process(getArchived,getAllEntries(getArchived).stream().iterator());
+        return iNotesOperations.process(getArchived, getAllEntries(getArchived).stream().iterator());
     }
 
     /**
@@ -184,7 +197,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
         log.debug("{} guid: {}", LogUtil.method(), guid.toString());
         Optional<NotesData> result = esNotesRepository.findById(guid);
         if (!result.isPresent()) {
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entry found for given guid");
+            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, guid);
         }
         archive(Set.of(result.get()));
         return List.of(esNotesRepository.findById(guid).orElse(null));
@@ -229,22 +242,21 @@ public class ESNotesService extends AbstractESService implements INotesService {
     private void archive(Set<NotesData> entriesToArchive) {
         Date dateTime = ESUtil.getCurrentDate();
         try {
-            entriesToArchive.forEach(entryToArchive -> {
-                esNotesRepository.save(NotesData.builder()
-                        .archived(dateTime)
-                        .externalGuid(entryToArchive.getExternalGuid())
-                        .entryGuid(entryToArchive.getEntryGuid())
-                        .guid(entryToArchive.getGuid())
-                        .threadGuid(entryToArchive.getThreadGuid())
-                        .threadGuidParent(entryToArchive.getThreadGuidParent())
-                        .content(entryToArchive.getContent())
-                        .created(entryToArchive.getCreated()).build());
-            });   
+            entriesToArchive.forEach(entryToArchive -> esNotesRepository.save(NotesData.builder()
+                    .archived(dateTime)
+                    .externalGuid(entryToArchive.getExternalGuid())
+                    .entryGuid(entryToArchive.getEntryGuid())
+                    .guid(entryToArchive.getGuid())
+                    .threadGuid(entryToArchive.getThreadGuid())
+                    .threadGuidParent(entryToArchive.getThreadGuidParent())
+                    .content(entryToArchive.getContent())
+                    .created(entryToArchive.getCreated())
+                    .build())
+            );
         } catch (Exception e) {
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Error while archiving entries. error = " + e.getMessage()); 
-        } finally {
-            log.debug("Successfully archived! Nr of entries archived = {}", entriesToArchive.size());
+            throwRestError(NotesAPIError.ERROR_ARCHIVING, e.getMessage());
         }
+        log.debug("Number of entries archived: {}", entriesToArchive.size());
     }
 
 }
