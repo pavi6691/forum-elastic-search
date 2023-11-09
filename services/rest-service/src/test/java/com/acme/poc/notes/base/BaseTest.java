@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,24 +22,23 @@ public class BaseTest {
     protected INotesService notesService;
     @Autowired
     protected INotesAdminService notesAdminService;
-
     @Autowired
     protected ESNotesRepository repository;
+
 
     protected NotesData createNewEntry(NotesData newExternalEntry) {
         NotesData entryCreated = notesService.create(newExternalEntry);
         assertEquals(newExternalEntry.getExternalGuid(), entryCreated.getExternalGuid());
         assertEquals(newExternalEntry.getContent(), entryCreated.getContent());
-        assertEquals(null, entryCreated.getHistory());
-        assertEquals(null, entryCreated.getThreads());
-        assertEquals(null, entryCreated.getThreadGuidParent());
-        assertEquals(null, entryCreated.getArchived());
-        assertNotEquals(null, entryCreated.getEntryGuid());
-        assertNotEquals(null, entryCreated.getCreated());
-        assertNotEquals(null, entryCreated.getThreadGuid());
+        assertNull(entryCreated.getHistory());
+        assertNull(entryCreated.getThreads());
+        assertNull(entryCreated.getThreadGuidParent());
+        assertNull(entryCreated.getArchived());
+        assertNotNull(entryCreated.getEntryGuid());
+        assertNotNull(entryCreated.getCreated());
+        assertNotNull(entryCreated.getThreadGuid());
         return entryCreated;
     }
-
 
     protected NotesData createThread(NotesData existingEntry, String content) {
         NotesData newThread = new NotesData();
@@ -46,9 +46,9 @@ public class BaseTest {
         newThread.setThreadGuidParent(existingEntry.getThreadGuid());
         NotesData newThreadCreated = notesService.create(newThread);
         assertEquals(newThread.getExternalGuid(), newThreadCreated.getExternalGuid());
-        assertEquals(null, newThreadCreated.getHistory());
-        assertEquals(null, newThreadCreated.getThreads());
-        assertEquals(null, newThreadCreated.getArchived());
+        assertNull(newThreadCreated.getHistory());
+        assertNull(newThreadCreated.getThreads());
+        assertNull(newThreadCreated.getArchived());
         assertEquals(existingEntry.getThreadGuid(), newThreadCreated.getThreadGuidParent());
         assertNotEquals(existingEntry.getEntryGuid(), newThreadCreated.getEntryGuid());
         assertNotEquals(existingEntry.getCreated(), newThreadCreated.getCreated());
@@ -77,36 +77,32 @@ public class BaseTest {
         List<NotesData> total = new ArrayList<>();
         List<NotesData> totalThreads = new ArrayList<>();
         List<NotesData> totalHistories = new ArrayList<>();
-        assertEquals(entrySize,result.size());
+        assertEquals(entrySize, result.size());
         result.forEach(r -> flatten(r, total));
-        assertEquals(expectedTotalCount,total.size());
+        assertEquals(expectedTotalCount, total.size());
         result.forEach(r -> flattenThreads(r, totalThreads));
-        assertEquals(expectedThreadCount,totalThreads.size());
+        assertEquals(expectedThreadCount, totalThreads.size());
         result.forEach(r -> flattenHistories(r, totalHistories));
-        assertEquals(expectedHistoryCount,totalHistories.size());
+        assertEquals(expectedHistoryCount, totalHistories.size());
 
         // this is to check each individual external entries will have different entryGuid
-        for(int i = 0; i < result.size(); i++) {
-            for (int j = i + 1; j < result.size(); j++) {
-                assertNotEquals(result.get(i).getEntryGuid(),result.get(j).getEntryGuid());
-            }
-        }
+        IntStream.range(0, result.size())
+                .forEach(i -> IntStream.range(i + 1, result.size())
+                        .forEach(j -> assertNotEquals(result.get(i).getEntryGuid(), result.get(j).getEntryGuid())));
 
         // this is to check each external entry and its history will have the same entryGuid
-        for(int i = 0; i < result.size(); i++) {
-            if(result.get(i).getHistory() != null) {
-                for (int j = 0; j < result.get(i).getHistory().size(); j++) {
-                    assertEquals(result.get(i).getEntryGuid(),result.get(i).getHistory().get(j).getEntryGuid());
-                }
+        for (NotesData notesData : result) {
+            if (notesData.getHistory() != null) {
+                IntStream.range(0, notesData.getHistory().size())
+                        .forEach(i -> assertEquals(notesData.getEntryGuid(), notesData.getHistory().get(i).getEntryGuid()));
             }
         }
 
         // this is to check each threads will have same thread guid as their parent 
-        for(int i = 0; i < result.size(); i++) {
-            if(result.get(i).getThreads() != null) {
-                for (int j = 0; j < result.get(i).getThreads().size(); j++) {
-                    assertEquals(result.get(i).getThreadGuid(),result.get(i).getThreads().get(j).getThreadGuidParent());
-                }
+        for (NotesData notesData : result) {
+            if (notesData.getThreads() != null) {
+                IntStream.range(0, notesData.getThreads().size())
+                        .forEach(i -> assertEquals(notesData.getThreadGuid(), notesData.getThreads().get(i).getThreadGuidParent()));
             }
         }
 
@@ -114,15 +110,14 @@ public class BaseTest {
     }
 
     protected void checkDuplicates(List<NotesData> result){
-        // check for duplicate entries
         List<NotesData> flattenEntries = new ArrayList<>();
         Set<String> entryCount = new HashSet<>();
         int j = 0;
-        for(int i = 0; i < result.size(); i++) {
-            flatten(result.get(i),flattenEntries);
-            while(j < flattenEntries.size()) {
+        for (NotesData notesData : result) {
+            flatten(notesData, flattenEntries);
+            while (j < flattenEntries.size()) {
                 String guidKey = flattenEntries.get(j).getGuid().toString();
-                if(entryCount.contains(guidKey)) { // this check is for debug just in case
+                if (entryCount.contains(guidKey)) { // this check is for debug just in case
                     assertFalse(entryCount.contains(guidKey));
                 }
                 entryCount.add(guidKey);
@@ -133,44 +128,45 @@ public class BaseTest {
 
     protected void flatten(NotesData root, List<NotesData> entries) {
         entries.add(root);
-        if(root.getThreads() != null)
-            root.getThreads().forEach(e -> flatten(e,entries));
-        if(root.getHistory() != null)
-            root.getHistory().forEach(e -> flatten(e,entries));
+        if (root.getThreads() != null)
+            root.getThreads().forEach(e -> flatten(e, entries));
+        if (root.getHistory() != null)
+            root.getHistory().forEach(e -> flatten(e, entries));
     }
 
     protected void flattenThreads(NotesData root, List<NotesData> entries) {
-        if(root.getThreads() != null)
+        if (root.getThreads() != null)
             root.getThreads().forEach(e -> {
                 entries.add(e);
-                flattenThreads(e,entries);
+                flattenThreads(e, entries);
             });
     }
 
     protected void flattenHistories(NotesData root, List<NotesData> entries) {
-        if(root.getThreads() != null)
+        if (root.getThreads() != null)
             root.getThreads().forEach(e -> {
-                flattenHistories(e,entries);
+                flattenHistories(e, entries);
             });
-        if(root.getHistory() != null)
+        if (root.getHistory() != null)
             root.getHistory().forEach(e -> {
                 entries.add(e);
-                flattenHistories(e,entries);
+                flattenHistories(e, entries);
             });
     }
 
     protected Map<String,NotesData> getEntries() {
-        Map<String,NotesData> entries = new HashMap<>();
+        Map<String, NotesData> entries = new HashMap<>();
         JSONArray jsonArray = null;
         try {
             jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
-            for(int i=0; i< jsonArray.length(); i++) {
+            for (int i = 0; i < jsonArray.length(); i++) {
                 NotesData data = NotesData.fromJson(jsonArray.getString(i));
-                entries.put(data.getGuid().toString(),data);
+                entries.put(data.getGuid().toString(), data);
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
         return entries;
     }
+
 }
