@@ -24,16 +24,6 @@ public class SearchByContent extends AbstractQuery {
     protected String contentToSearch;
 
     @Override
-    public boolean includeVersions() {
-        return includeVersions;
-    }
-
-    @Override
-    public boolean includeArchived() {
-        return includeArchived;
-    }
-
-    @Override
     public String buildQuery() {
         return String.format(QUERY,contentToSearch);
     }

@@ -4,14 +4,15 @@ import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.*;
 import com.acme.poc.notes.service.INotesService;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
 public class ESResource {
@@ -26,39 +27,26 @@ public class ESResource {
 
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
     public ResponseEntity<NotesData> create(@Valid @RequestBody NotesData notesData) {
+        log.debug("create");
         return ResponseEntity.ok(notesService.create(notesData));
     }
 
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_GUID)
     public ResponseEntity<NotesData> updateByGuid(@RequestBody NotesData notesData) {
+        log.debug("updateByGuid");
         return ResponseEntity.ok(notesService.updateByGuid(notesData));
     }
 
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_ENTRY_GUID)
     public ResponseEntity<NotesData> updateByEntryGuid(@RequestBody NotesData notesData) {
+        log.debug("updateByEntryGuid");
         return ResponseEntity.ok(notesService.updateByEntryGuid(notesData));
     }
 
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
     public ResponseEntity<NotesData> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+        log.debug("getByGuid");
         return ResponseEntity.ok(notesService.getByGuid(UUID.fromString(guid.toString())));
-    }
-
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID)
-    public ResponseEntity<List<NotesData>> getByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid,
-                                                             @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                             @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                             @RequestParam(required = false) String searchAfter,
-                                                             @RequestParam(required = false, defaultValue = "0") int size,
-                                                             @RequestParam(required = false) SortOrder sortOrder) {
-        return ResponseEntity.ok(notesService.search(SearchByExternalGuid.builder()
-                .searchGuid(externalGuid.toString())
-                .includeVersions(includeVersions)
-                .includeArchived(includeArchived)
-                .size(size)
-                .searchAfter(searchAfter)
-                .sortOrder(sortOrder)
-                .build()));
     }
 
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
@@ -68,7 +56,8 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return ResponseEntity.ok(notesService.search(SearchByEntryGuid.builder()
+        log.debug("searchByEntryGuid");
+        return ResponseEntity.ok(notesService.searchByEntryGuid(SearchByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())
                 .includeVersions(includeVersions)
                 .includeArchived(includeArchived)
@@ -85,7 +74,8 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return ResponseEntity.ok(notesService.search(SearchByContent.builder()
+        log.debug("searchContent");
+        return ResponseEntity.ok(notesService.searchByContent(SearchByContent.builder()
                 .contentToSearch(search)
                 .includeVersions(includeVersions)
                 .includeArchived(includeArchived)
@@ -97,11 +87,13 @@ public class ESResource {
 
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_GUID)
     public ResponseEntity<List<NotesData>> archiveByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+        log.debug("archiveByGuid");
         return ResponseEntity.ok(notesService.archive(guid));
     }
 
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid) {
+        log.debug("archiveExternalGuid");
         return ResponseEntity.ok(notesService.archive(SearchByExternalGuid.builder()
                 .searchGuid(externalGuid.toString())
                 .includeVersions(true)
@@ -111,6 +103,7 @@ public class ESResource {
 
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID) 
     public ResponseEntity<List<NotesData>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid) {
+        log.debug("archiveEntryGuid");
         return ResponseEntity.ok(notesService.archive(SearchByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())
                 .includeVersions(true)
@@ -125,7 +118,8 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return ResponseEntity.ok(notesService.search(SearchArchivedByExternalGuid.builder()
+        log.debug("searchArchivedEntriesByExternalGuid");
+        return ResponseEntity.ok(notesService.searchArchivedByExternalGuid(SearchArchivedByExternalGuid.builder()
                 .searchGuid(externalGuid.toString())
                 .includeArchived(true)
                 .includeVersions(includeVersions)
@@ -142,7 +136,8 @@ public class ESResource {
                                                        @RequestParam(required = false) String searchAfter, 
                                                        @RequestParam(required = false, defaultValue = "0") int size,
                                                        @RequestParam(required = false) SortOrder sortOrder) {
-        return ResponseEntity.ok(notesService.search(SearchArchivedByEntryGuid.builder()
+        log.debug("searchArchivedEntriesByEntryGuid");
+        return ResponseEntity.ok(notesService.searchArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())
                 .includeArchived(true)
                 .includeVersions(includeVersions)
@@ -152,42 +147,22 @@ public class ESResource {
                 .build()));
     }
 
-    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_EXTERNAL_GUID)
-    public ResponseEntity<List<NotesData>> deleteByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid) {
-        return ResponseEntity.ok(notesService.delete((SearchByExternalGuid.builder()
-                .searchGuid(externalGuid.toString())
-                .includeVersions(true)
-                .includeArchived(true))
-                .build()));
-    }
-
-    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_ENTRY_GUID)
-    public ResponseEntity<List<NotesData>> deleteByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid) {
-        return ResponseEntity.ok(notesService.delete(SearchByEntryGuid.builder()
-                .searchGuid(entryGuid.toString())
-                .includeVersions(true).includeArchived(true).build()));
-    }
-
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid) {
-        return ResponseEntity.ok(notesService.delete((SearchArchivedByExternalGuid.builder()
+        log.debug("deleteArchivedByExternalGuid");
+        return ResponseEntity.ok(notesService.deleteArchivedByExternalGuid((SearchArchivedByExternalGuid.builder()
                 .searchGuid(externalGuid.toString())
                 .includeVersions(true).includeArchived(true)).build()));
     }
 
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<NotesData>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid) {
-        return ResponseEntity.ok(notesService.delete(SearchArchivedByEntryGuid.builder()
+        log.debug("deleteArchivedByEntryGuid");
+        return ResponseEntity.ok(notesService.deleteArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())
                 .includeVersions(true)
                 .includeArchived(true)
                 .build()));
     }
-
-    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
-    public ResponseEntity<NotesData> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
-        return ResponseEntity.ok(notesService.delete(guid.toString()));
-    }
-
 
 }

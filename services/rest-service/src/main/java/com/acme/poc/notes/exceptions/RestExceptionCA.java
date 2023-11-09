@@ -1,5 +1,6 @@
 package com.acme.poc.notes.exceptions;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,12 +12,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import java.net.SocketTimeoutException;
 
+@Slf4j
 @RestControllerAdvice
 public class RestExceptionCA {
     
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RestStatusException.class)
     public BaseRestException handleRestException(RestStatusException exception) {
+        log.error(exception.getMessage());
         return new BaseRestException(HttpStatus.resolve(exception.getStatus()).name(),exception.getMessage());
     }
 
@@ -26,6 +29,7 @@ public class RestExceptionCA {
         FieldValidationException ex = new FieldValidationException(HttpStatus.BAD_REQUEST.name(), 
                 "Invalid request param value");
         ex.getFields().put(exception.getName(),exception.getValue().toString());
+        log.error(ex.getMessage());
         return ex;
     }
 
@@ -39,12 +43,14 @@ public class RestExceptionCA {
             String errorMessage = fieldError.getDefaultMessage();
             ex.getFields().put(fieldName,errorMessage);
         }
+        log.error(ex.getMessage());
         return ex;
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(SocketTimeoutException.class)
     public BaseRestException EsTimeOutException(SocketTimeoutException exception) {
+        log.error(exception.getMessage());
         return new BaseRestException(HttpStatus.BAD_REQUEST.name(), "Time out from elastic search. " + exception.getMessage());
     }
 
@@ -57,6 +63,7 @@ public class RestExceptionCA {
                     "Invalid value in the payload");
             fieldEx.getFields().put(invalidFormatException.getPath().size() > 0 ?  invalidFormatException.getPath().get(0).getFieldName() : "",
                     invalidFormatException.getValue().toString());
+            log.error(fieldEx.getMessage());
             return fieldEx;
         }
         return null;

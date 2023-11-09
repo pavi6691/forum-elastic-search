@@ -2,10 +2,9 @@
 
 
 ## Current phase
-- [ ] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
-- [ ] Implement AdminResource (currently commented out code)
+- [X] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
+- [X] Implement AdminResource (currently commented out code)
 - [ ] Add logs, handle exceptions and other validations if any
-  - [ ] Use default Logback instead of Log4j2
 - [ ] record class
 
 
@@ -17,9 +16,11 @@
 - Below two uses cases are covered with same fix
   - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads. 
   - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
+- [ ] handling more than 1k thread entries? 
 
 ## Later phase(s)
 
+- [ ] Restrict size of content?
 - [ ] SpringDoc open search
 - [ ] delete only histories?
 - [ ] POC on Logging and tracing

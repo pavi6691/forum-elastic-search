@@ -33,7 +33,7 @@ public class NotesConstants {
     // /api/v1/admin/...
     //
     public static final String API_ENDPOINT_ADMIN_GET_ALL = "";
-    public static final String API_ENDPOINT_ADMIN_GET_ALL_BY_EXTERNAL_GUID = "";
+    public static final String API_ENDPOINT_ADMIN_GET_ALL_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     public static final String API_ENDPOINT_ADMIN_DELETE_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     public static final String API_ENDPOINT_ADMIN_DELETE_BY_ENTRY_GUID = "/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
     public static final String API_ENDPOINT_ADMIN_DELETE_BY_THREAD_GUID = "/threadguid/{" + API_ENDPOINT_PATH_PARAMETER_THREAD_GUID + "}";

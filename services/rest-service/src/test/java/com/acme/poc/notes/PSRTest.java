@@ -3,7 +3,6 @@ package com.acme.poc.notes;
 import com.acme.poc.notes.base.BaseTest;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
-import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,8 +20,8 @@ import java.util.UUID;
 public class PSRTest extends BaseTest {
 
     //for 10K, its stack overflow for V2 as JVM stack size exceeding. V3 doesn't use recursion, so we are good there
-    static final int NR_OF_ENTRIES = 20; 
-    static final String EXTERNAL_GUID = "164c1633-44f0-4eee-8491-d5e6a539b300";
+    static final int NR_OF_ENTRIES = 10000; 
+    static final String EXTERNAL_GUID = "164c1633-44f0-4eee-8491-d5e6a5391300";
     @Test
     void SaveEntries() {
         NotesData entry = createNewEntry(NotesData.builder()
@@ -36,17 +35,18 @@ public class PSRTest extends BaseTest {
 
     @Test
     void searchEntries() {
-        IQuery query = SearchByExternalGuid.builder().searchGuid(EXTERNAL_GUID)
+        SearchByExternalGuid query = SearchByExternalGuid.builder().searchGuid(EXTERNAL_GUID)
                 .includeVersions(true).includeArchived(true).build();
-        List<NotesData> searchResult = notesService.search(query);
-        validateAll(searchResult,1,NR_OF_ENTRIES+1,NR_OF_ENTRIES,0);
+        List<NotesData> searchResult = notesAdminService.searchByExternalGuid(query);
+        validateAll(searchResult,1,NR_OF_ENTRIES,NR_OF_ENTRIES-1,0);
     }
 
     @Test
     void deleteEntries() {
-        IQuery query = SearchByExternalGuid.builder().searchGuid(EXTERNAL_GUID)
-                .includeVersions(true).includeArchived(true).build();
-        List<NotesData> searchResult = notesService.delete(query);
+        List<NotesData> searchResult = notesAdminService.deleteByExternalGuid(UUID.fromString(EXTERNAL_GUID));
+        validateAll(searchResult,1,NR_OF_ENTRIES,NR_OF_ENTRIES-1,0);
+        searchResult = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder().searchGuid(EXTERNAL_GUID)
+                .includeVersions(true).includeArchived(true).build());
         validateAll(searchResult,0,0,0,0);
     }
 }

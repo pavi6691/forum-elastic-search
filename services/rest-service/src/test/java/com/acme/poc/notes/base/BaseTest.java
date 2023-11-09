@@ -3,6 +3,7 @@ package com.acme.poc.notes.base;
 import com.acme.poc.notes.data.ElasticSearchData;
 import com.acme.poc.notes.elasticsearch.esrepo.ESNotesRepository;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.service.INotesAdminService;
 import com.acme.poc.notes.service.INotesService;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,6 +19,8 @@ public class BaseTest {
 
     @Autowired
     protected INotesService notesService;
+    @Autowired
+    protected INotesAdminService notesAdminService;
 
     @Autowired
     protected ESNotesRepository repository;

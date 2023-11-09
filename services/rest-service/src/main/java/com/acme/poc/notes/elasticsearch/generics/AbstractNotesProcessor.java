@@ -9,6 +9,7 @@ import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
 import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -33,14 +34,13 @@ import java.util.concurrent.TimeUnit;
 /**
  * abstraction for executing search query.
  */
+@Slf4j
 @Service
 public abstract class AbstractNotesProcessor implements INotesOperations {
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
     @Autowired
     private ElasticsearchOperations elasticsearchOperations;
-
-    private List<Object> sortValues = new ArrayList<>();
     
     
     /**
@@ -59,37 +59,47 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      */
     @Override
     public List<NotesData> fetchAndProcessEsResults(IQuery query) {
+        log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
         SearchHits<NotesData> searchHits = getEsResults(query);
         if(searchHits != null && searchHits.getSearchHits().size() > 0) {
+            log.debug("Nr of results got from elastic search = {}", searchHits.getSearchHits().size());
             return process(query,searchHits.stream().iterator());
+        } else {
+            log.error("no results found for request = {}", query.getClass().getSimpleName());
         }
         return new ArrayList<>();
     }
     
     @Override
     public SearchHits<NotesData> getEsResults(IQuery query) {
-        SearchHits<NotesData> searchHits = execSearchQuery(query);
-        if(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
-            // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
-            if (searchHits != null) {
-                Iterator<SearchHit<NotesData>> rootEntries = searchHits.stream().iterator();
-                if (rootEntries != null && rootEntries.hasNext()) {
-                    NotesData rootEntry = rootEntries.next().getContent();
-                    if (query.includeArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
-                        IQuery entryQuery = SearchByExternalGuid.builder()
-                                .size(query.getSize())
-                                .sortOrder(query.getSortOrder())
-                                .searchAfter(((AbstractQuery) query).getSearchAfter())
-                                .includeArchived(query.includeArchived())
-                                .includeVersions(query.includeVersions())
-                                .searchGuid(rootEntry.getExternalGuid().toString())
-                                .createdDateTime(rootEntry.getCreated().getTime()).build();
-                        searchHits = execSearchQuery(entryQuery);
+        SearchHits<NotesData> searchHits = null;
+        try {
+            searchHits = execSearchQuery(query);
+            if (query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
+                // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
+                if (searchHits != null) {
+                    Iterator<SearchHit<NotesData>> rootEntries = searchHits.stream().iterator();
+                    if (rootEntries != null && rootEntries.hasNext()) {
+                        NotesData rootEntry = rootEntries.next().getContent();
+                        if (query.includeArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
+                            IQuery entryQuery = SearchByExternalGuid.builder()
+                                    .size(query.getSize())
+                                    .sortOrder(query.getSortOrder())
+                                    .searchAfter(((AbstractQuery) query).getSearchAfter())
+                                    .includeArchived(query.includeArchived())
+                                    .includeVersions(query.includeVersions())
+                                    .searchGuid(rootEntry.getExternalGuid().toString())
+                                    .createdDateTime(rootEntry.getCreated().getTime()).build();
+                            searchHits = execSearchQuery(entryQuery);
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } finally {
+            return searchHits;
         }
-        return searchHits;
     }
 
     /**

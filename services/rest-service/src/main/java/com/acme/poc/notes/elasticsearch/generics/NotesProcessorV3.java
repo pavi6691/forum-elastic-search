@@ -4,6 +4,7 @@ import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.util.*;
 /**
  * Search and build response for thread of entries along with update histories. Version 3
  */
+@Slf4j
 @Service("notesProcessorV3")
 public class NotesProcessorV3 extends AbstractNotesProcessor {
 
@@ -36,6 +38,7 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
      */
     @Override
     public List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
+        log.debug("Processing request = {}", query.getClass().getSimpleName());
         Map<UUID,NotesData> threadMapping = new HashMap<>();
         List<NotesData> results = new LinkedList<>();
         Map<UUID,NotesData> archivedEntries = new HashMap<>();

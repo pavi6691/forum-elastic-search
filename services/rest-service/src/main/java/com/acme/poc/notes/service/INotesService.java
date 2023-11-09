@@ -1,8 +1,11 @@
 package com.acme.poc.notes.service;
 
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByExternalGuid;
+import com.acme.poc.notes.elasticsearch.queries.SearchByContent;
+import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -13,9 +16,10 @@ public interface INotesService {
     NotesData updateByEntryGuid(NotesData notesData);
     List<NotesData> archive(IQuery iQuery);
     List<NotesData> archive(UUID guid);
-    List<NotesData> delete(IQuery iQuery);
-    String createIndex(String indexName);
-    NotesData delete(String keyGuid);
-    List<NotesData> search(IQuery query);
-    
+    List<NotesData> searchByEntryGuid(SearchByEntryGuid iQuery);
+    List<NotesData> searchByContent(SearchByContent iQuery);
+    List<NotesData> searchArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
+    List<NotesData> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
+    List<NotesData> deleteArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
+    List<NotesData> deleteArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
 }

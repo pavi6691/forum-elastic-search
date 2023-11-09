@@ -5,10 +5,7 @@ import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.elasticsearch.search.sort.SortValue;
-
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Abstraction to search by any fields. returns entries created after passed time in millis.
@@ -81,10 +78,5 @@ public abstract class AbstractQuery implements IQuery {
     @Override
     public void searchAfter(Object sortValues) {
         this.searchAfter = sortValues;
-    }
-    
-    @Override
-    public String buildQuery() {
-        return String.format(QUERY,searchField.getEsFieldName(),searchGuid,createdDateTime);
     }
 }

@@ -43,9 +43,4 @@ public class SearchArchivedByExternalGuid extends AbstractQuery {
     public String buildQuery() {
         return String.format(QUERY,searchGuid);
     }
-
-    @Override
-    public boolean includeVersions() {
-        return includeVersions;
-    }
 }
