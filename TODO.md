@@ -2,6 +2,38 @@
 
 
 ## Current phase
+- [ ] Fix support for storing `customJson` as part of an entry. Saving with this:
+
+
+    "customJson": {
+      "timestampStart": 1,
+      "timestampEnd": 2
+    }
+
+results in this in Elasticsearch:
+
+    "customJson" : {
+      "_children" : {
+        "timestampStart" : {
+          "_value" : 1
+        },
+        "timestampEnd" : {
+          "_value" : 2
+        }
+      },
+      "_nodeFactory" : {
+        "_cfgBigDecimalExact" : false
+      }
+    }
+
+whereas it should simply be:
+
+    "customJson": {
+      "timestampStart": 1,
+      "timestampEnd": 2
+    }
+
+- [ ] Seems that note-v1_mapping.json is not used when creating the index? At least in Kibana index shows mapping as being different
 - [X] Implement AdminResource (currently commented out code)
 - [ ] An endpoint (API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID) for returning everything related to an externalGuid is missing
 - [ ] Use TestContainers for ElasticSearch in tests instead of relying on an existing Elasticsearch being available

@@ -27,6 +27,11 @@
       "content": {
         "type": "text"
       },
+      "customJson": {
+        "type": "object",
+        "enabled": false,
+        "index": false
+      },
       "created": {
         "type": "date",
         "pattern": "%s"

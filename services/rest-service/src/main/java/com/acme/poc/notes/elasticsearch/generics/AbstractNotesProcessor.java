@@ -132,7 +132,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         if(!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.includeVersions()) {
                 NotesData history = new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
-                        existingEntry.getEntryGuid(), existingEntry.getThreadGuidParent(), existingEntry.getContent(), existingEntry.getCreated(),
+                        existingEntry.getEntryGuid(), existingEntry.getThreadGuidParent(), existingEntry.getContent(), existingEntry.getCustomJson(), existingEntry.getCreated(),
                         existingEntry.getArchived(), null, null);
                 if(query.getSortOrder() == SortOrder.ASC) {
                     existingEntry.addHistory(history,existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);

@@ -6,6 +6,7 @@ import com.acme.poc.notes.serialzation.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -48,6 +49,9 @@ public class NotesData {
     
     @Field(type = FieldType.Text, name = "content")
     private String content;
+
+    @Field(type = FieldType.Object, name = "customJson")
+    private JsonNode customJson;
 
     @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)
