@@ -8,6 +8,7 @@ import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
 import com.acme.poc.notes.elasticsearch.queries.SearchByThreadGuid;
 import com.acme.poc.notes.service.generics.AbstractESService;
+import com.acme.poc.notes.util.LogUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,20 +31,20 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
 
     @Override
     public List<NotesData> getAll(String indexName) {
-        log.debug("getting all entries for index ={}", indexName);
+        log.debug("{} index: {}", LogUtil.method(), indexName);
         return iNotesOperations.fetchAndProcessEsResults(
                 SearchAll.builder().includeVersions(true).includeArchived(true).build());
     }
 
     @Override
     public List<NotesData> searchByExternalGuid(SearchByExternalGuid query) {
-        log.debug("Search by external guid = {}", query.getSearchGuid());
+        log.debug("{} externalGuid: {}", LogUtil.method(), query.getSearchGuid());
         return search(query);
     }
 
     @Override
     public List<NotesData> deleteByExternalGuid(UUID externalGuid) {
-        log.debug("delete by external guid = {} ", externalGuid.toString());
+        log.debug("{} externalGuid: {}", LogUtil.method(), externalGuid.toString());
         return delete(SearchByExternalGuid.builder()
                 .searchGuid(externalGuid.toString())
                 .includeVersions(true)
@@ -53,7 +54,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
 
     @Override
     public List<NotesData> deleteByEntryGuid(UUID entryGuid) {
-        log.debug("delete by entry guid = {} ", entryGuid.toString());
+        log.debug("{} entryGuid: {}", LogUtil.method(), entryGuid.toString());
         return delete(SearchByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())
                 .includeVersions(true).includeArchived(true).build());
@@ -61,7 +62,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
 
     @Override
     public List<NotesData> deleteByThreadGuid(UUID threadGuid) {
-        log.debug("delete by thread guid = {} ", threadGuid.toString());
+        log.debug("{} threadGuid: {}", LogUtil.method(), threadGuid.toString());
         return delete(SearchByThreadGuid.builder()
                 .searchGuid(threadGuid.toString())
                 .includeVersions(true).includeArchived(true).build());
@@ -69,7 +70,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
 
     @Override
     public NotesData deleteByGuid(UUID guid) {
-        log.debug("delete by guid = {} ", guid.toString());
+        log.debug("{} guid: {}", LogUtil.method(), guid.toString());
         return delete(guid.toString());
     }
 
@@ -80,8 +81,8 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
      */
     @Override
     public String createIndex(String indexName) {
+        log.debug("{} index: {}", LogUtil.method(), indexName);
         try {
-            log.debug("Creating an index if not exists. indexName = {} ", indexName);
 // TODO
 //            IndexMetadataConfiguration indexMetadataConfiguration =
 //            resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
@@ -102,4 +103,5 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
             throw new RuntimeException(e);
         }
     }
+
 }

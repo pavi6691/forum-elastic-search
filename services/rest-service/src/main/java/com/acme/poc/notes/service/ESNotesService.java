@@ -8,6 +8,7 @@ import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.service.generics.AbstractESService;
 import com.acme.poc.notes.util.ESUtil;
+import com.acme.poc.notes.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,6 +41,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      */
     @Override
     public NotesData create(NotesData notesData) {
+        log.debug("{}", LogUtil.method());
         notesData.setGuid(UUID.randomUUID());
         notesData.setEntryGuid(UUID.randomUUID());
         notesData.setThreadGuid(UUID.randomUUID());
@@ -77,7 +79,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      */
     @Override
     public NotesData getByGuid(UUID guid) {
-        log.debug("search by guid = {}", guid);
+        log.debug("{} guid: {}", LogUtil.method(), guid.toString());
         return esNotesRepository.findById(guid).orElse(null);
     }
 
@@ -90,7 +92,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      */
     @Override
     public NotesData updateByGuid(NotesData updatedEntry) {
-        log.debug("update by guid. externalEntry = {}, entryGuid ={} ", updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid());
+        log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid());
         NotesData  existingEntry;
         if (updatedEntry.getGuid() != null) {
             existingEntry = getByGuid(updatedEntry.getGuid());
@@ -112,7 +114,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      */
     @Override
     public NotesData updateByEntryGuid(NotesData updatedEntry) {
-        log.debug("update by entryGuid. externalEntry = {}, entryGuid ={} ", updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid());
+        log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid());
         NotesData  existingEntry;
         if (updatedEntry.getEntryGuid() != null) {
             List<NotesData> searchResult = iNotesOperations.fetchAndProcessEsResults(SearchByEntryGuid.builder()
@@ -129,6 +131,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
     }
     
     private NotesData update(NotesData existingEntry, NotesData updatedEntry) {
+        log.debug("{}", LogUtil.method());
         if(updatedEntry.getCreated() == null) {
             throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "createdDate of entry being updated should be provided");
         } else if(!updatedEntry.getCreated().equals(existingEntry.getCreated())) {
@@ -156,7 +159,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      */
     @Override
     public List<NotesData> archive(IQuery query) {
-        log.debug("archive entries for request = {}", query.getClass().getSimpleName());
+        log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
         List<NotesData> processed = iNotesOperations.process(query,searchHitList.stream().iterator());
         Set<NotesData> flatten = new HashSet<>();
@@ -178,7 +181,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      */
     @Override
     public List<NotesData> archive(UUID guid) {
-        log.debug("archive by guid = {}", guid.toString());
+        log.debug("{} guid: {}", LogUtil.method(), guid.toString());
         Optional<NotesData> result = esNotesRepository.findById(guid);
         if (!result.isPresent()) {
             throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"Cannot archive. not entry found for given guid");
@@ -189,37 +192,37 @@ public class ESNotesService extends AbstractESService implements INotesService {
 
     @Override
     public List<NotesData> searchByEntryGuid(SearchByEntryGuid iQuery) {
-        log.debug("search for entryGuid = {}", iQuery.getSearchGuid());
+        log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
         return search(iQuery);
     }
 
     @Override
     public List<NotesData> searchByContent(SearchByContent iQuery) {
-        log.debug("search for content = {}", iQuery.getContentToSearch());
+        log.debug("{} content: {}", LogUtil.method(), iQuery.getContentToSearch());
         return search(iQuery);
     }
 
     @Override
     public List<NotesData> searchArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery) {
-        log.debug("search archived entries by externalGuid = {}", iQuery.getSearchGuid());
+        log.debug("{} externalGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
         return search(iQuery);
     }
 
     @Override
     public List<NotesData> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery) {
-        log.debug("search archived entries by entryGuid = {}", iQuery.getSearchGuid());
+        log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
         return search(iQuery);
     }
 
     @Override
     public List<NotesData> deleteArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery) {
-        log.debug("delete archived entries by externalGuid = {}", iQuery.getSearchGuid());
+        log.debug("{} externalGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
         return delete(iQuery);
     }
 
     @Override
     public List<NotesData> deleteArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery) {
-        log.debug("delete archived entries by entryGuid = {}", iQuery.getSearchGuid());
+        log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
         return delete(iQuery);
     }
 
@@ -243,4 +246,5 @@ public class ESNotesService extends AbstractESService implements INotesService {
             log.debug("Successfully archived! Nr of entries archived = {}", entriesToArchive.size());
         }
     }
+
 }

@@ -4,6 +4,7 @@ import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
 import com.acme.poc.notes.service.INotesAdminService;
+import com.acme.poc.notes.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class AdminResource {
 
     @GetMapping(NotesConstants.API_ENDPOINT_ADMIN_GET_ALL)
     public ResponseEntity<List<NotesData>> getAll(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
-        log.debug("getAll()");
+        log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesAdminService.getAll(indexName));
     }
 
@@ -39,7 +40,7 @@ public class AdminResource {
                                                     @RequestParam(required = false) String searchAfter,
                                                     @RequestParam(required = false, defaultValue = "0") int size,
                                                     @RequestParam(required = false) SortOrder sortOrder) {
-        log.debug("getByExternalGuid()");
+        log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
                 .searchGuid(externalGuid.toString())
                 .includeVersions(includeVersions)
@@ -52,24 +53,25 @@ public class AdminResource {
 
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
-        log.debug("deleteByExternalGuid()");
+        log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesAdminService.deleteByExternalGuid(externalGuid));
     }
 
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_ENTRY_GUID)
     public ResponseEntity<List<NotesData>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
-        log.debug("deleteByEntryGuid()");
+        log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesAdminService.deleteByEntryGuid(entryGuid));
     }
 
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_THREAD_GUID)
     public ResponseEntity<List<NotesData>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
-        log.debug("deleteByThreadGuid()");
+        log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesAdminService.deleteByThreadGuid(threadGuid));
     }
 
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
     public ResponseEntity<NotesData> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+        log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesAdminService.deleteByGuid(guid));
     }
 

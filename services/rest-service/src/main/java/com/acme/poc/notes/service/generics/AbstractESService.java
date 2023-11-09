@@ -7,6 +7,7 @@ import com.acme.poc.notes.elasticsearch.metadata.ResourceFileReaderService;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.util.ESUtil;
+import com.acme.poc.notes.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,12 +39,13 @@ public abstract class AbstractESService implements IESCommonOperations {
 
     @Override
     public List<NotesData> search(IQuery query) {
+        log.debug("{}", LogUtil.method());
         return iNotesOperations.fetchAndProcessEsResults(query);
     }
 
     @Override
     public List<SearchHit<NotesData>> getAllEntries(IQuery query) {
-        log.debug("getting all entries");
+        log.debug("{}", LogUtil.method());
         long startTime = System.currentTimeMillis();
         boolean timeout = false;
         List<SearchHit<NotesData>> searchHitList = new ArrayList<>();
@@ -76,7 +78,7 @@ public abstract class AbstractESService implements IESCommonOperations {
      */
     @Override
     public List<NotesData> delete(IQuery query) {
-        log.debug("deleting entries for request ={}", query.getClass().getSimpleName());
+        log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
         List<NotesData> processed = iNotesOperations.process(query,searchHitList.stream().iterator());
         Set<NotesData> flatten = new HashSet<>();
@@ -92,8 +94,8 @@ public abstract class AbstractESService implements IESCommonOperations {
     }
 
     @Override
-    public NotesData delete(String keyGuid) {
-        log.debug("deleting entries by key guid");
+    public NotesData delete(String keyGuid) {   // TODO Check if this can be changed to be a UUID instead?
+        log.debug("{} keyGuid: {}", LogUtil.method(), keyGuid);
         UUID guid = UUID.fromString(keyGuid);
         NotesData notesData = esNotesRepository.findById(guid).orElse(null);
         if(notesData != null) {
@@ -106,4 +108,5 @@ public abstract class AbstractESService implements IESCommonOperations {
         log.error("cannot delete. No entry found for given guid = {}",keyGuid);
         throw new RestStatusException(HttpStatus.SC_NOT_FOUND,"cannot delete. No entry found for given GUID");
     }
+
 }
