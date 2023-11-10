@@ -2,6 +2,7 @@
 
 
 ## Current phase
+- [ ] [Proposal for changing guid names](documentation/NotesGuidOverview.drawio.png) (PNG with embedded Draw.io diagram)  
 - [ ] Fix support for storing `customJson` as part of an entry. Saving with this:
 
 
