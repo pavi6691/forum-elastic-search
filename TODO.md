@@ -40,7 +40,7 @@ whereas it should simply be:
 - [ ] Use TestContainers for ElasticSearch in tests instead of relying on an existing Elasticsearch being available
 - [ ] NotesData uses Date's. Shouldn't it use ZonedDateTime or similar?
 - [ ] Add logs, handle exceptions and other validations if any
-- [ ] record class
+- [ ] Record class
 
 
 ## Under consideration
