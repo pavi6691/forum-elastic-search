@@ -10,6 +10,7 @@ import com.acme.poc.notes.util.ESUtil;
 import com.acme.poc.notes.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -29,8 +30,8 @@ public abstract class AbstractESService implements IESCommonOperations {
     protected ElasticsearchOperations elasticsearchOperations;
     protected ResourceFileReaderService resourceFileReaderService;
 
-    public AbstractESService(INotesOperations iNotesOperations, ESNotesRepository esNotesRepository,
-                               ElasticsearchOperations elasticsearchOperations,ResourceFileReaderService resourceFileReaderService) {
+    public AbstractESService(@Qualifier("notesProcessorV3") INotesOperations iNotesOperations, ESNotesRepository esNotesRepository,
+                             ElasticsearchOperations elasticsearchOperations, ResourceFileReaderService resourceFileReaderService) {
         this.iNotesOperations = iNotesOperations;
         this.esNotesRepository = esNotesRepository;
         this.elasticsearchOperations = elasticsearchOperations;
