@@ -24,10 +24,10 @@ public enum NoteType {
     }
 
 
-    private String typeValue;
-    private boolean allowAsRoot;
+    private final String typeValue;
+    private final boolean allowAsRoot;
     private List<NoteType> allowedChildTypes;
-    private boolean allowCustomJson;
+    private final boolean allowCustomJson;
 
 
     NoteType(String typeValue, boolean allowAsRoot, boolean allowCustomJson) {
