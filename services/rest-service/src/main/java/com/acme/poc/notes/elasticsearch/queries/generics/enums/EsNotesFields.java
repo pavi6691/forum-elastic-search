@@ -5,7 +5,7 @@ public enum EsNotesFields {
     EXTERNAL("externalGuid"),
     ENTRY("entryGuid"),
     THREAD("threadGuid"),
-    PARENT_THREAD("threadGuidParent"),
+    PARENT_ENTRY("entryGuidParent"),
     ARCHIVED("archived"),
     CREATED("created"),
     CONTENT("content");

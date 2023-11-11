@@ -16,7 +16,7 @@ public class ElasticSearchData {
             "        \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
             "        \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "        \"entryGuid\": \"06a418c3-7475-473e-9e9d-3e952d672d4c\",\n" +
-            "        \"threadGuidParent\": \"ba7a0762-935d-43f3-acb0-c33d86e7f350\",\n" +
+            "        \"entryGuidParent\": \"ba7a0762-935d-43f3-acb0-c33d86e7f350\",\n" +
             "        \"content\": \"Content-thread-1\",\n" +
             "        \"created\": \"2023-10-19T08:15:50.000000+05:30\",\n" +
             "        \"threads\": [\n" +
@@ -25,7 +25,7 @@ public class ElasticSearchData {
             "            \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
             "            \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "            \"entryGuid\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
-            "            \"threadGuidParent\": \"06a418c3-7475-473e-9e9d-3e952d672d4c\",\n" +
+            "            \"entryGuidParent\": \"06a418c3-7475-473e-9e9d-3e952d672d4c\",\n" +
             "            \"content\": \"Content-thread-2\",\n" +
             "            \"created\": \"2023-10-19T08:16:15.000000+05:30\",\n" +
             "            \"threads\": [\n" +
@@ -34,7 +34,7 @@ public class ElasticSearchData {
             "                \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
             "                \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                \"entryGuid\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
-            "                \"threadGuidParent\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
+            "                \"entryGuidParent\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
             "                \"content\": \"Content-thread-3-update-1\",\n" +
             "                \"created\": \"2023-10-19T08:28:43.000000+05:30\",\n" +
             "                \"archived\": \"2023-10-20T10:20:54.000000+05:30\",\n" +
@@ -44,7 +44,7 @@ public class ElasticSearchData {
             "                    \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
             "                    \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                    \"entryGuid\": \"68b787e4-f75e-4775-ba76-fc53928f72df\",\n" +
-            "                    \"threadGuidParent\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
+            "                    \"entryGuidParent\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
             "                    \"content\": \"Content-thread-4\",\n" +
             "                    \"created\": \"2023-10-19T08:27:41.000000+05:30\",\n" +
             "                    \"archived\": \"2023-10-20T10:20:54.000000+05:30\"\n" +
@@ -54,7 +54,7 @@ public class ElasticSearchData {
             "                    \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
             "                    \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                    \"entryGuid\": \"dcd0df45-8fe7-4b1c-ad30-f64c5a2b6e74\",\n" +
-            "                    \"threadGuidParent\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
+            "                    \"entryGuidParent\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
             "                    \"content\": \"Content-thread-5\",\n" +
             "                    \"created\": \"2023-10-20T05:44:55.000000+05:30\",\n" +
             "                    \"archived\": \"2023-10-20T10:20:52.000000+05:30\"\n" +
@@ -66,7 +66,7 @@ public class ElasticSearchData {
             "                    \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
             "                    \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                    \"entryGuid\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
-            "                    \"threadGuidParent\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
+            "                    \"entryGuidParent\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
             "                    \"content\": \"Content-thread-3\",\n" +
             "                    \"created\": \"2023-10-19T08:16:37.000000+05:30\",\n" +
             "                    \"archived\": \"2023-10-20T10:20:54.000000+05:30\"\n" +
@@ -110,7 +110,7 @@ public class ElasticSearchData {
             "        \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
             "        \"threadGuid\": \"9db017b7-0e1b-4194-a79e-96239232e2be\",\n" +
             "        \"entryGuid\": \"a854b74c-305b-4797-9d80-322990ee38f7\",\n" +
-            "        \"threadGuidParent\": \"260624b3-0beb-46cb-a6cf-90a83162df71\",\n" +
+            "        \"entryGuidParent\": \"260624b3-0beb-46cb-a6cf-90a83162df71\",\n" +
             "        \"content\": \"Content-2-thread-1\",\n" +
             "        \"created\": \"2023-10-20T10:34:29.000000+05:30\"\n" +
             "      }\n" +

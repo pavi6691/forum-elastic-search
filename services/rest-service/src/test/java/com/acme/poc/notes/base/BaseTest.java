@@ -32,7 +32,7 @@ public class BaseTest {
         assertEquals(newExternalEntry.getContent(), entryCreated.getContent());
         assertNull(entryCreated.getHistory());
         assertNull(entryCreated.getThreads());
-        assertNull(entryCreated.getThreadGuidParent());
+        assertNull(entryCreated.getEntryGuidParent());
         assertNull(entryCreated.getArchived());
         assertNotNull(entryCreated.getEntryGuid());
         assertNotNull(entryCreated.getCreated());
@@ -43,13 +43,13 @@ public class BaseTest {
     protected NotesData createThread(NotesData existingEntry, String content) {
         NotesData newThread = new NotesData();
         newThread.setContent(content);
-        newThread.setThreadGuidParent(existingEntry.getEntryGuid());
+        newThread.setEntryGuidParent(existingEntry.getEntryGuid());
         NotesData newThreadCreated = notesService.create(newThread);
         assertEquals(newThread.getExternalGuid(), newThreadCreated.getExternalGuid());
         assertNull(newThreadCreated.getHistory());
         assertNull(newThreadCreated.getThreads());
         assertNull(newThreadCreated.getArchived());
-        assertEquals(existingEntry.getEntryGuid(), newThreadCreated.getThreadGuidParent());
+        assertEquals(existingEntry.getEntryGuid(), newThreadCreated.getEntryGuidParent());
         assertNotEquals(existingEntry.getEntryGuid(), newThreadCreated.getEntryGuid());
         assertNotEquals(existingEntry.getCreated(), newThreadCreated.getCreated());
         assertNotEquals(existingEntry.getContent(), newThreadCreated.getContent());
@@ -67,7 +67,7 @@ public class BaseTest {
         assertEquals(existingEntry.getExternalGuid(), newThreadUpdated.getExternalGuid());
         assertEquals(existingEntry.getEntryGuid(), newThreadUpdated.getEntryGuid());
         assertEquals(existingEntry.getThreadGuid(), newThreadUpdated.getThreadGuid());
-        assertEquals(existingEntry.getThreadGuidParent(), newThreadUpdated.getThreadGuidParent());
+        assertEquals(existingEntry.getEntryGuidParent(), newThreadUpdated.getEntryGuidParent());
         assertNotEquals(existingEntry.getCreated(), newThreadUpdated.getCreated());
         assertNotEquals(existingEntry.getContent(), newThreadUpdated.getContent());
         return newThreadUpdated;
@@ -102,7 +102,7 @@ public class BaseTest {
         for (NotesData notesData : result) {
             if (notesData.getThreads() != null) {
                 IntStream.range(0, notesData.getThreads().size())
-                        .forEach(i -> assertEquals(notesData.getEntryGuid(), notesData.getThreads().get(i).getThreadGuidParent()));
+                        .forEach(i -> assertEquals(notesData.getEntryGuid(), notesData.getThreads().get(i).getEntryGuidParent()));
             }
         }
 

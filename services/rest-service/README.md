@@ -11,7 +11,7 @@
   {
     "guid": "",
     "externalGuid": "External-system-GUID",
-    "threadGuidParent": "",
+    "entryGuidParent": "",
     "entryGuid": "",
     "content":"This world is beautiful!"
   }
@@ -40,7 +40,7 @@
   ```
   | Field              | Type     | Description                                                  |
   |--------------------|----------|--------------------------------------------------------------|
-  | `threadGuidParent` | `UUID`   | **Required**. Thread GUID of parent to create an entry under |
+  | `entryGuidParent ` | `UUID`   | **Required**. Thread GUID of parent to create an entry under |
   | `content`          | `string` | **Required**. Content                                        | 
 
 

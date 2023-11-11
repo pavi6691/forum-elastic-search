@@ -44,8 +44,8 @@ public class NotesData {
     @Field(type = FieldType.Keyword, name = "entryGuid")
     private UUID entryGuid; // A Guid for this entry
 
-    @Field(type = FieldType.Keyword, name = "threadGuidParent")
-    private UUID threadGuidParent; // A Guid for this entry's parent
+    @Field(type = FieldType.Keyword, name = "entryGuidParent")
+    private UUID entryGuidParent; // A Guid for this entry's parent
     
     @Field(type = FieldType.Text, name = "content")
     private String content;

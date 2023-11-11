@@ -22,15 +22,15 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
         if(esResults != null) {
             while (esResults.hasNext()) {
                 NotesData entry = esResults.next().getContent();
-                if (!processMap.containsKey(entry.getThreadGuidParent())) {
+                if (!processMap.containsKey(entry.getEntryGuidParent())) {
                     // null key is allowed and holds root element
-                    processMap.put(entry.getThreadGuidParent(), new LinkedHashMap<>());
+                    processMap.put(entry.getEntryGuidParent(), new LinkedHashMap<>());
                 }
-                if(!processMap.get(entry.getThreadGuidParent()).containsKey(entry.getEntryGuid())) {
-                    processMap.get(entry.getThreadGuidParent()).put(entry.getEntryGuid(), new ArrayList<>());
+                if(!processMap.get(entry.getEntryGuidParent()).containsKey(entry.getEntryGuid())) {
+                    processMap.get(entry.getEntryGuidParent()).put(entry.getEntryGuid(), new ArrayList<>());
                 }
                 if (!onlyThreads.contains(entry.getThreadGuid()) &&
-                        !onlyThreads.contains(entry.getThreadGuidParent())) {
+                        !onlyThreads.contains(entry.getEntryGuidParent())) {
                     if (filterArchived(query,entry,results)) {
                         continue;
                     }
@@ -40,7 +40,7 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
                     }
                 }
                 onlyThreads.add(entry.getThreadGuid());
-                processMap.get(entry.getThreadGuidParent()).get(entry.getEntryGuid()).add(entry);
+                processMap.get(entry.getEntryGuidParent()).get(entry.getEntryGuid()).add(entry);
             }
             results.stream().forEach(e -> buildThreads(e,processMap,new HashSet<>(),query));
         }
@@ -56,11 +56,11 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
      * @return - entries with threads and update histories
      */
     private NotesData buildThreads(NotesData threadEntry, Map<UUID,Map<UUID,List<NotesData>>> results, Set<UUID> entryThreadUuid, IQuery query) {
-        if(query.includeVersions() && threadEntry != null && results.containsKey(threadEntry.getThreadGuidParent()) &&
-                results.get(threadEntry.getThreadGuidParent()).containsKey(threadEntry.getEntryGuid())) {
-            int nrOfUpdates = results.get(threadEntry.getThreadGuidParent()).get(threadEntry.getEntryGuid()).size();
+        if(query.includeVersions() && threadEntry != null && results.containsKey(threadEntry.getEntryGuidParent()) &&
+                results.get(threadEntry.getEntryGuidParent()).containsKey(threadEntry.getEntryGuid())) {
+            int nrOfUpdates = results.get(threadEntry.getEntryGuidParent()).get(threadEntry.getEntryGuid()).size();
             for(int i = 0; i < nrOfUpdates; i++) {
-                updateVersions(threadEntry,results.get(threadEntry.getThreadGuidParent()).get(threadEntry.getEntryGuid()).get(i),query);
+                updateVersions(threadEntry,results.get(threadEntry.getEntryGuidParent()).get(threadEntry.getEntryGuid()).get(i),query);
             }
         }
         List<NotesData> threads = new ArrayList<>();

@@ -3,7 +3,7 @@ package com.acme.poc.notes.elasticsearch.generics;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.elasticsearch.queries.SearchByContent;
 import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.elasticsearch.queries.SearchByParentThreadGuid;
+import com.acme.poc.notes.elasticsearch.queries.SearchByParentEntryGuid;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -81,7 +81,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
      */
     private NotesData searchThreadsAndHistories(IQuery query, NotesData threadRoot, Set<String> entryThreadUuid) {
         checkAndAddHistory(threadRoot,query.includeVersions(),query);
-        Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(SearchByParentThreadGuid.builder()
+        Iterator<SearchHit<NotesData>> searchResponseIterator = getSearchResponse(SearchByParentEntryGuid.builder()
                 .searchGuid(threadRoot.getThreadGuid().toString()).build());
         while(searchResponseIterator.hasNext()) {
             NotesData thread = searchResponseIterator.next().getContent();

@@ -21,7 +21,7 @@
       "entryGuid": {
         "type": "keyword"
       },
-      "threadGuidParent": {
+      "entryGuidParent": {
         "type": "keyword"
       },
       "content": {

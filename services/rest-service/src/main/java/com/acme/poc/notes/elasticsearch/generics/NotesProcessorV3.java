@@ -51,17 +51,17 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
                 if (threadMapping.containsKey(entry.getEntryGuid())) {
                     NotesData thread = threadMapping.get(entry.getEntryGuid());
                     updateVersions(thread,entry,query);
-                } else if(threadMapping.containsKey(entry.getThreadGuidParent())) {
-                    addChild(threadMapping.get(entry.getThreadGuidParent()), entry, query);
+                } else if(threadMapping.containsKey(entry.getEntryGuidParent())) {
+                    addChild(threadMapping.get(entry.getEntryGuidParent()), entry, query);
                 }
                 if(!threadMapping.containsKey(entry.getEntryGuid())) {
-                    if(!threadMapping.containsKey(entry.getThreadGuidParent())) {
+                    if(!threadMapping.containsKey(entry.getEntryGuidParent())) {
                         // New Thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
                         if((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty())
                                 || query.searchAfter() != null) {
                             threadMapping.put(entry.getEntryGuid(),entry);
                             if(!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && 
-                                    !archivedEntries.containsKey(entry.getThreadGuidParent()))) {
+                                    !archivedEntries.containsKey(entry.getEntryGuidParent()))) {
                                 addNewThread(results, entry, query);
                                 archivedEntries.put(entry.getEntryGuid(), entry);
                             }
@@ -70,10 +70,10 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
                     // This is the specific use case to find archived entries by entryGuid
                     if(!(query instanceof SearchArchivedByEntryGuid)) {
                         threadMapping.put(entry.getEntryGuid(),entry);
-                    } else if(threadMapping.containsKey(entry.getThreadGuidParent())) {
+                    } else if(threadMapping.containsKey(entry.getEntryGuidParent())) {
                         threadMapping.put(entry.getEntryGuid(),entry);
-                        if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getThreadGuidParent()) &&
-                                threadMapping.get(entry.getThreadGuidParent()).getArchived() == null) {
+                        if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getEntryGuidParent()) &&
+                                threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
                             addNewThread(results,entry,query);
                             archivedEntries.put(entry.getEntryGuid(), entry);
                         }

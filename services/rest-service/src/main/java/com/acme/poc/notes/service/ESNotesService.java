@@ -38,7 +38,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
     }
 
     /**
-     * Create new entry or a thread if threadGuidParent is provided
+     * Create new entry or a thread if entryGuidParent is provided
      *
      * @param notesData Data for creating a new note entry
      * @return NotesData that is created and stored in Elasticsearch
@@ -51,14 +51,14 @@ public class ESNotesService extends AbstractESService implements INotesService {
         notesData.setThreadGuid(UUID.randomUUID());
         notesData.setCreated(ESUtil.getCurrentDate());
 
-        if (notesData.getThreadGuidParent() != null) {  // It's a thread that needs to be created
+        if (notesData.getEntryGuidParent() != null) {  // It's a thread that needs to be created
             List<NotesData> existingEntry = iNotesOperations.fetchAndProcessEsResults(SearchByEntryGuid.builder()
-                    .searchGuid(notesData.getThreadGuidParent().toString())
+                    .searchGuid(notesData.getEntryGuidParent().toString())
                     .includeVersions(false)
                     .includeArchived(true)
                     .build());
             if (existingEntry == null || existingEntry.isEmpty()) {
-                throwRestError(NotesAPIError.ERROR_NEW_RESPONSE_NO_THREAD_GUID, notesData.getThreadGuidParent());
+                throwRestError(NotesAPIError.ERROR_NEW_RESPONSE_NO_THREAD_GUID, notesData.getEntryGuidParent());
                 return null;
             }
             NotesData existingEntryFirst = existingEntry.get(0);
@@ -66,6 +66,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
                 throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD, existingEntryFirst.getExternalGuid(), existingEntryFirst.getEntryGuid());
                 return null;
             }
+            notesData.setThreadGuid(existingEntryFirst.getThreadGuid());
             notesData.setExternalGuid(existingEntryFirst.getExternalGuid());
             log.debug("Creating a thread for externalGuid: {}, entryGuid: {}", notesData.getExternalGuid().toString(), notesData.getEntryGuid().toString());
         } else {
@@ -248,7 +249,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
                     .entryGuid(entryToArchive.getEntryGuid())
                     .guid(entryToArchive.getGuid())
                     .threadGuid(entryToArchive.getThreadGuid())
-                    .threadGuidParent(entryToArchive.getThreadGuidParent())
+                    .entryGuidParent(entryToArchive.getEntryGuidParent())
                     .content(entryToArchive.getContent())
                     .created(entryToArchive.getCreated())
                     .build())

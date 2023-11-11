@@ -263,7 +263,7 @@ public class IntegrationTest extends BaseTest {
                 assertEquals(notesData.getExternalGuid(),e.getExternalGuid());
                 assertEquals(notesData.getEntryGuid(),e.getEntryGuid());
                 assertEquals(notesData.getThreadGuid(),e.getThreadGuid());
-                assertEquals(notesData.getThreadGuidParent(),e.getThreadGuidParent());
+                assertEquals(notesData.getEntryGuidParent(),e.getEntryGuidParent());
                 assertEquals(notesData.getContent(),e.getContent());
                 assertEquals(notesData.getCreated(),e.getCreated());
                 assertEquals(notesData.getArchived(),e.getArchived());

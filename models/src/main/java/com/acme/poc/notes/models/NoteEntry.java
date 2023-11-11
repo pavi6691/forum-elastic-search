@@ -14,7 +14,7 @@ public record NoteEntry(
     UUID externalGuid,
     UUID threadGuid,
     UUID entryGuid,
-    UUID threadGuidParent,
+    UUID entryGuidParent,
     NoteType type,
     String content,
     JsonNode customJson,
