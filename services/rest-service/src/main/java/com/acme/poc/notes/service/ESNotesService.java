@@ -52,12 +52,12 @@ public class ESNotesService extends AbstractESService implements INotesService {
         notesData.setCreated(ESUtil.getCurrentDate());
 
         if (notesData.getThreadGuidParent() != null) {  // It's a thread that needs to be created
-            List<NotesData> existingEntry = iNotesOperations.fetchAndProcessEsResults(SearchByThreadGuid.builder()
+            List<NotesData> existingEntry = iNotesOperations.fetchAndProcessEsResults(SearchByEntryGuid.builder()
                     .searchGuid(notesData.getThreadGuidParent().toString())
                     .includeVersions(false)
                     .includeArchived(true)
                     .build());
-            if (existingEntry == null) {
+            if (existingEntry == null || existingEntry.isEmpty()) {
                 throwRestError(NotesAPIError.ERROR_NEW_RESPONSE_NO_THREAD_GUID, notesData.getThreadGuidParent());
                 return null;
             }

@@ -91,7 +91,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
                     // Either discard archived entries OR Select only archived entries
                     break;
                 }
-                addThreads(threadRoot,thread,query);
+                addChild(threadRoot,thread,query);
                 entryThreadUuid.add(thread.getEntryGuid().toString());
                 searchThreadsAndHistories(query,thread,entryThreadUuid);
             }
@@ -108,7 +108,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
             }
             while(historyIterator.hasNext()) {
                 NotesData history = historyIterator.next().getContent();
-                addHistory(entry,history,query);
+                updateVersions(entry,history,query);
             }
         }
     }

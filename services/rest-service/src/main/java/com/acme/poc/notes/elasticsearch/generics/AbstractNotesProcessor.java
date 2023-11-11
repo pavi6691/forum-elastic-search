@@ -2,10 +2,7 @@ package com.acme.poc.notes.elasticsearch.generics;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByEntryGuid;
-import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByExternalGuid;
-import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
+import com.acme.poc.notes.elasticsearch.queries.*;
 import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
@@ -82,13 +79,13 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                     if (rootEntries != null && rootEntries.hasNext()) {
                         NotesData rootEntry = rootEntries.next().getContent();
                         if (query.includeArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
-                            IQuery entryQuery = SearchByExternalGuid.builder()
+                            IQuery entryQuery = SearchByThreadGuid.builder()
                                     .size(query.getSize())
                                     .sortOrder(query.getSortOrder())
                                     .searchAfter(((AbstractQuery) query).getSearchAfter())
                                     .includeArchived(query.includeArchived())
                                     .includeVersions(query.includeVersions())
-                                    .searchGuid(rootEntry.getExternalGuid().toString())
+                                    .searchGuid(rootEntry.getThreadGuid().toString())
                                     .createdDateTime(rootEntry.getCreated().getTime()).build();
                             searchHits = execSearchQuery(entryQuery);
                         }
@@ -128,7 +125,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         return elasticsearchOperations.search(searchQuery, NotesData.class);
     }
 
-    protected void addHistory(NotesData existingEntry,NotesData updatedEntry, IQuery query) {
+    protected void updateVersions(NotesData existingEntry,NotesData updatedEntry, IQuery query) {
         if(!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.includeVersions()) {
                 NotesData history = new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
@@ -147,7 +144,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         }
     }
 
-    protected void addThreads(NotesData existingEntry,NotesData newEntry, IQuery query) {
+    protected void addChild(NotesData existingEntry,NotesData newEntry, IQuery query) {
         if(query.getSortOrder() == SortOrder.ASC) {
             existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);   
         } else {
@@ -155,7 +152,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         }
     }
 
-    protected void addEntries(List<NotesData> entries,NotesData newEntry, IQuery query) {
+    protected void addNewThread(List<NotesData> entries,NotesData newEntry, IQuery query) {
         if(query.getSortOrder() == SortOrder.ASC) {
             entries.add(newEntry);   
         } else {

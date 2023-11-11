@@ -53,7 +53,7 @@ public class ESResource {
 
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
     public ResponseEntity<List<NotesData>> searchByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid,
-                                                       @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                           @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                        @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
                                                        @RequestParam(required = false) String searchAfter,
                                                        @RequestParam(required = false, defaultValue = "0") int size,

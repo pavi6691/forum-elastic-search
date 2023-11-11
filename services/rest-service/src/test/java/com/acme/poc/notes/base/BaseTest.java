@@ -43,17 +43,17 @@ public class BaseTest {
     protected NotesData createThread(NotesData existingEntry, String content) {
         NotesData newThread = new NotesData();
         newThread.setContent(content);
-        newThread.setThreadGuidParent(existingEntry.getThreadGuid());
+        newThread.setThreadGuidParent(existingEntry.getEntryGuid());
         NotesData newThreadCreated = notesService.create(newThread);
         assertEquals(newThread.getExternalGuid(), newThreadCreated.getExternalGuid());
         assertNull(newThreadCreated.getHistory());
         assertNull(newThreadCreated.getThreads());
         assertNull(newThreadCreated.getArchived());
-        assertEquals(existingEntry.getThreadGuid(), newThreadCreated.getThreadGuidParent());
+        assertEquals(existingEntry.getEntryGuid(), newThreadCreated.getThreadGuidParent());
         assertNotEquals(existingEntry.getEntryGuid(), newThreadCreated.getEntryGuid());
         assertNotEquals(existingEntry.getCreated(), newThreadCreated.getCreated());
         assertNotEquals(existingEntry.getContent(), newThreadCreated.getContent());
-        assertNotEquals(existingEntry.getThreadGuid(), newThreadCreated.getThreadGuid());
+        assertEquals(existingEntry.getThreadGuid(), newThreadCreated.getThreadGuid());
         return newThreadCreated;
     }
 
@@ -102,7 +102,7 @@ public class BaseTest {
         for (NotesData notesData : result) {
             if (notesData.getThreads() != null) {
                 IntStream.range(0, notesData.getThreads().size())
-                        .forEach(i -> assertEquals(notesData.getThreadGuid(), notesData.getThreads().get(i).getThreadGuidParent()));
+                        .forEach(i -> assertEquals(notesData.getEntryGuid(), notesData.getThreads().get(i).getThreadGuidParent()));
             }
         }
 

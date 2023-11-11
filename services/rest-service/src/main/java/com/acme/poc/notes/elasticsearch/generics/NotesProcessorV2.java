@@ -36,7 +36,7 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
                     }
                     if(results.isEmpty() || !(query instanceof SearchByEntryGuid)
                             || query.searchAfter() != null) {
-                        addEntries(results,entry,query);   
+                        addNewThread(results,entry,query);   
                     }
                 }
                 onlyThreads.add(entry.getThreadGuid());
@@ -59,8 +59,8 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
         if(query.includeVersions() && threadEntry != null && results.containsKey(threadEntry.getThreadGuidParent()) &&
                 results.get(threadEntry.getThreadGuidParent()).containsKey(threadEntry.getEntryGuid())) {
             int nrOfUpdates = results.get(threadEntry.getThreadGuidParent()).get(threadEntry.getEntryGuid()).size();
-            for(int i = 0; i < nrOfUpdates; i++) { 
-                addHistory(threadEntry,results.get(threadEntry.getThreadGuidParent()).get(threadEntry.getEntryGuid()).get(i),query);
+            for(int i = 0; i < nrOfUpdates; i++) {
+                updateVersions(threadEntry,results.get(threadEntry.getThreadGuidParent()).get(threadEntry.getEntryGuid()).get(i),query);
             }
         }
         List<NotesData> threads = new ArrayList<>();
@@ -75,7 +75,7 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
                         // Either discard archived entries OR Select only archived entries
                         break;
                     }
-                    addThreads(threadEntry,threads.get(i),query);
+                    addChild(threadEntry,threads.get(i),query);
                     entryThreadUuid.add(threads.get(i).getEntryGuid());
                     buildThreads(threads.get(i), results, entryThreadUuid, query);
                 }

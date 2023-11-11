@@ -14,27 +14,27 @@ public class ElasticSearchData {
             "      {\n" +
             "        \"guid\": \"5afecb9d-71a6-4fa6-bcaa-55d4e8695361\",\n" +
             "        \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
-            "        \"threadGuid\": \"eb800ff1-c8f0-448b-a565-48bfa7af54b7\",\n" +
+            "        \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "        \"entryGuid\": \"06a418c3-7475-473e-9e9d-3e952d672d4c\",\n" +
-            "        \"threadGuidParent\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
+            "        \"threadGuidParent\": \"ba7a0762-935d-43f3-acb0-c33d86e7f350\",\n" +
             "        \"content\": \"Content-thread-1\",\n" +
             "        \"created\": \"2023-10-19T08:15:50.000000+05:30\",\n" +
             "        \"threads\": [\n" +
             "          {\n" +
             "            \"guid\": \"2c4fbd54-3681-4bdd-ae26-c5e228e96a68\",\n" +
             "            \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
-            "            \"threadGuid\": \"9bf7f319-aaf2-4bb0-831f-453e101bf3ec\",\n" +
+            "            \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "            \"entryGuid\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
-            "            \"threadGuidParent\": \"eb800ff1-c8f0-448b-a565-48bfa7af54b7\",\n" +
+            "            \"threadGuidParent\": \"06a418c3-7475-473e-9e9d-3e952d672d4c\",\n" +
             "            \"content\": \"Content-thread-2\",\n" +
             "            \"created\": \"2023-10-19T08:16:15.000000+05:30\",\n" +
             "            \"threads\": [\n" +
             "              {\n" +
             "                \"guid\": \"babec42a-49e9-409f-b635-17fe1232b509\",\n" +
             "                \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
-            "                \"threadGuid\": \"78a7fdcc-5358-4696-aa2d-66ddbb813022\",\n" +
+            "                \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                \"entryGuid\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
-            "                \"threadGuidParent\": \"9bf7f319-aaf2-4bb0-831f-453e101bf3ec\",\n" +
+            "                \"threadGuidParent\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
             "                \"content\": \"Content-thread-3-update-1\",\n" +
             "                \"created\": \"2023-10-19T08:28:43.000000+05:30\",\n" +
             "                \"archived\": \"2023-10-20T10:20:54.000000+05:30\",\n" +
@@ -42,9 +42,9 @@ public class ElasticSearchData {
             "                  {\n" +
             "                    \"guid\": \"350e4c01-4445-4304-b816-25ad62806390\",\n" +
             "                    \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
-            "                    \"threadGuid\": \"0800891f-2238-40ef-a2bc-472faddea368\",\n" +
+            "                    \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                    \"entryGuid\": \"68b787e4-f75e-4775-ba76-fc53928f72df\",\n" +
-            "                    \"threadGuidParent\": \"78a7fdcc-5358-4696-aa2d-66ddbb813022\",\n" +
+            "                    \"threadGuidParent\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
             "                    \"content\": \"Content-thread-4\",\n" +
             "                    \"created\": \"2023-10-19T08:27:41.000000+05:30\",\n" +
             "                    \"archived\": \"2023-10-20T10:20:54.000000+05:30\"\n" +
@@ -52,9 +52,9 @@ public class ElasticSearchData {
             "                  {\n" +
             "                    \"guid\": \"b2189a45-fddc-4b15-adc1-5182491439ce\",\n" +
             "                    \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
-            "                    \"threadGuid\": \"529b8768-b269-4ce7-96c4-51b4acd29a0a\",\n" +
+            "                    \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                    \"entryGuid\": \"dcd0df45-8fe7-4b1c-ad30-f64c5a2b6e74\",\n" +
-            "                    \"threadGuidParent\": \"78a7fdcc-5358-4696-aa2d-66ddbb813022\",\n" +
+            "                    \"threadGuidParent\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
             "                    \"content\": \"Content-thread-5\",\n" +
             "                    \"created\": \"2023-10-20T05:44:55.000000+05:30\",\n" +
             "                    \"archived\": \"2023-10-20T10:20:52.000000+05:30\"\n" +
@@ -64,9 +64,9 @@ public class ElasticSearchData {
             "                  {\n" +
             "                    \"guid\": \"1c516c5c-4989-4371-b7b0-920a8c672c71\",\n" +
             "                    \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
-            "                    \"threadGuid\": \"78a7fdcc-5358-4696-aa2d-66ddbb813022\",\n" +
+            "                    \"threadGuid\": \"16a45a51-647f-4dbf-a057-ec6c9681d46b\",\n" +
             "                    \"entryGuid\": \"7f20d0eb-3907-4647-9584-3d7814cd3a55\",\n" +
-            "                    \"threadGuidParent\": \"9bf7f319-aaf2-4bb0-831f-453e101bf3ec\",\n" +
+            "                    \"threadGuidParent\": \"16b8d331-92ab-424b-b69a-3181f6d80f5a\",\n" +
             "                    \"content\": \"Content-thread-3\",\n" +
             "                    \"created\": \"2023-10-19T08:16:37.000000+05:30\",\n" +
             "                    \"archived\": \"2023-10-20T10:20:54.000000+05:30\"\n" +
@@ -108,9 +108,9 @@ public class ElasticSearchData {
             "      {\n" +
             "        \"guid\": \"4033954e-54b9-49f4-bbe4-357345d1e650\",\n" +
             "        \"externalGuid\": \"10a14259-ca84-4c7d-8d46-7ad398000002\",\n" +
-            "        \"threadGuid\": \"218db882-6233-400e-a65d-368d894acfdd\",\n" +
+            "        \"threadGuid\": \"9db017b7-0e1b-4194-a79e-96239232e2be\",\n" +
             "        \"entryGuid\": \"a854b74c-305b-4797-9d80-322990ee38f7\",\n" +
-            "        \"threadGuidParent\": \"9db017b7-0e1b-4194-a79e-96239232e2be\",\n" +
+            "        \"threadGuidParent\": \"260624b3-0beb-46cb-a6cf-90a83162df71\",\n" +
             "        \"content\": \"Content-2-thread-1\",\n" +
             "        \"created\": \"2023-10-20T10:34:29.000000+05:30\"\n" +
             "      }\n" +
