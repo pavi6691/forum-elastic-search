@@ -8,6 +8,7 @@ public enum EsNotesFields {
     PARENT_ENTRY("entryGuidParent"),
     ARCHIVED("archived"),
     CREATED("created"),
+    TYPE("type"),
     CONTENT("content");
 
     private String indexFieldName ="";

@@ -250,6 +250,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
                     .guid(entryToArchive.getGuid())
                     .threadGuid(entryToArchive.getThreadGuid())
                     .entryGuidParent(entryToArchive.getEntryGuidParent())
+                    .type(entryToArchive.getType())
                     .content(entryToArchive.getContent())
                     .created(entryToArchive.getCreated())
                     .build())

@@ -1,6 +1,7 @@
 package com.acme.poc.notes.elasticsearch.pojo;
 
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.serialzation.CustomDateDeserializer;
 import com.acme.poc.notes.serialzation.CustomDateSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -46,6 +47,9 @@ public class NotesData {
 
     @Field(type = FieldType.Keyword, name = "entryGuidParent")
     private UUID entryGuidParent; // A Guid for this entry's parent
+
+    @Field(type = FieldType.Keyword, name = "type")
+    private NoteType type = NoteType.NOTE;
     
     @Field(type = FieldType.Text, name = "content")
     private String content;

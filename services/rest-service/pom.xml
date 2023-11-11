@@ -21,6 +21,10 @@
 			<groupId>com.acme.poc.notes</groupId>
 			<artifactId>notes-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.acme.poc.notes</groupId>
+			<artifactId>notes-models</artifactId>
+		</dependency>
 
 		<!-- Spring -->
 		<dependency>
