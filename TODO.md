@@ -2,7 +2,8 @@
 
 
 ## Current phase
-- [ ] [Proposal for changing guid names](documentation/NotesGuidOverview.drawio.png) (PNG with embedded Draw.io diagram)  
+- [ ] [Proposal for changing guid names](documentation/NotesGuidOverview.drawio.png) (PNG with embedded Draw.io diagram)
+- [ ] Merge current branch into master
 - [ ] Fix support for storing `customJson` as part of an entry. Saving with this:
 
 
