@@ -37,10 +37,13 @@ public class IntegrationTest extends BaseTest {
 
     @Value("${index.name}")
     private String indexName;
+
+
     private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
 
     @Container
-    public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
+    public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
+            .withReuse(true);
 
 
     @DynamicPropertySource
@@ -59,10 +62,17 @@ public class IntegrationTest extends BaseTest {
         registry.add("service.thread.pool.size", () -> 8);
     }
 
-    @BeforeAll
-    void setup() {
-//        assertEquals(notesAdminService.createIndex(indexName), indexName);
-    }
+//    @BeforeAll
+//    void setup() {
+//        elasticsearchContainer
+//                .withNetworkAliases("elasticsearch")
+//                .setWaitStrategy((new LogMessageWaitStrategy())
+//                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
+//                        .withStartupTimeout(Duration.ofSeconds(180L)));
+//        elasticsearchContainer.start();
+//
+////        assertEquals(notesAdminService.createIndex(indexName), indexName);   // TODO This does not validate correctly
+//    }
 
 
     @Test
