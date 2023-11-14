@@ -2,7 +2,8 @@
 
 
 ## Current phase
-- [ ] [Proposal for changing guid names](documentation/NotesGuidOverview.drawio.png) (PNG with embedded Draw.io diagram)
+- [ ] Refactor package for Elasticsearch stuff from `com.acme.poc.notes.elasticsearch` to `com.acme.poc.notes.persistence.elasticsearch`
+- [ ] Refactor package for REST service from `com.acme.poc.note.*` to `com.acme.poc.note.rest.*`
 - [ ] Merge current branch into master
 - [ ] Fix support for storing `customJson` as part of an entry. Saving with this:
 
@@ -68,6 +69,7 @@ whereas it should simply be:
 
 ## Fixed
 
+- [x] [Proposal for changing guid names](documentation/NotesGuidOverview.drawio.png) (PNG with embedded Draw.io diagram)
 - [x] In general use timestamps as `uuuu-MM-dd'T'HH:mm:ss.SSSSSSXXX`. Currently `"created"` value is stored
       with only 3 digits for milliseconds.
 - [x] When saving data to Elasticsearch:
