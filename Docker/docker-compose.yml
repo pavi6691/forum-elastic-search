@@ -2,6 +2,19 @@ version: "3.0"
 
 services:
 
+  # PostgreSQL
+  postgresql:
+    container_name: postgresql
+    image: postgres:15.5-alpine
+    environment:
+      - POSTGRES_DB=acme
+      - POSTGRES_USER=postgresql-username
+      - POSTGRES_PASSWORD=postgresql-password
+    networks:
+      - network-postgresql
+    ports:
+      - 5432:5432
+
   # Elasticsearch
   elasticsearch:
     container_name: elasticsearch
@@ -29,5 +42,7 @@ services:
 
 networks:
 
+  network-postgresql:
+    driver: bridge
   network-elasticsearch:
     driver: bridge
