@@ -3,6 +3,7 @@ package com.acme.poc.notes.resource;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.util.LogUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class DevOpsResource {
 
 
+    @Operation(summary = "Get errors", description = "Retrieve all possible errors for client requests", tags = { NotesConstants.OPENAPI_DEVOPS_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_DEVOPS_ERRORS)
     public ResponseEntity<Object> getErrorDefinitions() {
         log.debug("{}", LogUtil.method());

@@ -3,6 +3,7 @@ package com.acme.poc.notes.resource;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.service.INotesAdminService;
 import com.acme.poc.notes.util.LogUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ public class ESAdminResource {
     }
 
 
+    @Operation(summary = "Create initial index", description = "Create the initial index in Elasticsearch for Notes support", tags = { NotesConstants.OPENAPI_ELASTICSEARCH_ADMIN_TAG })
     @PostMapping(NotesConstants.API_ENDPOINT_ADMIN_ES_INDEX_CREATE)
     public ResponseEntity<String> createIndex(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
         log.debug("{} index: {}", LogUtil.method(), indexName);

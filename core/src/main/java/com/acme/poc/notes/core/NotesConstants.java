@@ -12,6 +12,12 @@ public class NotesConstants {
     public static final long TIMEOUT_ARCHIVE = TimeUnit.SECONDS.toMillis(10);
     public static final long TIMEOUT_DELETE = TimeUnit.SECONDS.toMillis(10);
 
+    // OpenAPI
+    public static final String OPENAPI_NOTES_TAG = "Notes API";
+    public static final String OPENAPI_ADMIN_TAG = "Notes Admin API";
+    public static final String OPENAPI_DEVOPS_TAG = "Notes DevOps API";
+    public static final String OPENAPI_ELASTICSEARCH_ADMIN_TAG = "Notes Elasticsearch Admin API";
+
     // REST path parameters
     public static final String API_ENDPOINT_PATH_PARAMETER_GUID = "guid";
     public static final String API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID= "externalGuid";
