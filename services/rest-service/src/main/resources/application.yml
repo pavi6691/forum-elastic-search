@@ -8,3 +8,30 @@ default.number.of.entries.to.return: 1000
 service.thread.pool.size: 8
 
 springdoc.show-actuator: true
+
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost/acme
+    username: postgresql-username
+    password: postgresql-password
+    driverClassName: org.postgresql.Driver
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    table: flyway_Notes
+    locations: 'classpath:db/migration/{vendor}'
+  jpa:
+    properties:
+      hibernate:
+        check_nullability: true
+        jdbc:
+          time_zone: UTC
+          dialect: org.hibernate.dialect.PostgreSQL9Dialect
+          lob:
+            non_contextual_creation: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
