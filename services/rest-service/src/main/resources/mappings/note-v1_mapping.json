@@ -24,6 +24,9 @@
       "entryGuidParent": {
         "type": "keyword"
       },
+      "type": {
+        "type": "keyword"
+      },
       "content": {
         "type": "text"
       },
