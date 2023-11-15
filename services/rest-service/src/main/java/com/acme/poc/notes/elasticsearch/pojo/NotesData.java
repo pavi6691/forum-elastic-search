@@ -67,9 +67,9 @@ public class NotesData {
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date archived;
 
-    private List<NotesData> threads = null; // answers/responses to this answer
+    private List<NotesData> threads = null; // Answers/responses to this note
 
-    private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by
+    private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by ???
 
 
     public void addThreads(NotesData threads, int index) {
