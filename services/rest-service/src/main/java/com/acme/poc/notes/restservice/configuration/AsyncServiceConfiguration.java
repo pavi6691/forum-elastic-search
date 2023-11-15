@@ -8,12 +8,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
+
 @Configuration
 @EnableAsync
 public class AsyncServiceConfiguration {
 
     @Value("${service.thread.pool.size}")
     private int service_thread_pool_size;
+
+
     @Bean(name = "asyncExecutor")
     public Executor asyncServiceExecutor()  {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -23,4 +26,5 @@ public class AsyncServiceConfiguration {
         executor.initialize();
         return executor;
     }
+
 }

@@ -9,13 +9,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+
 /**
- * reads template, policy or mapping json file from resource path and store. 
- * provides ability to get content of the same for multiple indexes as well.
+ * Reads template, policy or mapping json file from resource path and store.
+ * Provides ability to get content of the same for multiple indexes as well.
  */
 @Configuration
 public class ResourceFileReaderService {
     
+
     public IndexMetadataConfiguration getDocsPropertyFile(String filePath, Class resourceClass) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         IndexMetadataConfiguration indexMetadataConfiguration;
@@ -30,10 +32,9 @@ public class ResourceFileReaderService {
             String filePath = Constants.POLICY_DIR + policyFile;
             getPolicyInfo = mapper.readValue(getFileFromResources(filePath, resourceClass), PolicyInfo.class);
         } catch (IOException | NullPointerException e) {
-            throw new RuntimeException("policy file does not exist");
+            throw new RuntimeException("Policy file does not exist: " + policyFile);
         }
         return getPolicyInfo;
-
     }
     
     public Template getTemplateFile(String templateFile, Class resourceClass) {
@@ -43,19 +44,18 @@ public class ResourceFileReaderService {
             String filePath = Constants.TEMPLATE_DIR + templateFile;
             template = mapper.readValue(getFileFromResources(filePath, resourceClass), Template.class);
         } catch (IOException | NullPointerException e) {
-            throw new RuntimeException("template file does not exist");
+            throw new RuntimeException("Template file does not exist: " + templateFile);
         }
         return template;
-
     }
     
-    public String getMappingFromFile(String mappingFile, Class resourceClass) throws IOException {
+    public String getMappingFromFile(String mappingFile, Class resourceClass) {
         String mappingString;
         try {
             String filePath = Constants.MAPPING_DIR + mappingFile;
             mappingString =  getFileFromResources(filePath, resourceClass);
         } catch (IOException | NullPointerException e) {
-            throw new RuntimeException("mapping file does not exist"+resourceClass.toString());
+            throw new RuntimeException("Mapping file does not exist: " + mappingFile);
         }
         return mappingString;
     }

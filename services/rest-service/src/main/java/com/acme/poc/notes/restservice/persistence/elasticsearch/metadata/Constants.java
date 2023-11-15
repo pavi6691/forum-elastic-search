@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.metadata;
 
+
 public class Constants {
 
     public static final String POLICY_DIR = "policies/";

@@ -1,4 +1,5 @@
 package com.acme.poc.notes.restservice.service;
+
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
@@ -19,9 +20,12 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.*;
 
+
 @Slf4j
 @Service
 public class ESAdminNotesService extends AbstractESService implements INotesAdminService {
+
+
     public ESAdminNotesService(@Qualifier("notesProcessorV3") INotesOperations iNotesOperations,
                                ESNotesRepository esNotesRepository,
                                ElasticsearchOperations elasticsearchOperations,
@@ -29,11 +33,15 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
         super(iNotesOperations, esNotesRepository, elasticsearchOperations,resourceFileReaderService);
     }
 
+
     @Override
     public List<NotesData> getAll(String indexName) {
         log.debug("{} index: {}", LogUtil.method(), indexName);
         return iNotesOperations.fetchAndProcessEsResults(
-                SearchAll.builder().includeVersions(true).includeArchived(true).build());
+                SearchAll.builder()
+                        .includeVersions(true)
+                        .includeArchived(true)
+                        .build());
     }
 
     @Override
@@ -57,7 +65,9 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
         log.debug("{} entryGuid: {}", LogUtil.method(), entryGuid.toString());
         return delete(SearchByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())
-                .includeVersions(true).includeArchived(true).build());
+                .includeVersions(true)
+                .includeArchived(true)
+                .build());
     }
 
     @Override
@@ -65,7 +75,9 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
         log.debug("{} threadGuid: {}", LogUtil.method(), threadGuid.toString());
         return delete(SearchByThreadGuid.builder()
                 .searchGuid(threadGuid.toString())
-                .includeVersions(true).includeArchived(true).build());
+                .includeVersions(true)
+                .includeArchived(true)
+                .build());
     }
 
     @Override
@@ -76,6 +88,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
 
     /**
      * Create new index if not exists
+     *
      * @param indexName - index name to create
      * @return indexName when successfully created, else message that says index already exists
      */
@@ -91,15 +104,15 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
 //            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
 //            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
             IndexOperations indexOperations = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
-            if(!indexOperations.exists()) {
+            if (!indexOperations.exists()) {
                 indexOperations.create();
                 return new ObjectMapper().writeValueAsString(indexOperations.getInformation());
             } else {
-                log.info("Index already exists, indexName= {} ", indexName);
-                return String.format("Index already exists, indexName=%s", indexName);
+                log.info("Index already exists: {} ", indexName);
+                return String.format("Index already exists: %s", indexName);
             }
         } catch (IOException e) {
-            log.error("Exception while creating an index = " + indexName, e);
+            log.error("Exception while creating index: " + indexName, e);
             throw new RuntimeException(e);
         }
     }

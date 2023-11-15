@@ -24,6 +24,7 @@ import java.util.*;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
+
 /**
  * Service to perform elastic search operations
  */
@@ -39,6 +40,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
     ) {
         super(iNotesOperations, esNotesRepository, elasticsearchOperations, resourceFileReaderService);
     }
+
 
     /**
      * Create new entry or a thread if entryGuidParent is provided
@@ -99,6 +101,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      * Update entry by guid. if guid is not provided
      * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
      * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
+     *
      * @param updatedEntry
      * @return updated entry
      */
@@ -121,6 +124,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
      * Update entry by entryGuid. if guid is not provided 
      * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
      * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
+     *
      * @param updatedEntry
      * @return updated entry
      */
@@ -171,6 +175,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
 
     /**
      * Archive by updating existing entry. updates archived field on elastic search with current date and time.
+     *
      * @param query - archive is done querying by either externalGuid / entryGuid
      * @return archived entries
      */
@@ -193,6 +198,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
 
     /**
      * Archive by updating existing entry. updates archived field on elastic search with current date and time.
+     *
      * @param guid - archive is done querying by guid
      * @return archived entries
      */

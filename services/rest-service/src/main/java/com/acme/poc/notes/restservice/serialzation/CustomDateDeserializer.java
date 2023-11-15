@@ -14,20 +14,23 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+
 public class CustomDateDeserializer extends JsonDeserializer<Date> {
+
     private final SimpleDateFormat formatter = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
 
+
     @Override
-    public Date deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JacksonException {
-        if(StringUtils.isEmpty(jsonParser.getText())) {
+    public Date deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
+        if (StringUtils.isEmpty(jsonParser.getText())) {
             return null;
         }
         String dateStr = jsonParser.getText();
         try {
             return formatter.parse(dateStr);
         } catch (ParseException e) {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,
-                    "Error parsing date: " + dateStr + " ErrorMessage : " + e.getMessage());
+            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "Error parsing date: " + dateStr + " ErrorMessage : " + e.getMessage());
         }
     }
+
 }

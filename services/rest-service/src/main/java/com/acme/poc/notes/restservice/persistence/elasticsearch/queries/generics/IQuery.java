@@ -2,7 +2,9 @@ package com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generic
 
 import org.elasticsearch.search.sort.SortOrder;
 
+
 public interface IQuery {
+
     String buildQuery();
     boolean includeVersions();
     boolean includeArchived();
@@ -10,4 +12,5 @@ public interface IQuery {
     Object searchAfter();
     int getSize();
     SortOrder getSortOrder();
+
 }

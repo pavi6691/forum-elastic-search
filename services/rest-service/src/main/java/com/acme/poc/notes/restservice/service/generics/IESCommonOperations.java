@@ -6,11 +6,14 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 
 import java.util.List;
 
+
 public interface IESCommonOperations {
+
     List<NotesData> search(IQuery query);
     List<SearchHit<NotesData>> getAllEntries(IQuery query);
 
     List<NotesData> delete(IQuery query);
 
     NotesData delete(String keyGuid);
+
 }

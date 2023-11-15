@@ -65,12 +65,13 @@ public class ESController {
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
-    public ResponseEntity<List<NotesData>> searchByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
-                                                           @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                       @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                       @RequestParam(required = false) String searchAfter,
-                                                       @RequestParam(required = false, defaultValue = "0") int size,
-                                                       @RequestParam(required = false) SortOrder sortOrder) {
+    public ResponseEntity<List<NotesData>> searchByEntryGuid(
+                                                        @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
+                                                        @RequestParam(required = false) String searchAfter,
+                                                        @RequestParam(required = false, defaultValue = "0") int size,
+                                                        @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.searchByEntryGuid(SearchByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())
@@ -84,12 +85,13 @@ public class ESController {
 
     @Operation(summary = "Search entries", description = "Return entries that matches the search.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_CONTENT)
-    public ResponseEntity<List<NotesData>> searchContent(@RequestParam String search,
-                                                       @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                       @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                       @RequestParam(required = false) String searchAfter,
-                                                       @RequestParam(required = false, defaultValue = "0") int size,
-                                                       @RequestParam(required = false) SortOrder sortOrder) {
+    public ResponseEntity<List<NotesData>> searchContent(
+                                                        @RequestParam String search,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
+                                                        @RequestParam(required = false) String searchAfter,
+                                                        @RequestParam(required = false, defaultValue = "0") int size,
+                                                        @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.searchByContent(SearchByContent.builder()
                 .contentToSearch(search)
@@ -133,11 +135,11 @@ public class ESController {
     @Operation(summary = "Search archived entries by externalGuid", description = "Search all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> searchArchivedEntriesByExternalGuid(
-                                                       @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
-                                                       @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                       @RequestParam(required = false) String searchAfter,
-                                                       @RequestParam(required = false, defaultValue = "0") int size,
-                                                       @RequestParam(required = false) SortOrder sortOrder) {
+                                                        @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(required = false) String searchAfter,
+                                                        @RequestParam(required = false, defaultValue = "0") int size,
+                                                        @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.searchArchivedByExternalGuid(SearchArchivedByExternalGuid.builder()
                 .searchGuid(externalGuid.toString())
@@ -152,11 +154,11 @@ public class ESController {
     @Operation(summary = "Search archived entries by entryGuid", description = "Search all entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<NotesData>> searchArchivedEntriesByEntryGuid(
-                                                       @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
-                                                       @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                       @RequestParam(required = false) String searchAfter, 
-                                                       @RequestParam(required = false, defaultValue = "0") int size,
-                                                       @RequestParam(required = false) SortOrder sortOrder) {
+                                                        @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
+                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(required = false) String searchAfter,
+                                                        @RequestParam(required = false, defaultValue = "0") int size,
+                                                        @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.searchArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
                 .searchGuid(entryGuid.toString())

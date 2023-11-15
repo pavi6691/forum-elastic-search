@@ -1,14 +1,15 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
 
 /**
  * Search and build response for thread of entries along with update histories. Version 3
@@ -16,6 +17,7 @@ import java.util.*;
 @Slf4j
 @Service("notesProcessorV3")
 public class NotesProcessorV3 extends AbstractNotesProcessor {
+
 
     /**
      * Out of all multiple entries and their threads and histories, figures out and process -
@@ -31,7 +33,7 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
      *        then map(archived - for archived filter) that will have only archived entries. 
      *        these entries are presented within the requested entry thread.
      *
-     * This method takes O(n) linear time
+     * <p>This method takes O(n) linear time</p>
      * 
      * @param query
      * @return
@@ -39,42 +41,39 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
     @Override
     public List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
         log.debug("Processing request = {}", query.getClass().getSimpleName());
-        Map<UUID,NotesData> threadMapping = new HashMap<>();
+        Map<UUID, NotesData> threadMapping = new HashMap<>();
         List<NotesData> results = new LinkedList<>();
-        Map<UUID,NotesData> archivedEntries = new HashMap<>();
-        if(esResults != null) {
+        Map<UUID, NotesData> archivedEntries = new HashMap<>();
+        if (esResults != null) {
             while (esResults.hasNext()) {
                 NotesData entry = esResults.next().getContent();
-                if (filterArchived(query,entry,results)) {
+                if (filterArchived(query, entry, results)) {
                     continue;
                 }
                 if (threadMapping.containsKey(entry.getEntryGuid())) {
                     NotesData thread = threadMapping.get(entry.getEntryGuid());
-                    updateVersions(thread,entry,query);
-                } else if(threadMapping.containsKey(entry.getEntryGuidParent())) {
+                    updateVersions(thread, entry, query);
+                } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
                     addChild(threadMapping.get(entry.getEntryGuidParent()), entry, query);
                 }
-                if(!threadMapping.containsKey(entry.getEntryGuid())) {
-                    if(!threadMapping.containsKey(entry.getEntryGuidParent())) {
-                        // New Thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
-                        if((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty())
-                                || query.searchAfter() != null) {
-                            threadMapping.put(entry.getEntryGuid(),entry);
-                            if(!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && 
-                                    !archivedEntries.containsKey(entry.getEntryGuidParent()))) {
+                if (!threadMapping.containsKey(entry.getEntryGuid())) {
+                    if (!threadMapping.containsKey(entry.getEntryGuidParent())) {
+                        // New thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
+                        if ((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty()) || query.searchAfter() != null) {
+                            threadMapping.put(entry.getEntryGuid(), entry);
+                            if (!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && !archivedEntries.containsKey(entry.getEntryGuidParent()))) {
                                 addNewThread(results, entry, query);
                                 archivedEntries.put(entry.getEntryGuid(), entry);
                             }
                         }
                     }
                     // This is the specific use case to find archived entries by entryGuid
-                    if(!(query instanceof SearchArchivedByEntryGuid)) {
-                        threadMapping.put(entry.getEntryGuid(),entry);
-                    } else if(threadMapping.containsKey(entry.getEntryGuidParent())) {
-                        threadMapping.put(entry.getEntryGuid(),entry);
-                        if(entry.getArchived() != null && !archivedEntries.containsKey(entry.getEntryGuidParent()) &&
-                                threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
-                            addNewThread(results,entry,query);
+                    if (!(query instanceof SearchArchivedByEntryGuid)) {
+                        threadMapping.put(entry.getEntryGuid(), entry);
+                    } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
+                        threadMapping.put(entry.getEntryGuid(), entry);
+                        if (entry.getArchived() != null && !archivedEntries.containsKey(entry.getEntryGuidParent()) && threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
+                            addNewThread(results, entry, query);
                             archivedEntries.put(entry.getEntryGuid(), entry);
                         }
                     }
@@ -83,4 +82,5 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
         }
         return results;
     }
+
 }

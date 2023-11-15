@@ -10,7 +10,9 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics
 import java.util.List;
 import java.util.UUID;
 
+
 public interface INotesService {
+
     NotesData create(NotesData notesData);
     NotesData getByGuid(UUID guid);
     NotesData updateByGuid(NotesData notesData);
@@ -23,4 +25,5 @@ public interface INotesService {
     List<NotesData> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
     List<NotesData> deleteArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
     List<NotesData> deleteArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
+
 }

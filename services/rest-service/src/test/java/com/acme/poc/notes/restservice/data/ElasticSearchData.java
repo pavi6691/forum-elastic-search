@@ -1,7 +1,9 @@
 package com.acme.poc.notes.restservice.data;
 
+
 public class ElasticSearchData {
-    
+
+
     public static final String ENTRIES = """
             [
               {
@@ -118,4 +120,5 @@ public class ElasticSearchData {
                 ]
               }
             ]""";
+
 }

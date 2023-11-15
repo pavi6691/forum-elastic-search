@@ -10,28 +10,25 @@ import lombok.Setter;
 
 import java.util.Set;
 
+
 /**
  * The POJO Index metadata which is used in IndexMetadataConfiguration
  */
+@Getter
+@Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect
 @AllArgsConstructor
 @NoArgsConstructor
 public class IndexMetadata {
 
-    @Setter @Getter
     private String docType;
-    @Setter @Getter
     private String mappingFile;
-    @Setter @Getter
     private String templateFile;
-    @Setter @Getter
     private String policyFile;
-    @Setter @Getter
     private Set<String> cmd;
-    @Setter @Getter
     private IndexType indexType;
-    @Setter @Getter
     @JsonProperty("isEnableUpdate")
     private boolean enableUpdate;
+
 }

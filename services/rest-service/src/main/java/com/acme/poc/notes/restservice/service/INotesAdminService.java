@@ -6,7 +6,9 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchBy
 import java.util.List;
 import java.util.UUID;
 
+
 public interface INotesAdminService {
+
     List<NotesData> getAll(String indexName);
     List<NotesData> searchByExternalGuid(SearchByExternalGuid query);
     List<NotesData> deleteByExternalGuid(UUID externalGuid);

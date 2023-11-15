@@ -31,12 +31,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+
 /**
- * abstraction for executing search query.
+ * Abstraction for executing search query.
  */
 @Slf4j
 @Service
 public abstract class AbstractNotesProcessor implements INotesOperations {
+
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
     @Autowired
@@ -61,15 +63,21 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     public List<NotesData> fetchAndProcessEsResults(IQuery query) {
         log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
         SearchHits<NotesData> searchHits = getEsResults(query);
-        if(searchHits != null && searchHits.getSearchHits().size() > 0) {
-            log.debug("Nr of results got from elastic search = {}", searchHits.getSearchHits().size());
-            return process(query,searchHits.stream().iterator());
+        if (searchHits != null && searchHits.getSearchHits().size() > 0) {
+            log.debug("Number of results from elastic search = {}", searchHits.getSearchHits().size());
+            return process(query, searchHits.stream().iterator());
         } else {
             log.error("no results found for request = {}", query.getClass().getSimpleName());
         }
         return new ArrayList<>();
     }
-    
+
+    /**
+     * TODO Explain purpose of method
+     *
+     * @param query
+     * @return
+     */
     @Override
     public SearchHits<NotesData> getEsResults(IQuery query) {
         SearchHits<NotesData> searchHits = null;
@@ -89,7 +97,8 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                                     .includeArchived(query.includeArchived())
                                     .includeVersions(query.includeVersions())
                                     .searchGuid(rootEntry.getThreadGuid().toString())
-                                    .createdDateTime(rootEntry.getCreated().getTime()).build();
+                                    .createdDateTime(rootEntry.getCreated().getTime())
+                                    .build();
                             searchHits = execSearchQuery(entryQuery);
                         }
                     }
@@ -103,7 +112,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     }
 
     /**
-     * executes IQuery
+     * Executes IQuery
      * @param query 
      * @return search result from elastics search response
      */
@@ -111,16 +120,16 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
                 .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
-        if(query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
+        if (query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
             SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
             try {
-                if(getTimeUnit(Long.valueOf(query.searchAfter().toString()))) {
+                if (getTimeUnit(Long.valueOf(query.searchAfter().toString()))) {
                     searchQueryBuilder.withSearchAfter(List.of(query.searchAfter().toString()));
                 } else {
                     searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(query.searchAfter().toString()).toInstant().toEpochMilli()));
                 }
             } catch (ParseException e) {
-                throw new RestStatusException(HttpStatus.SC_BAD_REQUEST,"Incorrect date format on searchAfter param");
+                throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "Incorrect date format on searchAfter param");
             }
         }
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
@@ -128,16 +137,23 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         return elasticsearchOperations.search(searchQuery, NotesData.class);
     }
 
-    protected void updateVersions(NotesData existingEntry,NotesData updatedEntry, IQuery query) {
-        if(!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
+    /**
+     * TODO Explain purpose of method
+     *
+     * @param existingEntry
+     * @param updatedEntry
+     * @param query
+     */
+    protected void updateVersions(NotesData existingEntry, NotesData updatedEntry, IQuery query) {
+        if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.includeVersions()) {
                 NotesData history = new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
                         existingEntry.getEntryGuid(), existingEntry.getEntryGuidParent(), existingEntry.getType(), existingEntry.getContent(), existingEntry.getCustomJson(), existingEntry.getCreated(),
                         existingEntry.getArchived(), null, null);
-                if(query.getSortOrder() == SortOrder.ASC) {
-                    existingEntry.addHistory(history,existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
+                if (query.getSortOrder() == SortOrder.ASC) {
+                    existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
                 } else {
-                    existingEntry.addHistory(history,0);
+                    existingEntry.addHistory(history, 0);
                 }
             }
             existingEntry.setGuid(updatedEntry.getGuid());
@@ -147,19 +163,33 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         }
     }
 
+    /**
+     * TODO Explain purpose of method
+     *
+     * @param existingEntry
+     * @param newEntry
+     * @param query
+     */
     protected void addChild(NotesData existingEntry,NotesData newEntry, IQuery query) {
-        if(query.getSortOrder() == SortOrder.ASC) {
+        if (query.getSortOrder() == SortOrder.ASC) {
             existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);   
         } else {
-            existingEntry.addThreads(newEntry,0);
+            existingEntry.addThreads(newEntry, 0);
         }
     }
 
+    /**
+     * TODO Explain purpose of method
+     *
+     * @param entries
+     * @param newEntry
+     * @param query
+     */
     protected void addNewThread(List<NotesData> entries,NotesData newEntry, IQuery query) {
-        if(query.getSortOrder() == SortOrder.ASC) {
+        if (query.getSortOrder() == SortOrder.ASC) {
             entries.add(newEntry);   
         } else {
-            entries.add(0,newEntry);
+            entries.add(0, newEntry);
         }
     }
 
@@ -181,4 +211,5 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         }
         return false; // Unknown time unit
     }
+
 }

@@ -18,8 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DTOMapperTest {
 
 
-
-
     @Test
     @DisplayName("Map from DTO to PostgreSQL entity")
     void mapDTOtoPostgreSQLEntity() {

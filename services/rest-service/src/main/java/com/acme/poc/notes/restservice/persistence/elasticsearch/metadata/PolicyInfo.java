@@ -10,19 +10,18 @@ import lombok.Setter;
 
 import java.util.Map;
 
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonAutoDetect
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class PolicyInfo {
 
-    @Setter
-    @Getter
     private Map<String, Object> policy;
-    @Setter @Getter
     private String policyName;
     @JsonProperty("schema_version")
-    @Setter @Getter
     private int schemaVersion;
 
 }

@@ -37,8 +37,9 @@ public class AdminController {
 
     @Operation(summary = "Get all notes by externalGuid", description = "Retrieve all notes by externalGuid", tags = { NotesConstants.OPENAPI_ADMIN_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_ADMIN_GET_ALL_BY_EXTERNAL_GUID)
-    public ResponseEntity<List<NotesData>> getByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+    public ResponseEntity<List<NotesData>> getByExternalGuid(
+                                                    @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
+                                                    @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                     @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
                                                     @RequestParam(required = false) String searchAfter,
                                                     @RequestParam(required = false, defaultValue = "0") int size,

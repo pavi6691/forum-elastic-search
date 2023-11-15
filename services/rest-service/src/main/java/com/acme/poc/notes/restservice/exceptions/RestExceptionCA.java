@@ -15,9 +15,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.net.SocketTimeoutException;
 
+
 @Slf4j
 @RestControllerAdvice
 public class RestExceptionCA {
+
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(RestStatusException.class)
@@ -69,4 +71,5 @@ public class RestExceptionCA {
         }
         return null;
     }
+
 }
