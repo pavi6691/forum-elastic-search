@@ -1,6 +1,16 @@
 # ToDo's
 
 
+## Considerations to be discussed
+
+- Scenario:
+  - Client tries to save a note
+  - Backend generates a UUID and saves it
+  - For some reason backend crashes (after persistence data) but before sending back response
+  - Client tries again and backend will again generate a new UUID. 
+  - QUESTION: Should frontend be the one to create the UUID so that it can re-post in case of now answer and just re-evaluate potential existing data from database? Pros/cons?
+
+
 ## Current phase
 - [ ] Refactor package for Elasticsearch stuff from `com.acme.poc.notes.elasticsearch` to `com.acme.poc.notes.persistence.elasticsearch`
 - [ ] Refactor package for REST service from `com.acme.poc.note.*` to `com.acme.poc.note.rest.*`
