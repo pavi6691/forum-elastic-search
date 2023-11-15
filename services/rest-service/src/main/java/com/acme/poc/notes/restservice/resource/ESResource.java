@@ -1,0 +1,193 @@
+package com.acme.poc.notes.restservice.resource;
+
+import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.*;
+import com.acme.poc.notes.restservice.service.INotesService;
+import com.acme.poc.notes.restservice.util.LogUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
+@RestController
+@RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
+public class ESResource {
+
+    INotesService notesService;
+
+
+    public ESResource(INotesService notesService) {
+        this.notesService = notesService;
+    }
+
+
+    @Operation(summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "DESCRIPTION", content = { @Content(mediaType = "application/json") }),
+            @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
+    })
+    @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
+    public ResponseEntity<NotesData> create(@Valid @RequestBody NotesData notesData) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.create(notesData));
+    }
+
+    @Operation(summary = "Update an existing entry by guid", description = "Update an existing entry by guid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_GUID)
+    public ResponseEntity<NotesData> updateByGuid(@RequestBody NotesData notesData) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.updateByGuid(notesData));
+    }
+
+    @Operation(summary = "Update an existing entry by entryGuid", description = "Update an existing entry by entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_ENTRY_GUID)
+    public ResponseEntity<NotesData> updateByEntryGuid(@RequestBody NotesData notesData) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.updateByEntryGuid(notesData));
+    }
+
+    @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
+    public ResponseEntity<NotesData> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.getByGuid(UUID.fromString(guid.toString())));
+    }
+
+    @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
+    public ResponseEntity<List<NotesData>> searchByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid,
+                                                           @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                       @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
+                                                       @RequestParam(required = false) String searchAfter,
+                                                       @RequestParam(required = false, defaultValue = "0") int size,
+                                                       @RequestParam(required = false) SortOrder sortOrder) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.searchByEntryGuid(SearchByEntryGuid.builder()
+                .searchGuid(entryGuid.toString())
+                .includeVersions(includeVersions)
+                .includeArchived(includeArchived)
+                .searchAfter(searchAfter)
+                .size(size)
+                .sortOrder(sortOrder)
+                .build()));
+    }
+
+    @Operation(summary = "Search entries", description = "Return entries that matches the search.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_CONTENT)
+    public ResponseEntity<List<NotesData>> searchContent(@RequestParam String search,
+                                                       @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                       @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
+                                                       @RequestParam(required = false) String searchAfter,
+                                                       @RequestParam(required = false, defaultValue = "0") int size,
+                                                       @RequestParam(required = false) SortOrder sortOrder) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.searchByContent(SearchByContent.builder()
+                .contentToSearch(search)
+                .includeVersions(includeVersions)
+                .includeArchived(includeArchived)
+                .searchAfter(searchAfter)
+                .size(size)
+                .sortOrder(sortOrder)
+                .build()));
+    }
+
+    @Operation(summary = "Archive entry by guid", description = "Archive entry by guid. Will also archive all response to this entry.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_GUID)
+    public ResponseEntity<List<NotesData>> archiveByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.archive(guid));
+    }
+
+    @Operation(summary = "Archive all entries by externalGuid", description = "Archive all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
+    public ResponseEntity<List<NotesData>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.archive(SearchByExternalGuid.builder()
+                .searchGuid(externalGuid.toString())
+                .includeVersions(true)
+                .includeArchived(false)
+                .build()));
+    }
+
+    @Operation(summary = "Archive all entries by entryGuid", description = "Archive all entries by entryGuid. Will also archive all responses to this entry.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
+    public ResponseEntity<List<NotesData>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.archive(SearchByEntryGuid.builder()
+                .searchGuid(entryGuid.toString())
+                .includeVersions(true)
+                .includeArchived(false)
+                .build()));
+    }
+
+    @Operation(summary = "Search archived entries by externalGuid", description = "Search all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID)
+    public ResponseEntity<List<NotesData>> searchArchivedEntriesByExternalGuid(
+                                                       @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid,
+                                                       @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                       @RequestParam(required = false) String searchAfter,
+                                                       @RequestParam(required = false, defaultValue = "0") int size,
+                                                       @RequestParam(required = false) SortOrder sortOrder) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.searchArchivedByExternalGuid(SearchArchivedByExternalGuid.builder()
+                .searchGuid(externalGuid.toString())
+                .includeArchived(true)
+                .includeVersions(includeVersions)
+                .searchAfter(searchAfter)
+                .size(size)
+                .sortOrder(sortOrder)
+                .build()));
+    }
+
+    @Operation(summary = "Search archived entries by entryGuid", description = "Search all entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID)
+    public ResponseEntity<List<NotesData>> searchArchivedEntriesByEntryGuid(
+                                                       @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid,
+                                                       @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+                                                       @RequestParam(required = false) String searchAfter, 
+                                                       @RequestParam(required = false, defaultValue = "0") int size,
+                                                       @RequestParam(required = false) SortOrder sortOrder) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.searchArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
+                .searchGuid(entryGuid.toString())
+                .includeArchived(true)
+                .includeVersions(includeVersions)
+                .searchAfter(searchAfter)
+                .size(size)
+                .sortOrder(sortOrder)
+                .build()));
+    }
+
+    @Operation(summary = "Delete all archived entries by externalGuid", description = "Delete all archived entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
+    public ResponseEntity<List<NotesData>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID externalGuid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.deleteArchivedByExternalGuid((SearchArchivedByExternalGuid.builder()
+                .searchGuid(externalGuid.toString())
+                .includeVersions(true)
+                .includeArchived(true))
+                .build()));
+    }
+
+    @Operation(summary = "Delete archived entry by entryGuid", description = "Delete archived entry by entryGuid. Will also delete all responses to this entry.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
+    public ResponseEntity<List<NotesData>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID entryGuid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.deleteArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
+                .searchGuid(entryGuid.toString())
+                .includeVersions(true)
+                .includeArchived(true)
+                .build()));
+    }
+
+}
