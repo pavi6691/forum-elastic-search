@@ -9,8 +9,9 @@ import org.springframework.data.elasticsearch.client.RestClients;
 import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
+
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.acme.poc.notes.restservice.persistence.elasticsearch.esrepo")
+@EnableElasticsearchRepositories(basePackages = "com.acme.poc.notes.restservice.persistence.elasticsearch.repositories")
 public class EsConfig extends AbstractElasticsearchConfiguration {
 
     @Value("${elasticsearch.host}")
@@ -18,6 +19,7 @@ public class EsConfig extends AbstractElasticsearchConfiguration {
 
     @Value("${index.name}")
     private String indexName;
+
 
     @Bean
     public String indexName(){
@@ -32,4 +34,5 @@ public class EsConfig extends AbstractElasticsearchConfiguration {
                 .build();
         return RestClients.create(clientConfiguration).rest();
     }
+
 }

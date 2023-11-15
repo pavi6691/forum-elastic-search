@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.persistence.elasticsearch.esrepo;
+package com.acme.poc.notes.restservice.persistence.elasticsearch.repositories;
 
 import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
