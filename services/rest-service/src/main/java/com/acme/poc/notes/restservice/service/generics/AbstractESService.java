@@ -1,24 +1,25 @@
 package com.acme.poc.notes.restservice.service.generics;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
+import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+
+import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
 
 @Slf4j
@@ -65,11 +66,11 @@ public abstract class AbstractESService implements IESCommonOperations {
         if (timeout) {
             long timeTaken = (System.currentTimeMillis() - startTime);
             log.error("Delete entries operation timed out, time taken: {} ms", timeTaken);
-            throw new RestStatusException(HttpStatus.SC_REQUEST_TIMEOUT, String.format("Delete entries operation timed out, time taken: %s ms", timeTaken));
+            throwRestError(NotesAPIError.ERROR_TIMEOUT_DELETE, timeTaken);
         }
         if (searchHitList == null || searchHitList.isEmpty()) {
             log.error("No entries found for request: {}", query.getClass().getSimpleName());
-            throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("No entries found to perform this operation"));
+            throwRestError(NotesAPIError.ERROR_NOT_FOUND);
         }
         log.debug("Number of entries found: {}",searchHitList.size());
         return searchHitList;
@@ -91,8 +92,8 @@ public abstract class AbstractESService implements IESCommonOperations {
             ESUtil.flatten(processed,flatten);
             esNotesRepository.deleteAll(flatten);
         } catch (Exception e) {
-            log.error("Exception while deleting entries for request " + query.getClass().getSimpleName(),e);
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Error while deleting entries. error = " + e.getMessage());
+            log.error("Error while deleting entries for request: {} -- " + query.getClass().getSimpleName(), e.getMessage());
+            throwRestError(NotesAPIError.ERROR_SERVER);
         }
         log.debug("Successfully deleted all {} entries",flatten.size());
         return processed;
@@ -111,7 +112,8 @@ public abstract class AbstractESService implements IESCommonOperations {
             }
         }
         log.error("Cannot delete. No entry found for given guid: {}", keyGuid);
-        throw new RestStatusException(HttpStatus.SC_NOT_FOUND, String.format("Cannot delete. No entry found for given guid: %s", keyGuid));
+        throwRestError(NotesAPIError.ERROR_NOT_FOUND);
+        return null;
     }
 
 }

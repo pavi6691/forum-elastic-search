@@ -1,18 +1,18 @@
 package com.acme.poc.notes.restservice.serialzation;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.fasterxml.jackson.core.JacksonException;
+import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.springframework.data.elasticsearch.RestStatusException;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
 
 public class CustomDateDeserializer extends JsonDeserializer<Date> {
@@ -29,8 +29,10 @@ public class CustomDateDeserializer extends JsonDeserializer<Date> {
         try {
             return formatter.parse(dateStr);
         } catch (ParseException e) {
-            throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "Error parsing date: " + dateStr + " ErrorMessage : " + e.getMessage());
+            throwRestError(NotesAPIError.ERROR_PARSING_TIMESTAMP, dateStr);
         }
+        throwRestError(NotesAPIError.ERROR_SERVER);
+        return null;
     }
 
 }

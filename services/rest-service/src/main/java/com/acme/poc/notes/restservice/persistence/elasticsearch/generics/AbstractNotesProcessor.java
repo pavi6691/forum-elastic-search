@@ -1,22 +1,21 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
+import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByThreadGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -30,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
 
 /**
@@ -105,10 +106,10 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                 }
             }
         } catch (Exception e) {
-            throw new RestStatusException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } finally {
-            return searchHits;
+            log.error("Error: {}", e.getMessage());
+            throwRestError(NotesAPIError.ERROR_SERVER);
         }
+        return searchHits;
     }
 
     /**
@@ -121,15 +122,16 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
                 .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
         if (query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
+            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);  // TODO Move to be static in NotesConstants
+            String searchAfter = query.searchAfter().toString();
             try {
-                if (getTimeUnit(Long.valueOf(query.searchAfter().toString()))) {
-                    searchQueryBuilder.withSearchAfter(List.of(query.searchAfter().toString()));
+                if (getTimeUnit(Long.valueOf(searchAfter))) {
+                    searchQueryBuilder.withSearchAfter(List.of(searchAfter));
                 } else {
-                    searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(query.searchAfter().toString()).toInstant().toEpochMilli()));
+                    searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(searchAfter).toInstant().toEpochMilli()));
                 }
             } catch (ParseException e) {
-                throw new RestStatusException(HttpStatus.SC_BAD_REQUEST, "Incorrect date format on searchAfter param");
+                throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, searchAfter);
             }
         }
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
