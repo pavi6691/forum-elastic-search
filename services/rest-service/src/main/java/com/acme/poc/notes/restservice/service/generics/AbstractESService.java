@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.service.generics;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.esrepo.ESNotesRepository;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
