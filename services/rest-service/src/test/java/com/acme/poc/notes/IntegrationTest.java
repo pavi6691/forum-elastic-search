@@ -2,9 +2,9 @@ package com.acme.poc.notes;
 
 import com.acme.poc.notes.base.BaseTest;
 import com.acme.poc.notes.data.ElasticSearchData;
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.*;
-import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.queries.*;
+import com.acme.poc.notes.persistence.elasticsearch.queries.generics.IQuery;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;

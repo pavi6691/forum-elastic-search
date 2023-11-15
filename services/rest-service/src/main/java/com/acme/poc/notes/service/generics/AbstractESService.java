@@ -1,11 +1,11 @@
 package com.acme.poc.notes.service.generics;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.elasticsearch.esrepo.ESNotesRepository;
-import com.acme.poc.notes.elasticsearch.generics.INotesOperations;
-import com.acme.poc.notes.elasticsearch.metadata.ResourceFileReaderService;
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.persistence.elasticsearch.esrepo.ESNotesRepository;
+import com.acme.poc.notes.persistence.elasticsearch.generics.INotesOperations;
+import com.acme.poc.notes.persistence.elasticsearch.metadata.ResourceFileReaderService;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.util.ESUtil;
 import com.acme.poc.notes.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;

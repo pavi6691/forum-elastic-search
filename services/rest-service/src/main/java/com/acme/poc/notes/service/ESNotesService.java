@@ -1,13 +1,16 @@
 package com.acme.poc.notes.service;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
-import com.acme.poc.notes.elasticsearch.esrepo.ESNotesRepository;
-import com.acme.poc.notes.elasticsearch.generics.INotesOperations;
-import com.acme.poc.notes.elasticsearch.metadata.ResourceFileReaderService;
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.*;
-import com.acme.poc.notes.elasticsearch.queries.generics.AbstractQuery;
-import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.persistence.elasticsearch.esrepo.ESNotesRepository;
+import com.acme.poc.notes.persistence.elasticsearch.generics.INotesOperations;
+import com.acme.poc.notes.persistence.elasticsearch.metadata.ResourceFileReaderService;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchByContent;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchByEntryGuid;
+import com.acme.poc.notes.persistence.elasticsearch.queries.generics.AbstractQuery;
+import com.acme.poc.notes.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.service.generics.AbstractESService;
 import com.acme.poc.notes.util.ESUtil;
 import com.acme.poc.notes.util.LogUtil;

@@ -1,8 +1,8 @@
 package com.acme.poc.notes.resource;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.*;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.queries.*;
 import com.acme.poc.notes.service.INotesService;
 import com.acme.poc.notes.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;

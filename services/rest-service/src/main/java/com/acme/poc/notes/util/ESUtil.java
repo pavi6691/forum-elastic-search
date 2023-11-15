@@ -1,6 +1,6 @@
 package com.acme.poc.notes.util;
 
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
 
 import java.util.Date;
 import java.util.List;

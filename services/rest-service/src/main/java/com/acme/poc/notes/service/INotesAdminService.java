@@ -1,7 +1,7 @@
 package com.acme.poc.notes.service;
 
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.SearchByExternalGuid;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchByExternalGuid;
 
 import java.util.List;
 import java.util.UUID;

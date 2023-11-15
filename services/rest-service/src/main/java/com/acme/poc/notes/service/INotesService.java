@@ -1,11 +1,11 @@
 package com.acme.poc.notes.service;
 
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
-import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByEntryGuid;
-import com.acme.poc.notes.elasticsearch.queries.SearchArchivedByExternalGuid;
-import com.acme.poc.notes.elasticsearch.queries.SearchByContent;
-import com.acme.poc.notes.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchByContent;
+import com.acme.poc.notes.persistence.elasticsearch.queries.SearchByEntryGuid;
+import com.acme.poc.notes.persistence.elasticsearch.queries.generics.IQuery;
 import java.util.List;
 import java.util.UUID;
 

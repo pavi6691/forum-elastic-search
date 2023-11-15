@@ -1,6 +1,6 @@
 package com.acme.poc.notes.util;
 
-import com.acme.poc.notes.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.persistence.elasticsearch.pojo.NotesData;
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.persistence.postgresql.models.PGNoteEntity;
 import org.mapstruct.Mapper;
