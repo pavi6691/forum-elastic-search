@@ -13,6 +13,8 @@
 
 ## Current phase
 - [ ] Merge current branch into master
+- [ ] Add JavaDoc description to methods where missing.
+- [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
 - [ ] Fix support for storing `customJson` as part of an entry. Saving with this:
 
 
