@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.resource;
+package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.service.INotesAdminService;
@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_ADMIN + NotesConstants.API_ENDPOINT_ADMIN_ES)
-public class ESAdminResource {
+public class ESAdminController {
 
     INotesAdminService notesAdminService;
 
 
-    public ESAdminResource(INotesAdminService notesAdminService) {
+    public ESAdminController(INotesAdminService notesAdminService) {
         this.notesAdminService = notesAdminService;
     }
 

@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.resource;
+package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
@@ -21,12 +21,12 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
-public class ESResource {
+public class ESController {
 
     INotesService notesService;
 
 
-    public ESResource(INotesService notesService) {
+    public ESController(INotesService notesService) {
         this.notesService = notesService;
     }
 

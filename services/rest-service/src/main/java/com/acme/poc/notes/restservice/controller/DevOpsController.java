@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.resource;
+package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_DEVOPS)
-public class DevOpsResource {
+public class DevOpsController {
 
 
     @Operation(summary = "Get errors", description = "Retrieve all possible errors for client requests", tags = { NotesConstants.OPENAPI_DEVOPS_TAG })

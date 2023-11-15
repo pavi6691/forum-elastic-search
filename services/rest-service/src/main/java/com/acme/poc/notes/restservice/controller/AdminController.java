@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.resource;
+package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
@@ -18,12 +18,12 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_ADMIN)
-public class AdminResource {
+public class AdminController {
 
     INotesAdminService notesAdminService;
 
 
-    public AdminResource(INotesAdminService notesAdminService) {
+    public AdminController(INotesAdminService notesAdminService) {
         this.notesAdminService = notesAdminService;
     }
 
