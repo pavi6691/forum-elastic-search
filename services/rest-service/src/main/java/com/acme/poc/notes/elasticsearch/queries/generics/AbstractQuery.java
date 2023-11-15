@@ -2,37 +2,46 @@ package com.acme.poc.notes.elasticsearch.queries.generics;
 
 import com.acme.poc.notes.elasticsearch.generics.AbstractNotesProcessor;
 import com.acme.poc.notes.elasticsearch.queries.generics.enums.EsNotesFields;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+
 import java.util.Iterator;
 
+
 /**
- * Abstraction to search by any fields. returns entries created after passed time in millis.
- * ability to filter out historical/archived records or to select both. 
- * filter is not done on elastic search but in {@link AbstractNotesProcessor#process(IQuery, Iterator)}
+ * Abstraction to search by any fields. Returns entries created after passed time in millis.
+ * Ability to filter out historical/archived records or to select both.
+ * Filter is not done on elastic search but in {@link AbstractNotesProcessor#process(IQuery, Iterator)}
  */
 @AllArgsConstructor
 @SuperBuilder
 public abstract class AbstractQuery implements IQuery {
-    protected static final String QUERY = "{\n" +
-            "  \"bool\": {\n" +
-            "    \"must\": [\n" +
-            "      {\n" +
-            "        \"match_phrase\": {\n" +
-            "          \"%s\": \"%s\"\n" +
-            "        }\n" +
-            "      },\n" +
-            "      {\n" +
-            "        \"range\": {\n" +
-            "          \""+ EsNotesFields.CREATED.getEsFieldName()+"\": {\n" +
-            "            \"gte\": \"%s\"\n" +
-            "          }\n" +
-            "        }\n" +
-            "      }\n" +
-            "    ]\n" +
-            "  }\n" +
-            "}";
+
+    protected static final String QUERY = """
+            {
+                  "bool": {
+                        "must": [
+                            {
+                                "match_phrase": {
+                                    "%s": "%s"
+                                }
+                            },
+                            {
+                                "range": {
+                                    "{FIELDNAME}": {
+                                        "gte": "%s"
+                                    }
+                                }
+                            }
+                        ]
+                  }
+            }
+            """
+            .replace("{FIELDNAME}", EsNotesFields.CREATED.getEsFieldName());
+
     @Getter
     protected EsNotesFields searchField = EsNotesFields.ENTRY;
     @Getter
@@ -49,6 +58,7 @@ public abstract class AbstractQuery implements IQuery {
     protected int size;
     @Getter
     protected SortOrder sortOrder = SortOrder.ASC;
+
 
     @Override
     public boolean includeVersions() {
@@ -79,4 +89,5 @@ public abstract class AbstractQuery implements IQuery {
     public void searchAfter(Object sortValues) {
         this.searchAfter = sortValues;
     }
+
 }

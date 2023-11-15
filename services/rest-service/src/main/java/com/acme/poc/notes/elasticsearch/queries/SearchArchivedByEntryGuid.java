@@ -8,25 +8,31 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.Iterator;
 
+
 /**
  * Query to search archived entries by entryGuid.
- * filter is done in {@link AbstractNotesProcessor#process(IQuery, Iterator)}
- * For any entryGuid(not archived), if their threads are archived, then return them too
+ * Filter is done in {@link AbstractNotesProcessor#process(IQuery, Iterator)}
+ * For any entryGuid (not archived), if their threads are archived, then return them too
  */
 @SuperBuilder
 public class SearchArchivedByEntryGuid extends AbstractQuery {
-    private static final String QUERY = "{\n" +
-            "  \"bool\": {\n" +
-            "    \"must\": [\n" +
-            "      {\n" +
-            "        \"match_phrase\": {\n" +
-            "          \""+ EsNotesFields.ENTRY.getEsFieldName()+"\": \"%s\"\n" +
-            "        }\n" +
-            "      }\n" +
-            "    ]\n" +
-            "  }\n" +
-            "}";
-    
+
+    private static final String QUERY = """
+            {
+                "bool": {
+                    "must": [
+                        {
+                            "match_phrase": {
+                                "{FIELDNAME}": "%s"
+                            }
+                        }
+                    ]
+                }
+            }
+            """
+            .replace("{FIELDNAME}", EsNotesFields.ENTRY.getEsFieldName());
+
+
     @Override
     public boolean includeArchived() {
         return true;
@@ -34,6 +40,7 @@ public class SearchArchivedByEntryGuid extends AbstractQuery {
 
     @Override
     public String buildQuery() {
-        return String.format(QUERY,searchGuid);
+        return String.format(QUERY, searchGuid);
     }
+
 }
