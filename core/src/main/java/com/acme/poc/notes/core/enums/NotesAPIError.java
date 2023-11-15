@@ -9,12 +9,16 @@ public enum NotesAPIError {
     ERROR_MISSING_THREAD_GUID              (400, 4003, "Missing property threadGuid"),
     ERROR_MISSING_THREAD_PARENT_GUID       (400, 4004, "Missing property threadParentGuid"),
     ERROR_MISSING_CREATED                  (400, 4005, "Missing property created"),
-    ERROR_NOT_EXISTS_GUID                  (400, 4006, "No entry found for guid: %s"),
-    ERROR_NOT_EXISTS_ENTRY_GUID            (400, 4007, "No entry found for entryGuid: %s"),
-    ERROR_NEW_RESPONSE_NO_THREAD_GUID      (404, 4008, "Cannot create new response. No entry found for threadGuid: %s"),
-    ERROR_ENTRY_ARCHIVED_NO_UPDATE         (400, 4009, "Entry is archived cannot be updated"),
-    ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD (400, 4010, "Entry is archived cannot add thread (externalGuid: %s, entryGuid: %s)"),   // TODO Maybe this entry should be removed in favor of ERROR_ENTRY_ARCHIVED_NO_UPDATE ?
-    ERROR_ENTRY_HAS_BEEN_MODIFIED          (409, 4011, "Entry recently updated. Please reload"),
+    ERROR_PARSING_TIMESTAMP                (400, 4006, "Error parsing timestamp: %s"),
+    ERROR_INCORRECT_SEARCH_AFTER           (400, 4007, "Incorrect date format on searchAfter parameter. Should be ????? but was: %s"),  // TODO correct timestamp pattern?
+    ERROR_NOT_EXISTS_GUID                  (400, 4008, "No entry found for guid: %s"),
+    ERROR_NOT_EXISTS_ENTRY_GUID            (400, 4009, "No entry found for entryGuid: %s"),
+    ERROR_NEW_RESPONSE_NO_THREAD_GUID      (404, 4010, "Cannot create new response. No entry found for threadGuid: %s"),
+    ERROR_ENTRY_ARCHIVED_NO_UPDATE         (400, 4011, "Entry is archived cannot be updated"),
+    ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD (400, 4012, "Entry is archived cannot add thread (externalGuid: %s, entryGuid: %s)"),   // TODO Maybe this entry should be removed in favor of ERROR_ENTRY_ARCHIVED_NO_UPDATE ?
+    ERROR_ENTRY_HAS_BEEN_MODIFIED          (409, 4013, "Entry recently updated. Please reload"),
+    ERROR_TIMEOUT_DELETE                   (408, 4014, "Delete entries timed out, time taken: %s ms"),
+    ERROR_NOT_FOUND                        (404, 4015, "No entries found"),
 
     ERROR_SERVER                           (500, 5000, "Internal server error"),
     ERROR_ARCHIVING                        (500, 5001, "Error while archiving entries: %s");

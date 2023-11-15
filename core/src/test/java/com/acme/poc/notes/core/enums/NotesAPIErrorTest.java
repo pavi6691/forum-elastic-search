@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class NotesAPIErrorTest {
 
-    private final static int[] VALID_HTTP_STATUS_CODES = { 400, 404, 409, 500 };
+    private final static int[] VALID_HTTP_STATUS_CODES = { 400, 404, 408, 409, 500 };
 
 
     @Test
@@ -30,12 +30,16 @@ public class NotesAPIErrorTest {
                      ERROR_MISSING_THREAD_GUID,
                      ERROR_MISSING_THREAD_PARENT_GUID,
                      ERROR_MISSING_CREATED,
+                     ERROR_PARSING_TIMESTAMP,
+                     ERROR_INCORRECT_SEARCH_AFTER,
                      ERROR_NOT_EXISTS_GUID,
                      ERROR_NOT_EXISTS_ENTRY_GUID,
                      ERROR_NEW_RESPONSE_NO_THREAD_GUID,
                      ERROR_ENTRY_ARCHIVED_NO_UPDATE,
                      ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD,
                      ERROR_ENTRY_HAS_BEEN_MODIFIED,
+                     ERROR_TIMEOUT_DELETE,
+                     ERROR_NOT_FOUND,
                      ERROR_SERVER,
                      ERROR_ARCHIVING -> {
                          String s = String.format("Checking: %s (%s, %s, \"%s\")", notesAPIError.name(), notesAPIError.httpStatusCode(), notesAPIError.errorCode(), notesAPIError.errorMessage());
