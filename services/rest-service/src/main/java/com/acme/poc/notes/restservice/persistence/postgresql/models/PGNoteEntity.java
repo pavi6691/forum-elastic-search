@@ -27,7 +27,7 @@ public class PGNoteEntity {
     private UUID entryGuidParent;
     private NoteType type;
     private String content;
-//    private JsonNode customJson;
+    private Object customJson;
     private Date created;
     private Date archived;
 

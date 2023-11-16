@@ -1,6 +1,8 @@
 package com.acme.poc.notes.restservice;
 
+import com.acme.poc.notes.restservice.service.ESAdminNotesService;
 import com.acme.poc.notes.restservice.service.ESNotesService;
+import com.acme.poc.notes.restservice.service.INotesAdminService;
 import com.acme.poc.notes.restservice.service.INotesService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -15,9 +17,8 @@ public class NotesApplication {
 
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(NotesApplication.class, args);
-
-//        INotesService esNotesService = context.getBean(ESNotesService.class);
-//        esNotesService.createIndex(context.getEnvironment().getProperty("index.name"));
+        INotesAdminService esNotesService = context.getBean(ESAdminNotesService.class);
+        esNotesService.createIndex(context.getEnvironment().getProperty("index.name"));
     }
 
 }

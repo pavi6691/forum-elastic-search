@@ -1,6 +1,4 @@
 package com.acme.poc.notes.models;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Builder;
 
 import java.util.Date;
@@ -17,7 +15,7 @@ public record NoteEntry(
     UUID entryGuidParent,
     NoteType type,
     String content,
-    JsonNode customJson,
+    Object customJson,
     Date created,
     Date archived,
     List<NoteEntry> threads,
