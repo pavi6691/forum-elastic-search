@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice;
 
 import com.acme.poc.notes.restservice.base.BaseTest;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByExternalGuid;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;

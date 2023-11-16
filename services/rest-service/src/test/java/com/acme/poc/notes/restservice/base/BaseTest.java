@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.base;
 
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.data.ElasticSearchData;
 import com.acme.poc.notes.restservice.service.INotesAdminService;
 import com.acme.poc.notes.restservice.service.INotesService;

@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.util;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import lombok.extern.slf4j.Slf4j;

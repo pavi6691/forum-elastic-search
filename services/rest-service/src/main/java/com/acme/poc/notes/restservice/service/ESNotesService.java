@@ -4,7 +4,7 @@ import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.pojo.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByContent;
