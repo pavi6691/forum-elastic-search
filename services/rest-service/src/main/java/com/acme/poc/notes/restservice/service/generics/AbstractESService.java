@@ -100,13 +100,12 @@ public abstract class AbstractESService implements IESCommonOperations {
     }
 
     @Override
-    public NotesData delete(String keyGuid) {   // TODO Check if this can be changed to be a UUID instead?
+    public NotesData delete(UUID keyGuid) {
         log.debug("{} keyGuid: {}", LogUtil.method(), keyGuid);
-        UUID guid = UUID.fromString(keyGuid);
-        NotesData notesData = esNotesRepository.findById(guid).orElse(null);
+        NotesData notesData = esNotesRepository.findById(keyGuid).orElse(null);
         if (notesData != null) {
-            esNotesRepository.deleteById(guid);
-            if (!esNotesRepository.findById(guid).isPresent()) {
+            esNotesRepository.deleteById(keyGuid);
+            if (!esNotesRepository.findById(keyGuid).isPresent()) {
                 log.debug("Successfully deleted an entry with guid: {}", notesData.getGuid());
                 return notesData;
             }

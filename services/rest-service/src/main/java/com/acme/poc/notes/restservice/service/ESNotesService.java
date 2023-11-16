@@ -77,9 +77,16 @@ public class ESNotesService extends AbstractESService implements INotesService {
         } else {
             log.debug("Creating a new entry for externalGuid: {}", notesData.getExternalGuid().toString());
         }
-        NotesData newEntry = esNotesRepository.save(notesData);
-        if (newEntry == null) {
-            // TODO What should happen in case of failure?
+        NotesData newEntry = null;
+        try {
+            newEntry = esNotesRepository.save(notesData);
+            if (newEntry == null) {
+                log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),"ES returned null value"));
+                throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),"ES returned null value");
+            }   
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),e.getMessage());
         }
         log.debug("Successfully created a new entry entryGuid: {} ", newEntry.getEntryGuid());
         return newEntry;
@@ -163,12 +170,17 @@ public class ESNotesService extends AbstractESService implements INotesService {
         existingEntry.setGuid(UUID.randomUUID());
         existingEntry.setCreated(ESUtil.getCurrentDate());
         existingEntry.setContent(updatedEntry.getContent());
-        NotesData updated = esNotesRepository.save(existingEntry);
-        if (updated == null) {
-            // TODO What should happen in case of failure?
-            return null;
+        NotesData updated =null;
+        try {
+            updated = esNotesRepository.save(existingEntry);
+            if (updated == null) {
+                log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),"ES returned null value"));
+                throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),"ES returned null value");
+            }
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),e.getMessage());
         }
-
         log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", updatedEntry.getExternalGuid(), updatedEntry.getEntryGuid(), existingEntry.getContent(), updatedEntry.getContent());
         return updated;
     }
@@ -185,12 +197,8 @@ public class ESNotesService extends AbstractESService implements INotesService {
         List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
         List<NotesData> processed = iNotesOperations.process(query, searchHitList.stream().iterator());
         Set<NotesData> flatten = new HashSet<>();
-        try {
-            ESUtil.flatten(processed,flatten);
-            archive(flatten);
-        } catch (Exception e) {
-            throwRestError(NotesAPIError.ERROR_ARCHIVING, e.getMessage());
-        }
+        ESUtil.flatten(processed,flatten);
+        archive(flatten);
         AbstractQuery getArchived = (AbstractQuery)query;
         getArchived.setIncludeArchived(true);
         return iNotesOperations.process(getArchived, getAllEntries(getArchived).stream().iterator());
@@ -265,7 +273,8 @@ public class ESNotesService extends AbstractESService implements INotesService {
                     .build())
             );
         } catch (Exception e) {
-            throwRestError(NotesAPIError.ERROR_ARCHIVING, e.getMessage());
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(), e.getMessage());
         }
         log.debug("Number of entries archived: {}", entriesToArchive.size());
     }

@@ -30,7 +30,7 @@ public class DTOMapperTest {
         assertEquals(TEST_NOTE.entryGuidParent(), entity.getEntryGuidParent());
         assertEquals(TEST_NOTE.type(), entity.getType());
         assertEquals(TEST_NOTE.content(), entity.getContent());
-        // TODO Add assert for testing customJson
+        assertEquals(TEST_NOTE.customJson(),entity.getCustomJson());
         assertEquals(TEST_NOTE.created(), entity.getCreated());
         assertEquals(TEST_NOTE.archived(), entity.getArchived());
     }
@@ -48,7 +48,7 @@ public class DTOMapperTest {
         assertEquals(entity.getEntryGuidParent(), dto.entryGuidParent());
         assertEquals(entity.getType(), dto.type());
         assertEquals(entity.getContent(), dto.content());
-        // TODO Add assert for testing customJson
+        assertEquals(TEST_NOTE.customJson(),entity.getCustomJson());
         assertEquals(entity.getCreated(), dto.created());
         assertEquals(entity.getArchived(), dto.archived());
     }
@@ -65,7 +65,7 @@ public class DTOMapperTest {
         assertEquals(TEST_NOTE.entryGuidParent(), entity.getEntryGuidParent());
         assertEquals(TEST_NOTE.type(), entity.getType());
         assertEquals(TEST_NOTE.content(), entity.getContent());
-        // TODO Add assert for testing customJson
+        assertEquals(TEST_NOTE.customJson(),entity.getCustomJson());
         assertEquals(TEST_NOTE.created(), entity.getCreated());
         assertEquals(TEST_NOTE.archived(), entity.getArchived());
     }
@@ -83,7 +83,7 @@ public class DTOMapperTest {
         assertEquals(entity.getEntryGuidParent(), dto.entryGuidParent());
         assertEquals(entity.getType(), dto.type());
         assertEquals(entity.getContent(), dto.content());
-        // TODO Add assert for testing customJson
+        assertEquals(TEST_NOTE.customJson(),entity.getCustomJson());
         assertEquals(entity.getCreated(), dto.created());
         assertEquals(entity.getArchived(), dto.archived());
     }

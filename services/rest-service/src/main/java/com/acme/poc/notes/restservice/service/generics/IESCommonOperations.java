@@ -5,6 +5,7 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics
 import org.springframework.data.elasticsearch.core.SearchHit;
 
 import java.util.List;
+import java.util.UUID;
 
 
 public interface IESCommonOperations {
@@ -14,6 +15,6 @@ public interface IESCommonOperations {
 
     List<NotesData> delete(IQuery query);
 
-    NotesData delete(String keyGuid);
+    NotesData delete(UUID keyGuid);
 
 }

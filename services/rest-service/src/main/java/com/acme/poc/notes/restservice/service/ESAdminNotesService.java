@@ -83,7 +83,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
     @Override
     public NotesData deleteByGuid(UUID guid) {
         log.debug("{} guid: {}", LogUtil.method(), guid.toString());
-        return delete(guid.toString());
+        return delete(guid);
     }
 
     /**

@@ -48,11 +48,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     
     /**
      * 1. Gets all entries along with threads and histories for externalGuid and content field
-     * 2. It's not possible to search threads and histories by entryGuid. So
-     *     - Search for main(root) entry first(for externalGuid/entryGuid), 
-     *     - then call for all subsequent entries by externalGuid and entries created after main entry that's requested.
-     *     - there will be some other entries created after and updated later, handled in process method
-     * 3. Process response and build threads and histories
+     * 2. Process response and build threads and histories
      *
      * @param query - query containing search details
      * @return list of entries with threads and histories
@@ -74,7 +70,11 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     }
 
     /**
-     * TODO Explain purpose of method
+     * Execute search queries on elastic search
+     * It's not possible to search all threads and history entries by entryGuid. So
+     *   - Search for main(root) entry first(for externalGuid/entryGuid), 
+     *   - then call for all subsequent entries by externalGuid and entries created after main entry that's requested.
+     *   - there will be some other entries created after and updated later, handled in process method
      *
      * @param query
      * @return
@@ -131,7 +131,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
                     searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(searchAfter).toInstant().toEpochMilli()));
                 }
             } catch (ParseException e) {
-                throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, searchAfter);
+                throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, String.format(searchAfter,NotesConstants.TIMESTAMP_ISO8601,searchAfter));
             }
         }
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
@@ -140,7 +140,8 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     }
 
     /**
-     * TODO Explain purpose of method
+     * Check if request needs all versions of entries, 
+     * then accommodate updated entry and include all previous versions in versions list
      *
      * @param existingEntry
      * @param updatedEntry
@@ -166,7 +167,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     }
 
     /**
-     * TODO Explain purpose of method
+     * This method is called when there is a child for the existing entry. so add it
      *
      * @param existingEntry
      * @param newEntry
@@ -181,7 +182,8 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     }
 
     /**
-     * TODO Explain purpose of method
+     * This creates new thread within same entryGuid/externalGuid. 
+     * Multiple threads are tend to be created when not all entries are selected but for specific criteria. ex - archived
      *
      * @param entries
      * @param newEntry
