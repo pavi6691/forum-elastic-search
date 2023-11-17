@@ -6,6 +6,7 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesO
 import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
@@ -86,16 +87,15 @@ public abstract class AbstractESService implements IESCommonOperations {
     public List<NotesData> delete(IQuery query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
+        query.setResultFormat(ResultFormat.FLATTEN);
         List<NotesData> processed = iNotesOperations.process(query,searchHitList.stream().iterator());
-        Set<NotesData> flatten = new HashSet<>();
         try {
-            ESUtil.flatten(processed,flatten);
-            esNotesRepository.deleteAll(flatten);
+            esNotesRepository.deleteAll(processed);
         } catch (Exception e) {
             log.error("Error while deleting entries for request: {} -- " + query.getClass().getSimpleName(), e.getMessage());
             throwRestError(NotesAPIError.ERROR_SERVER);
         }
-        log.debug("Successfully deleted all {} entries",flatten.size());
+        log.debug("Successfully deleted all {} entries",processed.size());
         return processed;
     }
 

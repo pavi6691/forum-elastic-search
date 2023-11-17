@@ -62,7 +62,7 @@ public class NotesProcessorV2 extends AbstractNotesProcessor {
                 results.get(threadEntry.getEntryGuidParent()).containsKey(threadEntry.getEntryGuid())) {
             int numberOfUpdates = results.get(threadEntry.getEntryGuidParent()).get(threadEntry.getEntryGuid()).size();
             for (int i = 0; i < numberOfUpdates; i++) {
-                updateVersions(threadEntry, results.get(threadEntry.getEntryGuidParent()).get(threadEntry.getEntryGuid()).get(i), query);
+                updateVersions(threadEntry, results.get(threadEntry.getEntryGuidParent()).get(threadEntry.getEntryGuid()).get(i), query,new ArrayList<>());
             }
         }
         List<NotesData> threads = new ArrayList<>();

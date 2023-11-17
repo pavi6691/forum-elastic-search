@@ -68,8 +68,8 @@ public class NotesConstants {
     public static final String API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     public static final String API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID = "/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
     public static final String API_ENDPOINT_NOTES_SEARCH_CONTENT = "/search";
-    public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID = "/search/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
-    public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID = "/search/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID = "/search/archived/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID = "/search/archived/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     // PUT
     public static final String API_ENDPOINT_NOTES_UPDATE_BY_GUID = "/guid";
     public static final String API_ENDPOINT_NOTES_UPDATE_BY_ENTRY_GUID = "/entryguid";

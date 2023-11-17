@@ -4,9 +4,12 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.util.ESUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Not;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 
 import java.util.*;
 
@@ -36,14 +39,14 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
      * <p>This method takes O(n) linear time</p>
      * 
      * @param query
-     * @return
+     * @return process results in tree format if {@link ResultFormat#TREE} else FLATTEN if {@link ResultFormat#FLATTEN}
      */
     @Override
     public List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
         log.debug("Processing request = {}", query.getClass().getSimpleName());
         Map<UUID, NotesData> threadMapping = new HashMap<>();
         List<NotesData> results = new LinkedList<>();
-        Map<UUID, NotesData> archivedEntries = new HashMap<>();
+        Set<UUID> entriesAddedToResults = new HashSet<>();
         if (esResults != null) {
             while (esResults.hasNext()) {
                 NotesData entry = esResults.next().getContent();
@@ -52,18 +55,27 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
                 }
                 if (threadMapping.containsKey(entry.getEntryGuid())) {
                     NotesData thread = threadMapping.get(entry.getEntryGuid());
-                    updateVersions(thread, entry, query);
+                    updateVersions(thread, entry, query,results);
                 } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
-                    addChild(threadMapping.get(entry.getEntryGuidParent()), entry, query);
+                    if(query.getResultFormat() == ResultFormat.TREE) {
+                        addChild(threadMapping.get(entry.getEntryGuidParent()), entry, query);
+                    } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
+                        if(entriesAddedToResults.contains(entry.getEntryGuidParent())) {
+                            entriesAddedToResults.add(entry.getEntryGuid());
+                            results.add(entry);
+                        }
+                    }
                 }
                 if (!threadMapping.containsKey(entry.getEntryGuid())) {
                     if (!threadMapping.containsKey(entry.getEntryGuidParent())) {
                         // New thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
-                        if ((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty()) || query.searchAfter() != null) {
+                        if ((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty()) || 
+                                query.searchAfter() != null) {
                             threadMapping.put(entry.getEntryGuid(), entry);
-                            if (!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && !archivedEntries.containsKey(entry.getEntryGuidParent()))) {
+                            if (!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && 
+                                    !entriesAddedToResults.contains(entry.getEntryGuidParent()))) {
                                 addNewThread(results, entry, query);
-                                archivedEntries.put(entry.getEntryGuid(), entry);
+                                entriesAddedToResults.add(entry.getEntryGuid());
                             }
                         }
                     }
@@ -72,9 +84,10 @@ public class NotesProcessorV3 extends AbstractNotesProcessor {
                         threadMapping.put(entry.getEntryGuid(), entry);
                     } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
                         threadMapping.put(entry.getEntryGuid(), entry);
-                        if (entry.getArchived() != null && !archivedEntries.containsKey(entry.getEntryGuidParent()) && threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
+                        if (entry.getArchived() != null && !entriesAddedToResults.contains(entry.getEntryGuidParent()) && 
+                                threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
                             addNewThread(results, entry, query);
-                            archivedEntries.put(entry.getEntryGuid(), entry);
+                            entriesAddedToResults.add(entry.getEntryGuid());
                         }
                     }
                 }

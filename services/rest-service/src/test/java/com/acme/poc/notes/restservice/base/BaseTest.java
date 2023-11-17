@@ -111,19 +111,21 @@ public class BaseTest {
     }
 
     protected void checkDuplicates(List<NotesData> result){
-        List<NotesData> flattenEntries = new ArrayList<>();
         Set<String> entryCount = new HashSet<>();
-        int j = 0;
         for (NotesData notesData : result) {
+            List<NotesData> flattenEntries = new ArrayList<>();
             flatten(notesData, flattenEntries);
-            while (j < flattenEntries.size()) {
-                String guidKey = flattenEntries.get(j).getGuid().toString();
-                if (entryCount.contains(guidKey)) { // this check is for debug just in case
-                    assertFalse(entryCount.contains(guidKey));
-                }
-                entryCount.add(guidKey);
-                j++;
+            checkDuplicates(flattenEntries,entryCount);
+        }
+    }
+    
+    protected void checkDuplicates(List<NotesData> result,Set<String> entryCount) {
+        for (NotesData e : result) {
+            String guidKey = e.getGuid().toString();
+            if (entryCount.contains(guidKey)) { // this check is for debug just in case
+                assertFalse(entryCount.contains(guidKey));
             }
+            entryCount.add(guidKey);
         }
     }
 

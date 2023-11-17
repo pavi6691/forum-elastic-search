@@ -122,7 +122,7 @@ public class NotesProcessorV1 extends AbstractNotesProcessor {
             }
             while (historyIterator.hasNext()) {
                 NotesData history = historyIterator.next().getContent();
-                updateVersions(entry, history, query);
+                updateVersions(entry, history, query,new ArrayList<>());
             }
         }
     }

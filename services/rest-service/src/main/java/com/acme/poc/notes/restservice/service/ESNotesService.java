@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.service;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
@@ -195,10 +196,14 @@ public class ESNotesService extends AbstractESService implements INotesService {
     public List<NotesData> archive(IQuery query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
+        query.setResultFormat(ResultFormat.FLATTEN);
         List<NotesData> processed = iNotesOperations.process(query, searchHitList.stream().iterator());
-        Set<NotesData> flatten = new HashSet<>();
-        ESUtil.flatten(processed,flatten);
-        archive(flatten);
+        try {
+            archive(processed);
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(), e.getMessage());
+        }
         AbstractQuery getArchived = (AbstractQuery)query;
         getArchived.setIncludeArchived(true);
         return iNotesOperations.process(getArchived, getAllEntries(getArchived).stream().iterator());
@@ -217,7 +222,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
         if (!result.isPresent()) {
             throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, guid);
         }
-        archive(Set.of(result.get()));
+        archive(List.of(result.get()));
         return List.of(esNotesRepository.findById(guid).orElse(null));
     }
 
@@ -230,6 +235,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
     @Override
     public List<NotesData> searchByContent(SearchByContent iQuery) {
         log.debug("{} content: {}", LogUtil.method(), iQuery.getContentToSearch());
+        iQuery.setResultFormat(ResultFormat.FLATTEN);
         return search(iQuery);
     }
 
@@ -257,7 +263,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
         return delete(iQuery);
     }
 
-    private void archive(Set<NotesData> entriesToArchive) {
+    private void archive(List<NotesData> entriesToArchive) {
         Date dateTime = ESUtil.getCurrentDate();
         try {
             entriesToArchive.forEach(entryToArchive -> esNotesRepository.save(NotesData.builder()
@@ -273,7 +279,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
                     .build())
             );
         } catch (Exception e) {
-            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e),e);
             throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(), e.getMessage());
         }
         log.debug("Number of entries archived: {}", entriesToArchive.size());

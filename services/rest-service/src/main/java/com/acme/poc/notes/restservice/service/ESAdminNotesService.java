@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice.service;
 
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesOperations;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
@@ -57,6 +58,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
                 .searchGuid(externalGuid.toString())
                 .includeVersions(true)
                 .includeArchived(true)
+                .resultFormat(ResultFormat.FLATTEN)
                 .build());
     }
 
@@ -67,6 +69,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
                 .searchGuid(entryGuid.toString())
                 .includeVersions(true)
                 .includeArchived(true)
+                .resultFormat(ResultFormat.FLATTEN)
                 .build());
     }
 
@@ -77,6 +80,7 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
                 .searchGuid(threadGuid.toString())
                 .includeVersions(true)
                 .includeArchived(true)
+                .resultFormat(ResultFormat.FLATTEN)
                 .build());
     }
 

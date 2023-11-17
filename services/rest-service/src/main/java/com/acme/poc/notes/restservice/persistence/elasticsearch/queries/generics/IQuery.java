@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics;
 
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import org.elasticsearch.search.sort.SortOrder;
 
 
@@ -12,5 +13,8 @@ public interface IQuery {
     Object searchAfter();
     int getSize();
     SortOrder getSortOrder();
+    ResultFormat getResultFormat();
+    void setResultFormat(ResultFormat resultFormat);
+    void setIncludeArchived(boolean includeArchived);
 
 }

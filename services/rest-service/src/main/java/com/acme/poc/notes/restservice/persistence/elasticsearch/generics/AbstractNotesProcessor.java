@@ -10,6 +10,7 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchBy
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -147,16 +149,20 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      * @param updatedEntry
      * @param query
      */
-    protected void updateVersions(NotesData existingEntry, NotesData updatedEntry, IQuery query) {
+    protected void updateVersions(NotesData existingEntry, NotesData updatedEntry, IQuery query,Collection<NotesData> results) {
         if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.includeVersions()) {
                 NotesData history = new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
                         existingEntry.getEntryGuid(), existingEntry.getEntryGuidParent(), existingEntry.getType(), existingEntry.getContent(), existingEntry.getCustomJson(), existingEntry.getCreated(),
                         existingEntry.getArchived(), null, null);
-                if (query.getSortOrder() == SortOrder.ASC) {
-                    existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
-                } else {
-                    existingEntry.addHistory(history, 0);
+                if (query.getResultFormat() == ResultFormat.TREE) {
+                    if (query.getSortOrder() == SortOrder.ASC) {
+                        existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
+                    } else {
+                        existingEntry.addHistory(history, 0);
+                    }
+                } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
+                    results.add(history);
                 }
             }
             existingEntry.setGuid(updatedEntry.getGuid());
@@ -175,7 +181,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      */
     protected void addChild(NotesData existingEntry,NotesData newEntry, IQuery query) {
         if (query.getSortOrder() == SortOrder.ASC) {
-            existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);   
+            existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);
         } else {
             existingEntry.addThreads(newEntry, 0);
         }
@@ -185,15 +191,19 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      * This creates new thread within same entryGuid/externalGuid. 
      * Multiple threads are tend to be created when not all entries are selected but for specific criteria. ex - archived
      *
-     * @param entries
+     * @param results
      * @param newEntry
      * @param query
      */
-    protected void addNewThread(List<NotesData> entries,NotesData newEntry, IQuery query) {
-        if (query.getSortOrder() == SortOrder.ASC) {
-            entries.add(newEntry);   
-        } else {
-            entries.add(0, newEntry);
+    protected void addNewThread(List<NotesData> results,NotesData newEntry, IQuery query) {
+        if(query.getResultFormat() == ResultFormat.TREE) {
+            if (query.getSortOrder() == SortOrder.ASC) {
+                results.add(newEntry);
+            } else {
+                results.add(0, newEntry);
+            }
+        } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
+            results.add(newEntry);
         }
     }
 
@@ -203,7 +213,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      * @param entry
      * @return true when not to select archived entry. And true for only archived request
      */
-    protected boolean filterArchived(IQuery query, NotesData entry, List<NotesData> results) {
+    protected boolean filterArchived(IQuery query, NotesData entry, Collection<NotesData> results) {
         return ((!query.includeArchived() && entry.getArchived() != null) ||
                 (query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null && !results.isEmpty());
     }

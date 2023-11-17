@@ -2,9 +2,8 @@ package com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generic
 
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
@@ -17,6 +16,7 @@ import java.util.Iterator;
  * Filter is not done on elastic search but in {@link AbstractNotesProcessor#process(IQuery, Iterator)}
  */
 @AllArgsConstructor
+@NoArgsConstructor
 @SuperBuilder
 public abstract class AbstractQuery implements IQuery {
 
@@ -56,8 +56,10 @@ public abstract class AbstractQuery implements IQuery {
     protected Object searchAfter;
     @Getter
     protected int size;
-    @Getter
+    @Getter @Builder.Default
     protected SortOrder sortOrder = SortOrder.ASC;
+    @Getter @Setter @Builder.Default
+    protected ResultFormat resultFormat = ResultFormat.TREE;
 
 
     @Override
