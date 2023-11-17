@@ -4,9 +4,7 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.util.ESUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
@@ -19,7 +17,7 @@ import java.util.*;
  */
 @Slf4j
 @Service("notesProcessorV3")
-public class NotesProcessorV3 extends AbstractNotesProcessor {
+public class NotesProcessor extends AbstractNotesProcessor {
 
 
     /**
