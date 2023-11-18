@@ -34,7 +34,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 public class ESNotesService extends AbstractESService implements INotesService {
     
 
-    public ESNotesService(@Qualifier("notesProcessorV3") INotesOperations iNotesOperations,
+    public ESNotesService(@Qualifier("NotesProcessor") INotesOperations iNotesOperations,
                           ESNotesRepository esNotesRepository,
                           ElasticsearchOperations elasticsearchOperations,
                           ResourceFileReaderService resourceFileReaderService
