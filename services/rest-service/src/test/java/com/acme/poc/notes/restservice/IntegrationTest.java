@@ -428,7 +428,7 @@ public class IntegrationTest extends BaseTest {
                 .includeArchived(true)
                 .build());
         checkDuplicates(result,new HashSet<>());
-        assertEquals(11,result.size());
+        assertEquals(11, result.size());
     }
 
     @Test

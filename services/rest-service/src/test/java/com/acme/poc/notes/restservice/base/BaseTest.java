@@ -115,11 +115,11 @@ public class BaseTest {
         for (NotesData notesData : result) {
             List<NotesData> flattenEntries = new ArrayList<>();
             flatten(notesData, flattenEntries);
-            checkDuplicates(flattenEntries,entryCount);
+            checkDuplicates(flattenEntries, entryCount);
         }
     }
     
-    protected void checkDuplicates(List<NotesData> result,Set<String> entryCount) {
+    protected void checkDuplicates(List<NotesData> result, Set<String> entryCount) {
         for (NotesData e : result) {
             String guidKey = e.getGuid().toString();
             if (entryCount.contains(guidKey)) { // this check is for debug just in case
