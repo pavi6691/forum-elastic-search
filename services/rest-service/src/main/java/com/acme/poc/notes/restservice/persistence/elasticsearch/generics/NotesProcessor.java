@@ -16,7 +16,7 @@ import java.util.*;
  * Search and build response for thread of entries along with update histories. Version 3
  */
 @Slf4j
-@Service("notesProcessorV3")
+@Service("NotesProcessor")
 public class NotesProcessor extends AbstractNotesProcessor {
 
 

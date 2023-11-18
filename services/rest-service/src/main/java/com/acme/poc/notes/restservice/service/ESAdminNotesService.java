@@ -27,7 +27,7 @@ import java.util.*;
 public class ESAdminNotesService extends AbstractESService implements INotesAdminService {
 
 
-    public ESAdminNotesService(@Qualifier("notesProcessorV3") INotesOperations iNotesOperations,
+    public ESAdminNotesService(@Qualifier("NotesProcessor") INotesOperations iNotesOperations,
                                ESNotesRepository esNotesRepository,
                                ElasticsearchOperations elasticsearchOperations,
                                ResourceFileReaderService resourceFileReaderService) {

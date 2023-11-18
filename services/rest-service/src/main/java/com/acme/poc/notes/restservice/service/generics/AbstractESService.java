@@ -35,7 +35,7 @@ public abstract class AbstractESService implements IESCommonOperations {
     protected ResourceFileReaderService resourceFileReaderService;
 
 
-    public AbstractESService(@Qualifier("notesProcessorV3") INotesOperations iNotesOperations, ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations, ResourceFileReaderService resourceFileReaderService) {
+    public AbstractESService(@Qualifier("NotesProcessor") INotesOperations iNotesOperations, ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations, ResourceFileReaderService resourceFileReaderService) {
         this.iNotesOperations = iNotesOperations;
         this.esNotesRepository = esNotesRepository;
         this.elasticsearchOperations = elasticsearchOperations;
