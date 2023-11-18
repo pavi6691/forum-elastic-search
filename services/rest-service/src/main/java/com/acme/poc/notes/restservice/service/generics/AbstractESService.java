@@ -88,14 +88,14 @@ public abstract class AbstractESService implements IESCommonOperations {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
         query.setResultFormat(ResultFormat.FLATTEN);
-        List<NotesData> processed = iNotesOperations.process(query,searchHitList.stream().iterator());
+        List<NotesData> processed = iNotesOperations.process(query, searchHitList.stream().iterator());
         try {
             esNotesRepository.deleteAll(processed);
         } catch (Exception e) {
             log.error("Error while deleting entries for request: {} -- " + query.getClass().getSimpleName(), e.getMessage());
             throwRestError(NotesAPIError.ERROR_SERVER);
         }
-        log.debug("Successfully deleted all {} entries",processed.size());
+        log.debug("Successfully deleted all {} entries", processed.size());
         return processed;
     }
 
