@@ -201,8 +201,8 @@ public class ESNotesService extends AbstractESService implements INotesService {
         try {
             archive(processed);
         } catch (Exception e) {
-            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
-            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(), e.getMessage());
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(), LogUtil.method(), e.getMessage()), e);
+            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH, LogUtil.method(), e.getMessage());
         }
         AbstractQuery getArchived = (AbstractQuery)query;
         getArchived.setIncludeArchived(true);
@@ -279,7 +279,7 @@ public class ESNotesService extends AbstractESService implements INotesService {
                     .build())
             );
         } catch (Exception e) {
-            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e),e);
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(), LogUtil.method(), e), e);
             throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(), e.getMessage());
         }
         log.debug("Number of entries archived: {}", entriesToArchive.size());

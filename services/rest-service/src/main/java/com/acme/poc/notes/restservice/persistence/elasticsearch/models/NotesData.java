@@ -34,16 +34,16 @@ public class NotesData {
     
     @Field(type = FieldType.Keyword, name = "externalGuid")
     @NotNull
-    private UUID externalGuid; // An external Guid
+    private UUID externalGuid;
 
     @Field(type = FieldType.Keyword, name = "threadGuid")
-    private UUID threadGuid; // A thread Guid
+    private UUID threadGuid;
 
     @Field(type = FieldType.Keyword, name = "entryGuid")
-    private UUID entryGuid; // A Guid for this entry
+    private UUID entryGuid;
 
     @Field(type = FieldType.Keyword, name = "entryGuidParent")
-    private UUID entryGuidParent; // A Guid for this entry's parent
+    private UUID entryGuidParent;
 
     @Field(type = FieldType.Keyword, name = "type")
     private NoteType type = NoteType.NOTE;

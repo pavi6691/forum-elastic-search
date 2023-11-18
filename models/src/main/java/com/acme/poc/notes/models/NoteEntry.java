@@ -1,4 +1,5 @@
 package com.acme.poc.notes.models;
+
 import lombok.Builder;
 
 import java.util.Date;
@@ -8,6 +9,7 @@ import java.util.UUID;
 
 @Builder
 public record NoteEntry(
+
     UUID guid,
     UUID externalGuid,
     UUID threadGuid,
@@ -20,5 +22,6 @@ public record NoteEntry(
     Date archived,
     List<NoteEntry> threads,
     List<NoteEntry> history
+
 ) {
 }
