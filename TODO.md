@@ -21,7 +21,8 @@
       some reason the update to Elasticsearch fails, a batch job running every 5 second (or so) should look
       for `isDirty:true` records in PostgreSQL (index for this?) and update Elasticsearch accordingly and
       after that set the `isDirty:false` in PostgreSQL. The controller should also have endpoints for
-      searching but will not search in PostgreSQL but use the existing service for Elasticseach for that. 
+      searching but will not search in PostgreSQL but use the existing service for Elasticseach for that.
+- [ ] Fix error in PSRTest.deleteEntries(). `Expected: 1, Actual: 11`
 - [ ] Fix errors related to Hibernate and 2003 errors introduced lately (`org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is javax.persistence.PersistenceException: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.MappingException: No Dialect mapping for JDBC type: 2003`)
 - [ ] Merge current branch into master
 - [ ] Add JavaDoc description to methods where missing.
