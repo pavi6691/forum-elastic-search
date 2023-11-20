@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice;
 
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.service.ESAdminNotesService;
 import com.acme.poc.notes.restservice.service.INotesAdminService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -16,7 +17,7 @@ public class NotesApplication {
 
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(NotesApplication.class, args);
-        INotesAdminService esNotesService = context.getBean(ESAdminNotesService.class);
+        INotesAdminService<NotesData> esNotesService = context.getBean(ESAdminNotesService.class);
         esNotesService.createIndex(context.getEnvironment().getProperty("index.name"));
     }
 

@@ -23,7 +23,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
  */
 @Slf4j
 @Service
-public abstract class AbstractNotesProcessor implements INotesOperations {
+public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
@@ -61,7 +60,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     @Override
     public List<NotesData> fetchAndProcessEsResults(IQuery query) {
         log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
-        SearchHits<NotesData> searchHits = getEsResults(query);
+        SearchHits<E> searchHits = getEsResults(query);
         if (searchHits != null && searchHits.getSearchHits().size() > 0) {
             log.debug("Number of results from elastic search = {}", searchHits.getSearchHits().size());
             return process(query, searchHits.stream().iterator());
@@ -82,7 +81,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
      * @return
      */
     @Override
-    public SearchHits<NotesData> getEsResults(IQuery query) {
+    public SearchHits<E> getEsResults(IQuery query) {
         SearchHits<NotesData> searchHits = null;
         try {
             searchHits = execSearchQuery(query);
@@ -111,7 +110,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
             log.error("Error: {}", e.getMessage());
             throwRestError(NotesAPIError.ERROR_SERVER);
         }
-        return searchHits;
+        return (SearchHits<E>) searchHits;
     }
 
     /**
@@ -138,7 +137,7 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
         }
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
         searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
-        return elasticsearchOperations.search(searchQuery, NotesData.class);
+        return (SearchHits<NotesData>) elasticsearchOperations.search(searchQuery, NotesData.class);
     }
 
     /**
@@ -152,9 +151,10 @@ public abstract class AbstractNotesProcessor implements INotesOperations {
     protected void updateVersions(NotesData existingEntry, NotesData updatedEntry, IQuery query,Collection<NotesData> results) {
         if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.includeVersions()) {
-                NotesData history = new NotesData(existingEntry.getGuid(), existingEntry.getExternalGuid(), existingEntry.getThreadGuid(),
-                        existingEntry.getEntryGuid(), existingEntry.getEntryGuidParent(), existingEntry.getType(), existingEntry.getContent(), existingEntry.getCustomJson(), existingEntry.getCreated(),
-                        existingEntry.getArchived(), null, null);
+                NotesData history = NotesData.builder().guid(existingEntry.getGuid()).externalGuid(existingEntry.getExternalGuid()).threadGuid(existingEntry.getThreadGuid())
+                        .entryGuid(existingEntry.getEntryGuid()).entryGuidParent(existingEntry.getEntryGuidParent()).type(existingEntry.getType())
+                        .archived(existingEntry.getArchived()).content(existingEntry.getContent()).created(existingEntry.getCreated())
+                        .type(existingEntry.getType()).build();
                 if (query.getResultFormat() == ResultFormat.TREE) {
                     if (query.getSortOrder() == SortOrder.ASC) {
                         existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);

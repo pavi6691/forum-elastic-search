@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice;
 
+import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
 import com.acme.poc.notes.restservice.util.DTOMapper;
@@ -28,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class PostgreSQLIntegrationTest {
+public class PostgreSQLIntegrationTest extends BaseTest {
 
     @Autowired
     private PGNotesRepository pgNotesRepository;

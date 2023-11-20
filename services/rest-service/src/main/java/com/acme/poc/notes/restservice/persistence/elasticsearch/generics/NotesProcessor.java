@@ -1,5 +1,4 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
-
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
@@ -17,7 +16,7 @@ import java.util.*;
  */
 @Slf4j
 @Service("NotesProcessor")
-public class NotesProcessor extends AbstractNotesProcessor {
+public class NotesProcessor<E> extends AbstractNotesProcessor<E> {
 
 
     /**
@@ -40,14 +39,14 @@ public class NotesProcessor extends AbstractNotesProcessor {
      * @return process results in tree format if {@link ResultFormat#TREE} else FLATTEN if {@link ResultFormat#FLATTEN}
      */
     @Override
-    public List<NotesData> process(IQuery query, Iterator<SearchHit<NotesData>> esResults) {
+    public List<NotesData> process(IQuery query, Iterator<SearchHit<E>> esResults) {
         log.debug("Processing request = {}", query.getClass().getSimpleName());
         Map<UUID, NotesData> threadMapping = new HashMap<>();
         List<NotesData> results = new LinkedList<>();
         Set<UUID> entriesAddedToResults = new HashSet<>();
         if (esResults != null) {
             while (esResults.hasNext()) {
-                NotesData entry = esResults.next().getContent();
+                NotesData entry = (NotesData) esResults.next().getContent();
                 if (filterArchived(query, entry, results)) {
                     continue;
                 }
