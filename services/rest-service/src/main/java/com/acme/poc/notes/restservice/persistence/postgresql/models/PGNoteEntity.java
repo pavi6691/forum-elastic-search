@@ -3,6 +3,7 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 import com.acme.poc.notes.models.NoteType;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,6 +28,8 @@ public class PGNoteEntity {
     private UUID entryGuidParent;
     private NoteType type;
     private String content;
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb")
     private Object customJson;
     private Date created;
     private Date archived;
