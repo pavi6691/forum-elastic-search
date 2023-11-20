@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice;
 
+import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByExternalGuid;
@@ -80,12 +81,12 @@ public class PSRTest extends BaseTest {
     @Test
     @Order(1)
     void createEntries() {
-        NotesData entry = createNewEntry(NotesData.builder()
+        INoteEntity entry = createNewEntry(NotesData.builder()
                 .externalGuid(EXTERNAL_GUID)
                 .content("New External Entry-1")
-                .build());
+                .build(),esNotesService);
         IntStream.range(0, NUMBER_OF_ENTRIES)
-                .forEach(i -> createThread(entry, "New External Entry-Thread-" + i));
+                .forEach(i -> createThread((NotesData) entry, "New External Entry-Thread-" + i));
         log.info("Created {} entries", NUMBER_OF_ENTRIES + 1);
     }
 

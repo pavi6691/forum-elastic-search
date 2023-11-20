@@ -6,24 +6,20 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchAr
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByContent;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.ICommonOperations;
 
 import java.util.List;
 import java.util.UUID;
 
 
-public interface INotesService {
-
-    NotesData create(NotesData notesData);
-    NotesData getByGuid(UUID guid);
-    NotesData updateByGuid(NotesData notesData);
-    NotesData updateByEntryGuid(NotesData notesData);
-    List<NotesData> archive(IQuery iQuery);
-    List<NotesData> archive(UUID guid);
-    List<NotesData> searchByEntryGuid(SearchByEntryGuid iQuery);
-    List<NotesData> searchByContent(SearchByContent iQuery);
-    List<NotesData> searchArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
-    List<NotesData> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
-    List<NotesData> deleteArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
-    List<NotesData> deleteArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
+public interface INotesService<E> {
+    List<E> archive(IQuery iQuery);
+    List<E> archive(UUID guid);
+    List<E> searchByEntryGuid(SearchByEntryGuid iQuery);
+    List<E> searchByContent(SearchByContent iQuery);
+    List<E> searchArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
+    List<E> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
+    List<E> deleteArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
+    List<E> deleteArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
 
 }

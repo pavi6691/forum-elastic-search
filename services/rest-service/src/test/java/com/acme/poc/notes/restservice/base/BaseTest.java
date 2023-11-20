@@ -1,10 +1,12 @@
 package com.acme.poc.notes.restservice.base;
-
+import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.data.ElasticSearchData;
+import com.acme.poc.notes.restservice.service.ESNotesService;
 import com.acme.poc.notes.restservice.service.INotesAdminService;
-import com.acme.poc.notes.restservice.service.INotesService;
+import com.acme.poc.notes.restservice.service.PSQLNotesService;
+import com.acme.poc.notes.restservice.service.generics.AbstractService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,19 +22,21 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BaseTest {
 
     @Autowired
-    protected INotesService notesService;
+    protected ESNotesService esNotesService;
+    @Autowired
+    protected PSQLNotesService psqlNotesService;
     @Autowired
     protected INotesAdminService notesAdminService;
     @Autowired
     protected ESNotesRepository repository;
 
 
-    protected NotesData createNewEntry(NotesData newExternalEntry) {
-        NotesData entryCreated = notesService.create(newExternalEntry);
+    protected INoteEntity createNewEntry(INoteEntity newExternalEntry, AbstractService iNotesService) {
+        INoteEntity entryCreated = iNotesService.create(newExternalEntry);
         assertEquals(newExternalEntry.getExternalGuid(), entryCreated.getExternalGuid());
         assertEquals(newExternalEntry.getContent(), entryCreated.getContent());
-        assertNull(entryCreated.getHistory());
-        assertNull(entryCreated.getThreads());
+        assertNull(((NotesData) entryCreated).getHistory());
+        assertNull(((NotesData) entryCreated).getThreads());
         assertNull(entryCreated.getEntryGuidParent());
         assertNull(entryCreated.getArchived());
         assertNotNull(entryCreated.getEntryGuid());
@@ -41,14 +45,14 @@ public class BaseTest {
         return entryCreated;
     }
 
-    protected NotesData createThread(NotesData existingEntry, String content) {
+    protected INoteEntity createThread(INoteEntity existingEntry, String content) {
         NotesData newThread = new NotesData();
         newThread.setContent(content);
         newThread.setEntryGuidParent(existingEntry.getEntryGuid());
-        NotesData newThreadCreated = notesService.create(newThread);
+        INoteEntity newThreadCreated = esNotesService.create(newThread);
         assertEquals(newThread.getExternalGuid(), newThreadCreated.getExternalGuid());
-        assertNull(newThreadCreated.getHistory());
-        assertNull(newThreadCreated.getThreads());
+        assertNull(((NotesData) newThreadCreated).getHistory());
+        assertNull(((NotesData) newThreadCreated).getThreads());
         assertNull(newThreadCreated.getArchived());
         assertEquals(existingEntry.getEntryGuid(), newThreadCreated.getEntryGuidParent());
         assertNotEquals(existingEntry.getEntryGuid(), newThreadCreated.getEntryGuid());
@@ -58,13 +62,13 @@ public class BaseTest {
         return newThreadCreated;
     }
 
-    protected NotesData updateGuid(NotesData existingEntry, String content) {
+    protected INoteEntity updateGuid(INoteEntity existingEntry, String content) {
         NotesData newEntry = new NotesData();
         newEntry.setGuid(existingEntry.getGuid());
         newEntry.setContent(content);
         newEntry.setEntryGuid(existingEntry.getEntryGuid());
         newEntry.setCreated(existingEntry.getCreated());
-        NotesData newThreadUpdated = notesService.updateByGuid(newEntry);
+        INoteEntity newThreadUpdated = esNotesService.updateByGuid(newEntry);
         assertEquals(existingEntry.getExternalGuid(), newThreadUpdated.getExternalGuid());
         assertEquals(existingEntry.getEntryGuid(), newThreadUpdated.getEntryGuid());
         assertEquals(existingEntry.getThreadGuid(), newThreadUpdated.getThreadGuid());
@@ -76,8 +80,8 @@ public class BaseTest {
 
     protected void validateAll(List<NotesData> result, int entrySize, int expectedTotalCount, int expectedThreadCount, int expectedHistoryCount) {
         List<NotesData> total = new ArrayList<>();
-        List<NotesData> totalThreads = new ArrayList<>();
-        List<NotesData> totalHistories = new ArrayList<>();
+        List<INoteEntity> totalThreads = new ArrayList<>();
+        List<INoteEntity> totalHistories = new ArrayList<>();
         assertEquals(entrySize, result.size());
         result.forEach(r -> flatten(r, total));
         assertEquals(expectedTotalCount, total.size());
@@ -92,18 +96,18 @@ public class BaseTest {
                         .forEach(j -> assertNotEquals(result.get(i).getEntryGuid(), result.get(j).getEntryGuid())));
 
         // this is to check each external entry and its history will have the same entryGuid
-        for (NotesData notesData : result) {
-            if (notesData.getHistory() != null) {
-                IntStream.range(0, notesData.getHistory().size())
-                        .forEach(i -> assertEquals(notesData.getEntryGuid(), notesData.getHistory().get(i).getEntryGuid()));
+        for (INoteEntity noteEntity : result) {
+            if (((NotesData) noteEntity).getHistory() != null) {
+                IntStream.range(0, ((NotesData) noteEntity).getHistory().size())
+                        .forEach(i -> assertEquals(noteEntity.getEntryGuid(), ((NotesData) noteEntity).getHistory().get(i).getEntryGuid()));
             }
         }
 
         // this is to check each threads will have same thread guid as their parent 
-        for (NotesData notesData : result) {
-            if (notesData.getThreads() != null) {
-                IntStream.range(0, notesData.getThreads().size())
-                        .forEach(i -> assertEquals(notesData.getEntryGuid(), notesData.getThreads().get(i).getEntryGuidParent()));
+        for (INoteEntity noteEntity : result) {
+            if (((NotesData) noteEntity).getThreads() != null) {
+                IntStream.range(0, ((NotesData) noteEntity).getThreads().size())
+                        .forEach(i -> assertEquals(noteEntity.getEntryGuid(), ((NotesData) noteEntity).getThreads().get(i).getEntryGuidParent()));
             }
         }
 
@@ -112,15 +116,15 @@ public class BaseTest {
 
     protected void checkDuplicates(List<NotesData> result){
         Set<String> entryCount = new HashSet<>();
-        for (NotesData notesData : result) {
+        for (INoteEntity noteEntity : result) {
             List<NotesData> flattenEntries = new ArrayList<>();
-            flatten(notesData, flattenEntries);
+            flatten(noteEntity, flattenEntries);
             checkDuplicates(flattenEntries, entryCount);
         }
     }
     
     protected void checkDuplicates(List<NotesData> result, Set<String> entryCount) {
-        for (NotesData e : result) {
+        for (INoteEntity e : result) {
             String guidKey = e.getGuid().toString();
             if (entryCount.contains(guidKey)) { // this check is for debug just in case
                 assertFalse(entryCount.contains(guidKey));
@@ -129,29 +133,29 @@ public class BaseTest {
         }
     }
 
-    protected void flatten(NotesData root, List<NotesData> entries) {
-        entries.add(root);
-        if (root.getThreads() != null)
-            root.getThreads().forEach(e -> flatten(e, entries));
-        if (root.getHistory() != null)
-            root.getHistory().forEach(e -> flatten(e, entries));
+    protected void flatten(INoteEntity root, List<NotesData> entries) {
+        entries.add((NotesData) root);
+        if (((NotesData) root).getThreads() != null)
+            ((NotesData) root).getThreads().forEach(e -> flatten(e, entries));
+        if (((NotesData) root).getHistory() != null)
+            ((NotesData) root).getHistory().forEach(e -> flatten(e, entries));
     }
 
-    protected void flattenThreads(NotesData root, List<NotesData> entries) {
-        if (root.getThreads() != null)
-            root.getThreads().forEach(e -> {
+    protected void flattenThreads(INoteEntity root, List<INoteEntity> entries) {
+        if (((NotesData) root).getThreads() != null)
+            ((NotesData) root).getThreads().forEach(e -> {
                 entries.add(e);
                 flattenThreads(e, entries);
             });
     }
 
-    protected void flattenHistories(NotesData root, List<NotesData> entries) {
-        if (root.getThreads() != null)
-            root.getThreads().forEach(e -> {
+    protected void flattenHistories(INoteEntity root, List<INoteEntity> entries) {
+        if (((NotesData) root).getThreads() != null)
+            ((NotesData) root).getThreads().forEach(e -> {
                 flattenHistories(e, entries);
             });
-        if (root.getHistory() != null)
-            root.getHistory().forEach(e -> {
+        if (((NotesData) root).getHistory() != null)
+            ((NotesData) root).getHistory().forEach(e -> {
                 entries.add(e);
                 flattenHistories(e, entries);
             });
@@ -163,7 +167,7 @@ public class BaseTest {
         try {
             jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
             for (int i = 0; i < jsonArray.length(); i++) {
-                NotesData data = NotesData.fromJson(jsonArray.getString(i));
+                NotesData data = (NotesData) NotesData.fromJson(jsonArray.getString(i));
                 entries.put(data.getGuid().toString(), data);
             }
         } catch (JSONException e) {

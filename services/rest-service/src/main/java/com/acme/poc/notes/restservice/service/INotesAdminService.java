@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.UUID;
 
 
-public interface INotesAdminService {
+public interface INotesAdminService<E> {
 
-    List<NotesData> getAll(String indexName);
-    List<NotesData> searchByExternalGuid(SearchByExternalGuid query);
-    List<NotesData> deleteByExternalGuid(UUID externalGuid);
-    List<NotesData> deleteByEntryGuid(UUID entryGuid);
-    List<NotesData> deleteByThreadGuid(UUID threadGuid);
-    NotesData deleteByGuid(UUID guid);
+    List<E> getAll(String indexName);
+    List<E> searchByExternalGuid(SearchByExternalGuid query);
+    List<E> deleteByExternalGuid(UUID externalGuid);
+    List<E> deleteByEntryGuid(UUID entryGuid);
+    List<E> deleteByThreadGuid(UUID threadGuid);
+    E deleteByGuid(UUID guid);
     String createIndex(String indexName);
     
 }

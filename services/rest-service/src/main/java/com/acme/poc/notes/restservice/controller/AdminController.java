@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_ADMIN)
 public class AdminController {
 
-    INotesAdminService notesAdminService;
+    INotesAdminService<NotesData> notesAdminService;
 
 
     public AdminController(INotesAdminService notesAdminService) {

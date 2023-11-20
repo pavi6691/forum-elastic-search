@@ -1,8 +1,8 @@
 package com.acme.poc.notes.restservice.persistence.postgresql.models;
 
+import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
@@ -17,8 +17,10 @@ import java.util.UUID;
 @Setter
 @Table(name = "notes")
 @Entity(name = "note")
-public class PGNoteEntity {
-
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PGNoteEntity implements INoteEntity {
     @Id
     @Column(name = "guid", nullable = false)
     private UUID guid;
@@ -33,5 +35,4 @@ public class PGNoteEntity {
     private Object customJson;
     private Date created;
     private Date archived;
-
 }

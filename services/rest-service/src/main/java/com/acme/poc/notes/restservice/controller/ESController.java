@@ -3,7 +3,9 @@ package com.acme.poc.notes.restservice.controller;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.*;
+import com.acme.poc.notes.restservice.service.ESNotesService;
 import com.acme.poc.notes.restservice.service.INotesService;
+import com.acme.poc.notes.restservice.service.generics.AbstractService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,10 +25,9 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
 public class ESController {
 
-    INotesService notesService;
+    ESNotesService notesService;
 
-
-    public ESController(INotesService notesService) {
+    public ESController(ESNotesService notesService) {
         this.notesService = notesService;
     }
 

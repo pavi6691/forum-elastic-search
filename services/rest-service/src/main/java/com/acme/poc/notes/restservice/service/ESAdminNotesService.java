@@ -1,18 +1,17 @@
 package com.acme.poc.notes.restservice.service;
-
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesOperations;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.metadata.ResourceFileReaderService;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesProcessor;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchAll;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByExternalGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByThreadGuid;
-import com.acme.poc.notes.restservice.service.generics.AbstractESService;
+import com.acme.poc.notes.restservice.service.generics.AbstractService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
@@ -24,21 +23,21 @@ import java.util.*;
 
 @Slf4j
 @Service
-public class ESAdminNotesService extends AbstractESService implements INotesAdminService {
+public class ESAdminNotesService extends AbstractService<NotesData> implements INotesAdminService<NotesData> {
+    
+    @Autowired
+    ElasticsearchOperations elasticsearchOperations;
 
-
-    public ESAdminNotesService(@Qualifier("NotesProcessor") INotesOperations iNotesOperations,
-                               ESNotesRepository esNotesRepository,
-                               ElasticsearchOperations elasticsearchOperations,
-                               ResourceFileReaderService resourceFileReaderService) {
-        super(iNotesOperations, esNotesRepository, elasticsearchOperations,resourceFileReaderService);
+    public ESAdminNotesService(@Qualifier("NotesProcessor") INotesProcessor iNotesProcessor,
+                               ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations) {
+        super(iNotesProcessor, esNotesRepository);
     }
 
 
     @Override
     public List<NotesData> getAll(String indexName) {
         log.debug("{} index: {}", LogUtil.method(), indexName);
-        return iNotesOperations.fetchAndProcessEsResults(
+        return (List<NotesData>) iNotesProcessor.fetchAndProcessEsResults(
                 SearchAll.builder()
                         .includeVersions(true)
                         .includeArchived(true)
@@ -120,5 +119,4 @@ public class ESAdminNotesService extends AbstractESService implements INotesAdmi
             throw new RuntimeException(e);
         }
     }
-
 }
