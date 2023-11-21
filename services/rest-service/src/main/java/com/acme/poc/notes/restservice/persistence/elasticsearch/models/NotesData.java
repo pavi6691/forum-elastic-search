@@ -28,7 +28,7 @@ import java.util.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotesData implements INoteEntity {
+public class NotesData implements INoteEntity<NotesData> {
     
     @Id
     @Field(type = FieldType.Keyword, name = "guid")

@@ -20,7 +20,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PGNoteEntity implements INoteEntity {
+public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     @Id
     @Column(name = "guid", nullable = false)
     private UUID guid;
