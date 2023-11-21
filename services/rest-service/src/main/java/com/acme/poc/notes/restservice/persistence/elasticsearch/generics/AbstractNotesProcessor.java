@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
-
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
+import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
@@ -18,18 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
@@ -39,8 +35,8 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
  */
 @Slf4j
 @Service
-public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
-
+public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implements INotesProcessor<E> {
+    
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
     @Autowired
@@ -58,12 +54,12 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
      * - filter both archived and histories
      */
     @Override
-    public List<NotesData> fetchAndProcessEsResults(IQuery query) {
+    public List<E> getProcessed(IQuery query) {
         log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
-        SearchHits<E> searchHits = getEsResults(query);
-        if (searchHits != null && searchHits.getSearchHits().size() > 0) {
-            log.debug("Number of results from elastic search = {}", searchHits.getSearchHits().size());
-            return process(query, searchHits.stream().iterator());
+        List<E> searchHits = getUnprocessed(query);
+        if (searchHits != null && searchHits.size() > 0) {
+            log.debug("Number of results from elastic search = {}", searchHits.size());
+            return process(query, searchHits.iterator());
         } else {
             log.error("no results found for request = {}", query.getClass().getSimpleName());
         }
@@ -81,16 +77,16 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
      * @return
      */
     @Override
-    public SearchHits<E> getEsResults(IQuery query) {
-        SearchHits<NotesData> searchHits = null;
+    public List<E> getUnprocessed(IQuery query) {
+        List<E> searchHits = null;
         try {
             searchHits = execSearchQuery(query);
             if (query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
                 // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
                 if (searchHits != null) {
-                    Iterator<SearchHit<NotesData>> rootEntries = searchHits.stream().iterator();
+                    Iterator<E> rootEntries = searchHits.stream().iterator();
                     if (rootEntries != null && rootEntries.hasNext()) {
-                        NotesData rootEntry = rootEntries.next().getContent();
+                        E rootEntry = rootEntries.next();
                         if (query.includeArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
                             IQuery entryQuery = SearchByThreadGuid.builder()
                                     .size(query.getSize())
@@ -110,7 +106,7 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
             log.error("Error: {}", e.getMessage());
             throwRestError(NotesAPIError.ERROR_SERVER);
         }
-        return (SearchHits<E>) searchHits;
+        return searchHits;
     }
 
     /**
@@ -118,7 +114,7 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
      * @param query 
      * @return search result from elastics search response
      */
-    protected SearchHits<NotesData> execSearchQuery(IQuery query) {
+    protected List<E> execSearchQuery(IQuery query) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
                 .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
@@ -137,7 +133,8 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
         }
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
         searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
-        return elasticsearchOperations.search(searchQuery, NotesData.class);
+        return (List<E>) elasticsearchOperations.search(searchQuery, NotesData.class).stream()
+                .map(sh -> sh.getContent()).collect(Collectors.toList());
     }
 
     /**
@@ -148,13 +145,20 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
      * @param updatedEntry
      * @param query
      */
-    protected void updateVersions(NotesData existingEntry, NotesData updatedEntry, IQuery query,Collection<NotesData> results) {
+    protected void updateVersions(E existingEntry, E updatedEntry, IQuery query,Collection<E> results) {
         if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.includeVersions()) {
-                NotesData history = NotesData.builder().guid(existingEntry.getGuid()).externalGuid(existingEntry.getExternalGuid()).threadGuid(existingEntry.getThreadGuid())
-                        .entryGuid(existingEntry.getEntryGuid()).entryGuidParent(existingEntry.getEntryGuidParent()).type(existingEntry.getType())
-                        .archived(existingEntry.getArchived()).content(existingEntry.getContent()).created(existingEntry.getCreated())
-                        .type(existingEntry.getType()).build();
+                E history = existingEntry.getInstance(); // TODO is getInstance proper way? make these setters dynamic, when any field added/removed
+                history.setGuid(existingEntry.getGuid());
+                history.setExternalGuid(existingEntry.getExternalGuid());
+                history.setThreadGuid(existingEntry.getThreadGuid());
+                history.setEntryGuid(existingEntry.getEntryGuid());
+                history.setEntryGuidParent(existingEntry.getEntryGuidParent());
+                history.setType(existingEntry.getType());
+                history.setArchived(existingEntry.getArchived());
+                history.setContent(existingEntry.getContent());
+                history.setCreated(existingEntry.getCreated());
+                history.setCustomJson(existingEntry.getCustomJson());
                 if (query.getResultFormat() == ResultFormat.TREE) {
                     if (query.getSortOrder() == SortOrder.ASC) {
                         existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
@@ -162,7 +166,7 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
                         existingEntry.addHistory(history, 0);
                     }
                 } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
-                    results.add(history);
+                    results.add((E) history);
                 }
             }
             existingEntry.setGuid(updatedEntry.getGuid());
@@ -179,7 +183,7 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
      * @param newEntry
      * @param query
      */
-    protected void addChild(NotesData existingEntry,NotesData newEntry, IQuery query) {
+    protected void addChild(E existingEntry,E newEntry, IQuery query) {
         if (query.getSortOrder() == SortOrder.ASC) {
             existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);
         } else {
@@ -195,7 +199,7 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
      * @param newEntry
      * @param query
      */
-    protected void addNewThread(List<NotesData> results,NotesData newEntry, IQuery query) {
+    protected void addNewThread(List<E> results,E newEntry, IQuery query) {
         if(query.getResultFormat() == ResultFormat.TREE) {
             if (query.getSortOrder() == SortOrder.ASC) {
                 results.add(newEntry);
@@ -213,7 +217,7 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
      * @param entry
      * @return true when not to select archived entry. And true for only archived request
      */
-    protected boolean filterArchived(IQuery query, NotesData entry, Collection<NotesData> results) {
+    protected boolean filterArchived(IQuery query, E entry, Collection<E> results) {
         return ((!query.includeArchived() && entry.getArchived() != null) ||
                 (query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null && !results.isEmpty());
     }

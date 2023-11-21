@@ -24,4 +24,7 @@ public interface INoteEntity<E> {
     void setArchived(Date archived);
     default List<E> getHistory() {return new ArrayList<>();}
     default List<E> getThreads() {return new ArrayList<>();}
+    default void addThreads(INoteEntity threads, int index) {}
+    default void addHistory(INoteEntity history, int index) {}
+    E getInstance();
 }

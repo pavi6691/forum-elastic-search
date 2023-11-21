@@ -14,7 +14,6 @@ import com.acme.poc.notes.restservice.service.generics.AbstractService;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -41,7 +40,7 @@ public class ESNotesService extends AbstractService<NotesData> implements INotes
     @Override
     public List<NotesData> archive(IQuery query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
-        List<SearchHit<NotesData>> searchHitList = getAllEntries(query);
+        List<NotesData> searchHitList = getAllEntries(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<NotesData> processed = iNotesProcessor.process(query, searchHitList.stream().iterator());
         try {

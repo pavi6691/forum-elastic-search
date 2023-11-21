@@ -25,7 +25,7 @@ import java.util.*;
 @Document(indexName = "#{@indexName}", createIndex = false, writeTypeHint = WriteTypeHint.FALSE)
 @Getter
 @Setter
-@Builder
+@Builder()
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotesData implements INoteEntity<NotesData> {
@@ -68,18 +68,24 @@ public class NotesData implements INoteEntity<NotesData> {
     private List<NotesData> threads = null; // Answers/responses to this note
     private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by ???
     
+    @Override
     public void addThreads(INoteEntity threads, int index) {
         if (this.threads == null) {
             this.threads = new LinkedList<>();;
         }
         this.threads.add(index, (NotesData) threads);
     }
-    
+    @Override
     public void addHistory(INoteEntity history, int index) {
         if (this.history == null) {
             this.history = new LinkedList<>();;
         }
         this.history.add(index, (NotesData) history);
+    }
+
+    @Override
+    public NotesData getInstance() {
+        return new NotesData();
     }
 
     public static NotesData fromJson(String json){

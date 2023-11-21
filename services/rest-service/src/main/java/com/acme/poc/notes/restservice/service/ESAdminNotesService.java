@@ -37,7 +37,7 @@ public class ESAdminNotesService extends AbstractService<NotesData> implements I
     @Override
     public List<NotesData> getAll(String indexName) {
         log.debug("{} index: {}", LogUtil.method(), indexName);
-        return (List<NotesData>) iNotesProcessor.fetchAndProcessEsResults(
+        return (List<NotesData>) iNotesProcessor.getProcessed(
                 SearchAll.builder()
                         .includeVersions(true)
                         .includeArchived(true)
