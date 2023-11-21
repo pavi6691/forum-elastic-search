@@ -22,12 +22,12 @@
       for `isDirty:true` records in PostgreSQL (index for this?) and update Elasticsearch accordingly and
       after that set the `isDirty:false` in PostgreSQL. The controller should also have endpoints for
       searching but will not search in PostgreSQL but use the existing service for Elasticseach for that.
-- [ ] Fix error in PSRTest.deleteEntries(). `Expected: 1, Actual: 11`
-- [ ] Fix errors related to Hibernate and 2003 errors introduced lately (`org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is javax.persistence.PersistenceException: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.MappingException: No Dialect mapping for JDBC type: 2003`)
+- [X] Fix error in PSRTest.deleteEntries(). `Expected: 1, Actual: 11` - Its supposed to be 11. as the response earlier was in tree for delete, it was 1. for improved performance its flatten now.
+- [X] Fix errors related to Hibernate and 2003 errors introduced lately (`org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is javax.persistence.PersistenceException: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.MappingException: No Dialect mapping for JDBC type: 2003`)
 - [ ] Merge current branch into master
 - [ ] Add JavaDoc description to methods where missing.
 - [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
-- [ ] Fix support for storing `customJson` as part of an entry. Saving with this:
+- [X] Fix support for storing `customJson` as part of an entry. Saving with this:
 
 
     "customJson": {

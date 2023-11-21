@@ -62,17 +62,17 @@ public class IntegrationTest extends BaseTest {
         registry.add("service.thread.pool.size", () -> 8);
     }
 
-    @BeforeAll
-    void setup() {
-        elasticsearchContainer
-                .withNetworkAliases("elasticsearch")
-                .setWaitStrategy((new LogMessageWaitStrategy())
-                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
-                        .withStartupTimeout(Duration.ofSeconds(180L)));
-        elasticsearchContainer.start();
-
-//        assertEquals(notesAdminService.createIndex(indexName), indexName);   // TODO This does not validate correctly
-    }
+//    @BeforeAll
+//    void setup() {
+//        elasticsearchContainer
+//                .withNetworkAliases("elasticsearch")
+//                .setWaitStrategy((new LogMessageWaitStrategy())
+//                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
+//                        .withStartupTimeout(Duration.ofSeconds(180L)));
+//        elasticsearchContainer.start();
+//
+////        assertEquals(notesAdminService.createIndex(indexName), indexName);   // TODO This does not validate correctly
+//    }
 
     @Test
     void crud() {
