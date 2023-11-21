@@ -12,6 +12,7 @@
 
 
 ## Current phase
+- [ ] Make IntegrationTest work again.
 - [ ] Keep existing controller for adding/searching/... directly to Elasticsearch, but add new controller
       that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
       (not for querying/searching). Whenever this has saved to PostgreSQL (also setting an `isDirty` field
