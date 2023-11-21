@@ -33,7 +33,6 @@ import java.util.stream.IntStream;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Configuration
-@EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class, HibernateJpaAutoConfiguration.class })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PSRTest extends BaseTest {
@@ -107,8 +106,8 @@ public class PSRTest extends BaseTest {
     @Order(3)
     void deleteEntries() {
         List<NotesData> searchResult = notesAdminService.deleteByExternalGuid(EXTERNAL_GUID);
-        log.info("Deleted {} entries", searchResult.size());  // TODO This returns '1'. Shouldn't it return NUMBER_OF_ENTRIES + 1 ?
-        validateAll(searchResult, 1, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES, 0);
+        log.info("Deleted {} entries", searchResult.size());
+        validateAll(searchResult, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES + 1, 0, 0);
         searchResult = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
                 .searchGuid(EXTERNAL_GUID.toString())
                 .includeVersions(true)

@@ -158,7 +158,7 @@ public abstract class AbstractService<E extends INoteEntity> implements ICommonO
             throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_NO_UPDATE);
         }
 
-        ESUtil.clearHistoryAndThreads((NotesData) existingEntity);
+        ESUtil.clearHistoryAndThreads(existingEntity); // TODO it needs to be corrected for getByGuid
         existingEntity.setGuid(UUID.randomUUID());
         existingEntity.setCreated(ESUtil.getCurrentDate());
         existingEntity.setContent(updatedEntity.getContent());
@@ -196,7 +196,7 @@ public abstract class AbstractService<E extends INoteEntity> implements ICommonO
             throwRestError(NotesAPIError.ERROR_SERVER);
         }
         log.debug("Successfully deleted all {} entries", processed.size());
-        return (List<E>) processed;
+        return processed;
     }
 
     @Override
@@ -217,7 +217,7 @@ public abstract class AbstractService<E extends INoteEntity> implements ICommonO
 
     public List<E> search(IQuery query) {
         log.debug("{}", LogUtil.method());
-        return (List<E>) iNotesProcessor.fetchAndProcessEsResults(query);
+        return iNotesProcessor.fetchAndProcessEsResults(query);
     }
 
     protected List<SearchHit<E>> getAllEntries(IQuery query) {
