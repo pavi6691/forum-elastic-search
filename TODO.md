@@ -34,8 +34,8 @@
     List<NoteEntry> threads,
     List<NoteEntry> history
 
-- [ ] Keep existing controller for adding/searching/... directly to Elasticsearch, but add new controller
-      that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
+- [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
+      `ApiController`that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
       (not for querying/searching). Whenever this has saved to PostgreSQL (also setting an `isDirty` field
       (only in PostgreSQL, not in Elasticsearch)) it should return OK to client. However, it should (in a
       thread or using events; whichever is best) also update Elasticsearch 'in the background'/asynchronously
