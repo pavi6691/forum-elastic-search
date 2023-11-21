@@ -9,6 +9,7 @@ import java.util.UUID;
 
 @Builder()
 public record NoteEntry(
+
     UUID guid,
     UUID externalGuid,
     UUID threadGuid,

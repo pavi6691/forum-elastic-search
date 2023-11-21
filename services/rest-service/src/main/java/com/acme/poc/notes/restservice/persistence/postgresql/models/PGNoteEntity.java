@@ -21,6 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
+
     @Id
     @Column(name = "guid", nullable = false)
     private UUID guid;
@@ -40,4 +41,5 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     public PGNoteEntity getInstance() {
         return new PGNoteEntity();
     }
+
 }

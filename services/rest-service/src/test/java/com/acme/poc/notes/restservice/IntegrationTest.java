@@ -1,4 +1,5 @@
 package com.acme.poc.notes.restservice;
+
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.data.ElasticSearchData;
@@ -14,15 +15,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -76,7 +71,10 @@ public class IntegrationTest extends BaseTest {
 
     @Test
     void crud() {
-        INoteEntity newEntryCreated = createNewEntry(NotesData.builder().externalGuid(UUID.randomUUID()).content("New External Entry - 1").build(),
+        INoteEntity newEntryCreated = createNewEntry(NotesData.builder()
+                        .externalGuid(UUID.randomUUID())
+                        .content("New External Entry - 1")
+                        .build(),
                 esNotesService);
         SearchByExternalGuid querySearchByExternalGuid = SearchByExternalGuid.builder()
                 .searchGuid(newEntryCreated.getExternalGuid().toString())

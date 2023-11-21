@@ -1,4 +1,5 @@
 package com.acme.poc.notes.restservice.service.generics;
+
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
@@ -11,28 +12,29 @@ import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
+
 
 @Slf4j
 @Service
 public abstract class AbstractService<E extends INoteEntity<E>> implements ICommonOperations<E> {
+
     @Value("${default.number.of.entries.to.return}")
     private int default_number_of_entries;
     protected INotesProcessor iNotesProcessor;
     protected CrudRepository crudRepository;
     
+
     public AbstractService(@Qualifier("NotesProcessor") INotesProcessor iNotesProcessor, CrudRepository crudRepository) {
         this.iNotesProcessor = iNotesProcessor;
         this.crudRepository = crudRepository;
     }
+
 
     /**
      * Search entry by guid
@@ -246,4 +248,5 @@ public abstract class AbstractService<E extends INoteEntity<E>> implements IComm
         log.debug("Number of entries found: {}",searchHitList.size());
         return searchHitList;
     }
+
 }

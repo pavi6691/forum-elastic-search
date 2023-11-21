@@ -1,4 +1,5 @@
 package com.acme.poc.notes.restservice.service;
+
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
@@ -28,8 +29,8 @@ public class ESAdminNotesService extends AbstractService<NotesData> implements I
     @Autowired
     ElasticsearchOperations elasticsearchOperations;
 
-    public ESAdminNotesService(@Qualifier("NotesProcessor") INotesProcessor iNotesProcessor,
-                               ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations) {
+
+    public ESAdminNotesService(@Qualifier("NotesProcessor") INotesProcessor iNotesProcessor, ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
         super(iNotesProcessor, esNotesRepository);
     }
 
@@ -119,4 +120,5 @@ public class ESAdminNotesService extends AbstractService<NotesData> implements I
             throw new RuntimeException(e);
         }
     }
+
 }

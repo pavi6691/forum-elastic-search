@@ -1,4 +1,5 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
+
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
@@ -21,6 +22,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -199,14 +201,14 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implement
      * @param newEntry
      * @param query
      */
-    protected void addNewThread(List<E> results,E newEntry, IQuery query) {
-        if(query.getResultFormat() == ResultFormat.TREE) {
+    protected void addNewThread(List<E> results, E newEntry, IQuery query) {
+        if (query.getResultFormat() == ResultFormat.TREE) {
             if (query.getSortOrder() == SortOrder.ASC) {
                 results.add(newEntry);
             } else {
                 results.add(0, newEntry);
             }
-        } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
+        } else if (query.getResultFormat() == ResultFormat.FLATTEN) {
             results.add(newEntry);
         }
     }

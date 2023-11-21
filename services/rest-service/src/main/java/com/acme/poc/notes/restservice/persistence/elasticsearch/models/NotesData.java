@@ -67,7 +67,8 @@ public class NotesData implements INoteEntity<NotesData> {
     private Date archived;
     private List<NotesData> threads = null; // Answers/responses to this note
     private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by ???
-    
+
+
     @Override
     public void addThreads(INoteEntity threads, int index) {
         if (this.threads == null) {
@@ -75,6 +76,7 @@ public class NotesData implements INoteEntity<NotesData> {
         }
         this.threads.add(index, (NotesData) threads);
     }
+
     @Override
     public void addHistory(INoteEntity history, int index) {
         if (this.history == null) {
@@ -96,4 +98,5 @@ public class NotesData implements INoteEntity<NotesData> {
             throw new RuntimeException(e);
         }
     }
+
 }

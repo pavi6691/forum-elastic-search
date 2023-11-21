@@ -1,11 +1,12 @@
 package com.acme.poc.notes.restservice.util;
 
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+
 import java.util.Date;
 
 
 public class ESUtil {
+
 
     public static Date getCurrentDate() {
         return new Date();
@@ -19,4 +20,5 @@ public class ESUtil {
             entry.getHistory().clear();
         }
     }
+
 }

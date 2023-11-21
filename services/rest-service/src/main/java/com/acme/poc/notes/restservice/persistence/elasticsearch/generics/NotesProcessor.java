@@ -1,12 +1,12 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
+
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.stereotype.Service;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
