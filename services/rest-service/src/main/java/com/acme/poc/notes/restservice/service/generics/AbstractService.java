@@ -3,7 +3,6 @@ import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.INotesProcessor;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
@@ -23,7 +22,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
 @Slf4j
 @Service
-public abstract class AbstractService<E extends INoteEntity> implements ICommonOperations<E> {
+public abstract class AbstractService<E extends INoteEntity<E>> implements ICommonOperations<E> {
     @Value("${default.number.of.entries.to.return}")
     private int default_number_of_entries;
     protected INotesProcessor iNotesProcessor;
@@ -158,7 +157,7 @@ public abstract class AbstractService<E extends INoteEntity> implements ICommonO
             throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_NO_UPDATE);
         }
 
-        ESUtil.clearHistoryAndThreads(existingEntity); // TODO it needs to be corrected for getByGuid
+        ESUtil.clearHistoryAndThreads(existingEntity);
         existingEntity.setGuid(UUID.randomUUID());
         existingEntity.setCreated(ESUtil.getCurrentDate());
         existingEntity.setContent(updatedEntity.getContent());

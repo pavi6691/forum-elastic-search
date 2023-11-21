@@ -137,7 +137,7 @@ public abstract class AbstractNotesProcessor<E> implements INotesProcessor<E> {
         }
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
         searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
-        return (SearchHits<NotesData>) elasticsearchOperations.search(searchQuery, NotesData.class);
+        return elasticsearchOperations.search(searchQuery, NotesData.class);
     }
 
     /**
