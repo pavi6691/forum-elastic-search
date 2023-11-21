@@ -35,4 +35,9 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     private Object customJson;
     private Date created;
     private Date archived;
+
+    @Override
+    public PGNoteEntity getInstance() {
+        return new PGNoteEntity();
+    }
 }

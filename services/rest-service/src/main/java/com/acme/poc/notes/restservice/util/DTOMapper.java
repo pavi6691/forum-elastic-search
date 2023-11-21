@@ -1,5 +1,4 @@
 package com.acme.poc.notes.restservice.util;
-
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
@@ -18,5 +17,4 @@ public interface DTOMapper {
 
     NotesData toESEntity(NoteEntry noteEntry);
     NoteEntry toDTO(NotesData notesData);
-
 }

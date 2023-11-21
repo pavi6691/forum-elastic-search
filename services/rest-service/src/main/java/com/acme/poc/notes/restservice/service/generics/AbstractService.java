@@ -17,6 +17,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
@@ -60,7 +61,7 @@ public abstract class AbstractService<E extends INoteEntity<E>> implements IComm
         entity.setCreated(ESUtil.getCurrentDate());
 
         if (entity.getEntryGuidParent() != null) {  // It's a thread that needs to be created
-            List<E> existingEntry = (List<E>) iNotesProcessor.fetchAndProcessEsResults(SearchByEntryGuid.builder()
+            List<E> existingEntry = (List<E>) iNotesProcessor.getProcessed(SearchByEntryGuid.builder()
                     .searchGuid(entity.getEntryGuidParent().toString())
                     .includeVersions(false)
                     .includeArchived(true)
@@ -133,7 +134,7 @@ public abstract class AbstractService<E extends INoteEntity<E>> implements IComm
             throwRestError(NotesAPIError.ERROR_MISSING_ENTRY_GUID);
         }
 
-        List<E> searchResult = (List<E>) iNotesProcessor.fetchAndProcessEsResults(SearchByEntryGuid.builder()
+        List<E> searchResult = (List<E>) iNotesProcessor.getProcessed(SearchByEntryGuid.builder()
                 .searchGuid(entity.getEntryGuid().toString())
                 .includeVersions(false)
                 .includeArchived(true)
@@ -185,7 +186,7 @@ public abstract class AbstractService<E extends INoteEntity<E>> implements IComm
     @Override
     public List<E> delete(IQuery query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
-        List<SearchHit<E>> searchHitList = getAllEntries(query);
+        List<E> searchHitList = getAllEntries(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = (List<E>) iNotesProcessor.process(query, searchHitList.stream().iterator());
         try {
@@ -216,21 +217,21 @@ public abstract class AbstractService<E extends INoteEntity<E>> implements IComm
 
     public List<E> search(IQuery query) {
         log.debug("{}", LogUtil.method());
-        return iNotesProcessor.fetchAndProcessEsResults(query);
+        return iNotesProcessor.getProcessed(query);
     }
 
-    protected List<SearchHit<E>> getAllEntries(IQuery query) {
+    protected List<E> getAllEntries(IQuery query) {
         log.debug("{}", LogUtil.method());
         long startTime = System.currentTimeMillis();
         boolean timeout = false;
-        List<SearchHit<E>> searchHitList = new ArrayList<>();
-        SearchHits<E> searchHits = (SearchHits<E>) iNotesProcessor.getEsResults(query);
-        searchHitList.addAll(searchHits.getSearchHits());
-        while (searchHits != null && !searchHits.isEmpty() && !timeout && searchHits.getSearchHits().size() == default_number_of_entries) {
-            searchHitList.addAll(searchHits.getSearchHits());
-            List<Object> sortValues = searchHits.getSearchHits().get(searchHits.getSearchHits().size() - 1).getSortValues();
+        List<E> searchHitList = new ArrayList<>();
+        List<E> searchHits = iNotesProcessor.getUnprocessed(query);
+        searchHitList.addAll(searchHits);
+        while (searchHits != null && !searchHits.isEmpty() && !timeout && searchHits.size() == default_number_of_entries) {
+            searchHitList.addAll(searchHits);
+            List<Object> sortValues = List.of(searchHits.get(searchHits.size() - 1).getCreated()); // TODO make sort value created dynamic
             query.searchAfter(sortValues.size() > 0 ? sortValues.get(0) : null);
-            searchHits = (SearchHits<E>) iNotesProcessor.getEsResults(query);
+            searchHits = iNotesProcessor.getUnprocessed(query);
             timeout = (System.currentTimeMillis() - startTime) >= NotesConstants.TIMEOUT_DELETE;
         }
         if (timeout) {

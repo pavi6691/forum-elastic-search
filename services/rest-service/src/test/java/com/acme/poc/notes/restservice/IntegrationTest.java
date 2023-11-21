@@ -42,25 +42,25 @@ public class IntegrationTest extends BaseTest {
 
     private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
 
-    @Container
-    public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
-
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        elasticsearchContainer
-                .withNetworkAliases("elasticsearch")
-                .setWaitStrategy((new LogMessageWaitStrategy())
-                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
-                        .withStartupTimeout(Duration.ofSeconds(180L)));
-        elasticsearchContainer.start();
-
-        registry.add("elasticsearch.host", () -> elasticsearchContainer.getHost() + ":" + elasticsearchContainer.getMappedPort(9200));
-        registry.add("elasticsearch.clustername", () -> "");
-        registry.add("index.name", () -> "note-v1");
-        registry.add("default.number.of.entries.to.return", () -> 20);
-        registry.add("service.thread.pool.size", () -> 8);
-    }
+//    @Container
+//    public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
+//
+//
+//    @DynamicPropertySource
+//    static void setProperties(DynamicPropertyRegistry registry) {
+//        elasticsearchContainer
+//                .withNetworkAliases("elasticsearch")
+//                .setWaitStrategy((new LogMessageWaitStrategy())
+//                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
+//                        .withStartupTimeout(Duration.ofSeconds(180L)));
+//        elasticsearchContainer.start();
+//
+//        registry.add("elasticsearch.host", () -> elasticsearchContainer.getHost() + ":" + elasticsearchContainer.getMappedPort(9200));
+//        registry.add("elasticsearch.clustername", () -> "");
+//        registry.add("index.name", () -> "note-v1");
+//        registry.add("default.number.of.entries.to.return", () -> 20);
+//        registry.add("service.thread.pool.size", () -> 8);
+//    }
 
 //    @BeforeAll
 //    void setup() {

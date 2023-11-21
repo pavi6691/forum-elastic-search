@@ -1,5 +1,5 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
@@ -16,7 +16,7 @@ import java.util.*;
  */
 @Slf4j
 @Service("NotesProcessor")
-public class NotesProcessor<E> extends AbstractNotesProcessor<E> {
+public class NotesProcessor<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> {
 
 
     /**
@@ -39,20 +39,19 @@ public class NotesProcessor<E> extends AbstractNotesProcessor<E> {
      * @return process results in tree format if {@link ResultFormat#TREE} else FLATTEN if {@link ResultFormat#FLATTEN}
      */
     @Override
-    public List<NotesData> process(IQuery query, Iterator<SearchHit<E>> esResults) {
+    public List<E> process(IQuery query, Iterator<E> esResults) {
         log.debug("Processing request = {}", query.getClass().getSimpleName());
-        Map<UUID, NotesData> threadMapping = new HashMap<>();
-        List<NotesData> results = new LinkedList<>();
+        Map<UUID, E> threadMapping = new HashMap<>();
+        List<E> results = new LinkedList<>();
         Set<UUID> entriesAddedToResults = new HashSet<>();
         if (esResults != null) {
             while (esResults.hasNext()) {
-                NotesData entry = (NotesData) esResults.next().getContent();
+                E entry = esResults.next();
                 if (filterArchived(query, entry, results)) {
                     continue;
                 }
                 if (threadMapping.containsKey(entry.getEntryGuid())) {
-                    NotesData thread = threadMapping.get(entry.getEntryGuid());
-                    updateVersions(thread, entry, query,results);
+                    updateVersions(threadMapping.get(entry.getEntryGuid()), entry, query,results);
                 } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
                     if(query.getResultFormat() == ResultFormat.TREE) {
                         addChild(threadMapping.get(entry.getEntryGuidParent()), entry, query);
