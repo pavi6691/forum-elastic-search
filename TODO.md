@@ -13,6 +13,27 @@
 
 ## Current phase
 - [ ] Make IntegrationTest work again.
+- [ ] Update NoteEntry/PGNoteEntity/NotesData models. New properties have a comment behind them: 
+
+
+    UUID guid,
+    String externalDataSource,      // This is just a name identifying where the note belongs to. It could be fx "Forum A", "Service B" etc. No logic behind it. Just persist the value.
+    UUID externalGuid,
+    UUID externalItemGuid,          // An externalItemGuid. Not used right now. Just persist the value.
+    UUID threadGuid,
+    UUID entryGuid,
+    UUID entryGuidParent,
+    String userId,                  // Who created the note. Not used right now. Just persist the value.
+    NoteType type,
+    String content,
+    Object customJson,
+    Date createdInitially,          // Initial entry will set this to NOW. Whenever a new version of an entry is created this value should be the same on the new note.
+    Date created,
+    Date archived,
+    Boolean isDirty,                // This one should only be in PGNoteEntity. Initially set to true. When data is persisted to both PostgreSQL and Elasticsearch it should be set to false.
+    List<NoteEntry> threads,
+    List<NoteEntry> history
+
 - [ ] Keep existing controller for adding/searching/... directly to Elasticsearch, but add new controller
       that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
       (not for querying/searching). Whenever this has saved to PostgreSQL (also setting an `isDirty` field
