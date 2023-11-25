@@ -1,0 +1,197 @@
+package com.acme.poc.notes.restservice.service.generics.abstracts;
+import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.core.enums.NotesAPIError;
+import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.restservice.service.generics.interfaces.INotesCrudOperations;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.util.ESUtil;
+import com.acme.poc.notes.restservice.util.LogUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Service;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
+@Slf4j
+@Service
+public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> 
+        implements INotesCrudOperations<E> {
+
+    @Value("${default.number.of.entries.to.return}")
+    private int default_number_of_entries;
+    
+    protected CrudRepository crudRepository;
+
+    public AbstractNotesCrudOperations(CrudRepository crudRepository) {
+        this.crudRepository = crudRepository;
+    }
+
+    /**
+     * Search entry by guid
+     *
+     * @param guid
+     * @return Entry from Elasticsearch for given guid
+     */
+    @Override
+    public E getByGuid(UUID guid) {
+        log.debug("{} guid: {}", LogUtil.method(), guid.toString());
+        return (E) crudRepository.findById(guid).orElse(null);
+    }
+    
+    @Override
+    public List<E> search(IQuery query) {
+        log.debug("{}", LogUtil.method());
+        return getProcessed(query);
+    }
+
+    /**
+     * Deletes entries by either externalGuid/entryGuid
+     *
+     * @param query search entries for given externalGuid/entryGuid
+     * @return deleted entries
+     */
+    @Override
+    public List<E> delete(IQuery query) {
+        log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
+        List<E> searchHitList = getAllEntries(query);
+        query.setResultFormat(ResultFormat.FLATTEN);
+        List<E> processed = process(query, searchHitList.stream().iterator());
+        try {
+            crudRepository.deleteAll(processed);
+        } catch (Exception e) {
+            log.error("Error while deleting entries for request: {} -- " + query.getClass().getSimpleName(), e.getMessage());
+            throwRestError(NotesAPIError.ERROR_SERVER);
+        }
+        log.debug("Successfully deleted all {} entries", processed.size());
+        return processed;
+    }
+
+    @Override
+    public E delete(UUID keyGuid) {
+        log.debug("{} keyGuid: {}", LogUtil.method(), keyGuid);
+        E entity = (E) crudRepository.findById(keyGuid).orElse(null);
+        if (entity != null) {
+            crudRepository.deleteById(keyGuid);
+            if (!crudRepository.findById(keyGuid).isPresent()) {
+                log.debug("Successfully deleted an entry with guid: {}", entity.getGuid());
+                return entity;
+            }
+        }
+        log.error("Cannot delete. No entry found for given guid: {}", keyGuid);
+        throwRestError(NotesAPIError.ERROR_NOT_FOUND);
+        return null;
+    }
+
+    @Override
+    public List<E> getAllEntries(IQuery query) {
+        log.debug("{}", LogUtil.method());
+        long startTime = System.currentTimeMillis();
+        boolean timeout = false;
+        List<E> searchHitList = new ArrayList<>();
+        List<E> searchHits = getUnprocessed(query);
+        searchHitList.addAll(searchHits);
+        while (searchHits != null && !searchHits.isEmpty() && !timeout && searchHits.size() == default_number_of_entries) {
+            searchHitList.addAll(searchHits);
+            List<Object> sortValues = List.of(searchHits.get(searchHits.size() - 1).getCreated()); // TODO make sort value created dynamic
+            query.searchAfter(sortValues.size() > 0 ? sortValues.get(0) : null);
+            searchHits = getUnprocessed(query);
+            timeout = (System.currentTimeMillis() - startTime) >= NotesConstants.TIMEOUT_DELETE;
+        }
+        if (timeout) {
+            long timeTaken = (System.currentTimeMillis() - startTime);
+            log.error("Delete entries operation timed out, time taken: {} ms", timeTaken);
+            throwRestError(NotesAPIError.ERROR_TIMEOUT_DELETE, timeTaken);
+        }
+        if (searchHitList == null || searchHitList.isEmpty()) {
+            log.error("No entries found for request: {}", query.getClass().getSimpleName());
+            throwRestError(NotesAPIError.ERROR_NOT_FOUND);
+        }
+        log.debug("Number of entries found: {}",searchHitList.size());
+        return searchHitList;
+    }
+
+    /**
+     * Update entry by guid. if guid is not provided
+     * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
+     * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
+     *
+     * @param entity
+     * @return updated entry
+     */
+    @Override
+    public E updateByGuid(E entity) {
+        log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), entity.getExternalGuid(), entity.getEntryGuid());
+        if (entity.getGuid() == null) {
+            throwRestError(NotesAPIError.ERROR_MISSING_GUID);
+        }
+
+        E existingEntry = getByGuid(entity.getGuid());
+        if (existingEntry == null) {
+            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, entity.getGuid());
+        }
+
+        return update(existingEntry, entity);
+    }
+
+    /**
+     * Update entry by entryGuid. if guid is not provided 
+     * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
+     * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
+     *
+     * @param entity
+     * @return updated entry
+     */
+    @Override
+    public E updateByEntryGuid(E entity) {
+        log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), entity.getExternalGuid(), entity.getEntryGuid());
+        if (entity.getEntryGuid() == null) {
+            throwRestError(NotesAPIError.ERROR_MISSING_ENTRY_GUID);
+        }
+
+        List<E> searchResult = getProcessed(SearchByEntryGuid.builder()
+                .searchGuid(entity.getEntryGuid().toString())
+                .includeVersions(false)
+                .includeArchived(true)
+                .build());
+        if (searchResult == null || searchResult.isEmpty()) {
+            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, entity.getEntryGuid());
+        }
+        E existingEntry = searchResult.get(0);
+        return update(existingEntry, entity);
+    }
+
+    private E update(E existingEntity, E updatedEntity) {
+        log.debug("{}", LogUtil.method());
+        if (updatedEntity.getCreated() == null) {
+            throwRestError(NotesAPIError.ERROR_MISSING_CREATED);
+        }
+        if (!updatedEntity.getCreated().equals(existingEntity.getCreated())) {
+            throwRestError(NotesAPIError.ERROR_ENTRY_HAS_BEEN_MODIFIED, existingEntity.getCreated());  // TODO Make sure we format all timestamps in {@link NotesConstants.TIMESTAMP_ISO8601} format (not here, but in throwRestError method)
+        }
+        if (existingEntity.getArchived() != null) {
+            throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_NO_UPDATE);
+        }
+
+        ESUtil.clearHistoryAndThreads(existingEntity);
+        existingEntity.setGuid(UUID.randomUUID());
+        existingEntity.setCreated(ESUtil.getCurrentDate());
+        existingEntity.setContent(updatedEntity.getContent());
+        E updated =null;
+        try {
+            updated = (E) crudRepository.save(existingEntity);
+            if (updated == null) {
+                log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),"ES returned null value"));
+                throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),"ES returned null value");
+            }
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),e.getMessage());
+        }
+        log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", updatedEntity.getExternalGuid(), updatedEntity.getEntryGuid(), existingEntity.getContent(), updatedEntity.getContent());
+        return updated;
+    }
+}

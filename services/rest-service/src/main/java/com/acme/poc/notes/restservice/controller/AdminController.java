@@ -3,7 +3,7 @@ package com.acme.poc.notes.restservice.controller;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByExternalGuid;
-import com.acme.poc.notes.restservice.service.INotesAdminService;
+import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
