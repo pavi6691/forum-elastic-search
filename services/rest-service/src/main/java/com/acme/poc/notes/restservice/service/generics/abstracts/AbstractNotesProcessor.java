@@ -1,31 +1,18 @@
-package com.acme.poc.notes.restservice.persistence.elasticsearch.generics;
-import com.acme.poc.notes.core.NotesConstants;
+package com.acme.poc.notes.restservice.service.generics.abstracts;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByThreadGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
@@ -35,13 +22,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
  */
 @Slf4j
 @Service
-public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implements INotesProcessor<E> {
-    
-    @Value("${default.number.of.entries.to.return}")
-    private int default_size_configured;
-    @Autowired
-    private ElasticsearchOperations elasticsearchOperations;
-    
+public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     
     /**
      * 1. Gets all entries along with threads and histories for externalGuid and content field
@@ -53,8 +34,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implement
      * - filter only history
      * - filter both archived and histories
      */
-    @Override
-    public List<E> getProcessed(IQuery query) {
+    protected List<E> getProcessed(IQuery query) {
         log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
         List<E> searchHits = getUnprocessed(query);
         if (searchHits != null && searchHits.size() > 0) {
@@ -76,8 +56,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implement
      * @param query
      * @return
      */
-    @Override
-    public List<E> getUnprocessed(IQuery query) {
+    protected List<E> getUnprocessed(IQuery query) {
         List<E> searchHits = null;
         try {
             searchHits = execSearchQuery(query);
@@ -114,27 +93,78 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implement
      * @param query 
      * @return search result from elastics search response
      */
-    protected List<E> execSearchQuery(IQuery query) {
-        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
-                .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
-        if (query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);  // TODO Move to be static in NotesConstants
-            String searchAfter = query.searchAfter().toString();
-            try {
-                if (getTimeUnit(Long.valueOf(searchAfter))) {
-                    searchQueryBuilder.withSearchAfter(List.of(searchAfter));
-                } else {
-                    searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(searchAfter).toInstant().toEpochMilli()));
+    protected abstract List<E> execSearchQuery(IQuery query);
+
+    /**
+     * Out of all multiple entries and their threads and histories, figures out and process -
+     * 1. Individual entry - which has no parent
+     * 2. Threads - which has parent
+     * 3. Histories - which has already an older entry, replace it with new and add the current one to histories
+     * 4. For request by entryGuid, query gets all entries that are created after the requested one. so result set from elasticsearch may contain 
+     *    other entries that not belongs to requested entry thread. as they may have been created/updated for others but after this entry is created. 
+     *    So further filter is done as below -
+     *      - For entry request, exclude all other entries that doesn't belongs to the request one. only one record stored in results list
+     *        and threadMapping is done only for this record
+     *      - For selection of multi entries within requested entry due to some criteria(Ex - only archived entries), 
+     *        then map(archived - for archived filter) that will have only archived entries. 
+     *        these entries are presented within the requested entry thread.
+     *
+     * <p>This method takes O(n) linear time</p>
+     *
+     * @param query
+     * @return process results in tree format if {@link ResultFormat#TREE} else FLATTEN if {@link ResultFormat#FLATTEN}
+     */
+    protected List<E> process(IQuery query, Iterator<E> esResults) {
+        log.debug("Processing request = {}", query.getClass().getSimpleName());
+        Map<UUID, E> threadMapping = new HashMap<>();
+        List<E> results = new LinkedList<>();
+        Set<UUID> entriesAddedToResults = new HashSet<>();
+        if (esResults != null) {
+            while (esResults.hasNext()) {
+                E entry = esResults.next();
+                if (filterArchived(query, entry, results)) {
+                    continue;
                 }
-            } catch (ParseException e) {
-                throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, String.format(searchAfter,NotesConstants.TIMESTAMP_ISO8601,searchAfter));
+                if (threadMapping.containsKey(entry.getEntryGuid())) {
+                    updateVersions(threadMapping.get(entry.getEntryGuid()), entry, query,results);
+                } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
+                    if(query.getResultFormat() == ResultFormat.TREE) {
+                        addChild(threadMapping.get(entry.getEntryGuidParent()), entry, query);
+                    } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
+                        if(entriesAddedToResults.contains(entry.getEntryGuidParent())) {
+                            entriesAddedToResults.add(entry.getEntryGuid());
+                            results.add(entry);
+                        }
+                    }
+                }
+                if (!threadMapping.containsKey(entry.getEntryGuid())) {
+                    if (!threadMapping.containsKey(entry.getEntryGuidParent())) {
+                        // New thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
+                        if ((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty()) ||
+                                query.searchAfter() != null) {
+                            threadMapping.put(entry.getEntryGuid(), entry);
+                            if (!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null &&
+                                    !entriesAddedToResults.contains(entry.getEntryGuidParent()))) {
+                                addNewThread(results, entry, query);
+                                entriesAddedToResults.add(entry.getEntryGuid());
+                            }
+                        }
+                    }
+                    // This is the specific use case to find archived entries by entryGuid
+                    if (!(query instanceof SearchArchivedByEntryGuid)) {
+                        threadMapping.put(entry.getEntryGuid(), entry);
+                    } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
+                        threadMapping.put(entry.getEntryGuid(), entry);
+                        if (entry.getArchived() != null && !entriesAddedToResults.contains(entry.getEntryGuidParent()) &&
+                                threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
+                            addNewThread(results, entry, query);
+                            entriesAddedToResults.add(entry.getEntryGuid());
+                        }
+                    }
+                }
             }
         }
-        NativeSearchQuery searchQuery  = searchQueryBuilder.build();
-        searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
-        return (List<E>) elasticsearchOperations.search(searchQuery, NotesData.class).stream()
-                .map(sh -> sh.getContent()).collect(Collectors.toList());
+        return results;
     }
 
     /**
@@ -166,7 +196,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implement
                         existingEntry.addHistory(history, 0);
                     }
                 } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
-                    results.add((E) history);
+                    results.add(history);
                 }
             }
             existingEntry.setGuid(updatedEntry.getGuid());
@@ -222,7 +252,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> implement
                 (query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null && !results.isEmpty());
     }
 
-    private static boolean getTimeUnit(long timeValue) {
+    protected static boolean getTimeUnit(long timeValue) {
         long millisInUnit = TimeUnit.MILLISECONDS.toMillis(1);
         if (timeValue % millisInUnit == 0) {
             return true;

@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.queries;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.AbstractNotesProcessor;
+import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;

@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.generics.AbstractNotesProcessor;
+import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import lombok.*;
