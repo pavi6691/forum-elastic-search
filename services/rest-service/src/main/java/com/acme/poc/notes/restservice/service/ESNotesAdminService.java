@@ -1,8 +1,9 @@
 package com.acme.poc.notes.restservice.service;
-import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesAdminService;
+
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
+import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesAdminService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +12,11 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.List;
+
+
 @Slf4j
 @Service
 public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
@@ -22,13 +26,14 @@ public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
 
     ElasticsearchOperations elasticsearchOperations;
     ESNotesClientService esNotesClientService;
-    
-    public ESNotesAdminService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations,
-                               ESNotesClientService esNotesClientService) {
+
+
+    public ESNotesAdminService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations, ESNotesClientService esNotesClientService) {
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
         this.esNotesClientService = esNotesClientService;
     }
+
 
     /**
      * Executes IQuery
@@ -69,4 +74,5 @@ public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
             throw new RuntimeException(e);
         }
     }
+
 }

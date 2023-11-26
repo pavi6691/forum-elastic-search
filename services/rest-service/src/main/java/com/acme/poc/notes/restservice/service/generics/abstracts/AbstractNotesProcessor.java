@@ -1,4 +1,5 @@
 package com.acme.poc.notes.restservice.service.generics.abstracts;
+
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
@@ -11,6 +12,7 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +25,8 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Slf4j
 @Service
 public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
-    
+
+
     /**
      * 1. Gets all entries along with threads and histories for externalGuid and content field
      * 2. Process response and build threads and histories

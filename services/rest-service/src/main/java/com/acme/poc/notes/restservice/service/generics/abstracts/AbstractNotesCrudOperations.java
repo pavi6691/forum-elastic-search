@@ -1,34 +1,40 @@
 package com.acme.poc.notes.restservice.service.generics.abstracts;
+
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesCrudOperations;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.interfaces.INotesCrudOperations;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
+
+
 @Slf4j
 @Service
-public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> 
-        implements INotesCrudOperations<E> {
+public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesCrudOperations<E> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_number_of_entries;
     
     protected CrudRepository crudRepository;
 
+
     public AbstractNotesCrudOperations(CrudRepository crudRepository) {
         this.crudRepository = crudRepository;
     }
+
 
     /**
      * Search entry by guid
@@ -194,4 +200,5 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", updatedEntity.getExternalGuid(), updatedEntity.getEntryGuid(), existingEntity.getContent(), updatedEntity.getContent());
         return updated;
     }
+
 }

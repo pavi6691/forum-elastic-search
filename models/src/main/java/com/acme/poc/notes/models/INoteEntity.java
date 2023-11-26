@@ -1,7 +1,10 @@
 package com.acme.poc.notes.models;
 
 import java.util.*;
+
+
 public interface INoteEntity<E> {
+
     UUID getGuid();
     void setGuid(UUID guid);
     UUID getExternalGuid();
@@ -27,4 +30,5 @@ public interface INoteEntity<E> {
     default void addThreads(INoteEntity threads, int index) {}
     default void addHistory(INoteEntity history, int index) {}
     E getInstance();
+
 }

@@ -14,14 +14,16 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+
 @Slf4j
 @Service
-public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E>  
-        implements INotesAdminService<E> {
+public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E> implements INotesAdminService<E> {
+
 
     public AbstractNotesAdminService(CrudRepository crudRepository) {
         super(crudRepository);
     }
+
 
     @Override
     public List<E> getAll(String indexName) {
@@ -77,4 +79,5 @@ public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extend
         log.debug("{} guid: {}", LogUtil.method(), guid.toString());
         return delete(guid);
     }
+
 }

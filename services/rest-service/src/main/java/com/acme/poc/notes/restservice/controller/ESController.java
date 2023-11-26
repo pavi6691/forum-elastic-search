@@ -25,6 +25,7 @@ public class ESController {
 
     ESNotesClientService notesService;
 
+
     public ESController(ESNotesClientService notesService) {
         this.notesService = notesService;
     }

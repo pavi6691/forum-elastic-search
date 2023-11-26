@@ -16,12 +16,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_ADMIN + NotesConstants.API_ENDPOINT_ADMIN_ES)
 public class ESAdminController {
+
     ESNotesAdminService notesAdminService;
-    
+
+
     public ESAdminController(ESNotesAdminService notesAdminService) {
         this.notesAdminService = notesAdminService;
     }
-    
+
+
     @Operation(summary = "Create initial index", description = "Create the initial index in Elasticsearch for Notes support", tags = { NotesConstants.OPENAPI_ELASTICSEARCH_ADMIN_TAG })
     @PostMapping(NotesConstants.API_ENDPOINT_ADMIN_ES_INDEX_CREATE)
     public ResponseEntity<String> createIndex(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {

@@ -30,7 +30,7 @@ public class BaseTest {
     @Autowired
     protected PSQLNotesClientService psqlNotesService;
     @Autowired
-    protected INotesAdminService notesAdminService;
+    protected INotesAdminService notesAdminService;     // TODO Fix "Could not autowire"
     @Autowired
     protected ESNotesRepository repository;
 

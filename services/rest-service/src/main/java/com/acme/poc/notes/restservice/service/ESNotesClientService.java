@@ -1,4 +1,5 @@
 package com.acme.poc.notes.restservice.service;
+
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
@@ -31,14 +32,18 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Slf4j
 @Service
 public class ESNotesClientService extends AbstractNotesClientService<NotesData> {
+
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
 
     ElasticsearchOperations elasticsearchOperations;
+
+
     public ESNotesClientService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations) {
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
     }
+
 
     /**
      * Executes IQuery
@@ -51,7 +56,7 @@ public class ESNotesClientService extends AbstractNotesClientService<NotesData> 
                 .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
                 .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
         if (query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);  // TODO Move to be static in NotesConstants
+            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
             String searchAfter = query.searchAfter().toString();
             try {
                 if (getTimeUnit(Long.valueOf(searchAfter))) {
@@ -68,4 +73,5 @@ public class ESNotesClientService extends AbstractNotesClientService<NotesData> 
         return elasticsearchOperations.search(searchQuery, NotesData.class).stream()
                 .map(sh -> sh.getContent()).collect(Collectors.toList());
     }
+
 }

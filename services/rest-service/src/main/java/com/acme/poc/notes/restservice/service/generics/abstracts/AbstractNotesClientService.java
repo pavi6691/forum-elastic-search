@@ -1,27 +1,38 @@
 package com.acme.poc.notes.restservice.service.generics.abstracts;
+
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesClientService;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.*;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByContent;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.interfaces.INotesClientService;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
-import java.util.*;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
+
 
 @Slf4j
 @Service
-public abstract class AbstractNotesClientService<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E> 
-        implements INotesClientService<E> {
-    
+public abstract class AbstractNotesClientService<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E> implements INotesClientService<E> {
+
+
     public AbstractNotesClientService(CrudRepository crudRepository) {
         super(crudRepository);
     }
+
 
     /**
      * Create new entry or a thread if entryGuidParent is provided
@@ -174,4 +185,5 @@ public abstract class AbstractNotesClientService<E extends INoteEntity<E>> exten
         }
         log.debug("Number of entries archived: {}", entriesToArchive.size());
     }
+
 }
