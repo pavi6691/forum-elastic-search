@@ -13,9 +13,11 @@ public interface DTOMapper {
     DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
 
 
+    // PostgreSQL
     PGNoteEntity toEntity(NoteEntry noteEntry);
     NoteEntry toDTO(PGNoteEntity pgNoteEntity);
 
+    // Elasticsearch
     NotesData toESEntity(NoteEntry noteEntry);
     NoteEntry toDTO(NotesData notesData);
 
