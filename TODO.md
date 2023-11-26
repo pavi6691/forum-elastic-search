@@ -12,6 +12,7 @@
 
 
 ## Current phase
+- [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
 - [ ] Make IntegrationTest work again.
 - [ ] Update NoteEntry/PGNoteEntity/NotesData models. New properties have a comment behind them: 
 
