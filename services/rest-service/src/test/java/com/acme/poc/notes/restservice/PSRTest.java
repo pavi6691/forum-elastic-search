@@ -8,15 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -43,14 +40,24 @@ public class PSRTest extends BaseTest {
     static final UUID EXTERNAL_GUID = UUID.fromString("164c1633-44f0-4eee-8491-d5e6a5391300");
 
 
+    private static final String POSTGRESQL_IMAGE = "postgres:15.5-alpine";
     private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
 
+    @Container
+    public static final PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer(POSTGRESQL_IMAGE)
+            .withDatabaseName("acme")
+            .withUsername("postgresql-username")
+            .withPassword("postgresql-password");
     @Container
     public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
 
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
+        postgresqlContainer
+                .withNetworkAliases("postgresql");
+        postgresqlContainer.start();
+
         elasticsearchContainer
                 .withNetworkAliases("elasticsearch")
                 .setWaitStrategy((new LogMessageWaitStrategy())
@@ -58,6 +65,9 @@ public class PSRTest extends BaseTest {
                         .withStartupTimeout(Duration.ofSeconds(180L)));
         elasticsearchContainer.start();
 
+        registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", () -> "postgresql-username");
+        registry.add("spring.datasource.password", () -> "postgresql-password");
         registry.add("elasticsearch.host", () -> elasticsearchContainer.getHost() + ":" + elasticsearchContainer.getMappedPort(9200));
         registry.add("elasticsearch.clustername", () -> "");
         registry.add("index.name", () -> "note-v1");

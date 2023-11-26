@@ -14,7 +14,8 @@
 ## Current phase
 - [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
 - [ ] Add more fields to NoteEntry. Should likewise be present in entities for PostgreSQL and Elasticsearch.
-- [ ] Make IntegrationTest work again.
+- [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
+- [X] Make IntegrationTest work again.
 - [ ] Update NoteEntry/PGNoteEntity/NotesData models. New properties have a comment behind them: 
 
 
