@@ -33,10 +33,20 @@ public class NotesData implements INoteEntity<NotesData> {
     @Id
     @Field(type = FieldType.Keyword, name = "guid")
     private UUID guid;
+
+    @Field(type = FieldType.Text, name = "externalDataSource")
+    @NotNull
+    private String externalDataSource;
     
     @Field(type = FieldType.Keyword, name = "externalGuid")
     @NotNull
     private UUID externalGuid;
+
+    @Field(type = FieldType.Keyword, name = "externalItemGuid")
+    @NotNull
+    private UUID externalItemGuid;
+    @Field(type = FieldType.Keyword, name = "externalItemId")
+    private String externalItemId;
 
     @Field(type = FieldType.Keyword, name = "threadGuid")
     private UUID threadGuid;
@@ -47,6 +57,9 @@ public class NotesData implements INoteEntity<NotesData> {
     @Field(type = FieldType.Keyword, name = "entryGuidParent")
     private UUID entryGuidParent;
 
+    @Field(type = FieldType.Keyword, name = "userId")
+    private String userId;
+
     @Field(type = FieldType.Keyword, name = "type")
     private NoteType type = NoteType.NOTE;
     
@@ -55,6 +68,11 @@ public class NotesData implements INoteEntity<NotesData> {
 
     @Field(type = FieldType.Object, name = "customJson")
     private Object customJson;
+
+    @Field(type = FieldType.Date, name = "createdInitially", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
+    @JsonSerialize(using = CustomDateSerializer.class)
+    @JsonDeserialize(using = CustomDateDeserializer.class)
+    private Date createdInitially;
 
     @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)

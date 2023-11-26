@@ -25,17 +25,24 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     @Id
     @Column(name = "guid", nullable = false)
     private UUID guid;
+    private String externalDataSource;
     private UUID externalGuid;
+    private UUID externalItemGuid;
+    private String externalItemId;
     private UUID threadGuid;
     private UUID entryGuid;
     private UUID entryGuidParent;
+    private String userId;
     private NoteType type;
     private String content;
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb")
     private Object customJson;
+    private Date createdInitially;
     private Date created;
     private Date archived;
+    private Boolean isDirty;
+
 
     @Override
     public PGNoteEntity getInstance() {

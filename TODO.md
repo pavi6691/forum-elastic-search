@@ -13,10 +13,55 @@
 
 ## Current phase
 - [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
-- [ ] Add more fields to NoteEntry. Should likewise be present in entities for PostgreSQL and Elasticsearch.
 - [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
+- [ ] Set `createdInitially` correct. Should be the same across all versions of same note entry.
+- [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
+      `ApiController`that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
+      (not for querying/searching). Whenever this has saved to PostgreSQL (also setting an `isDirty` field
+      (only in PostgreSQL, not in Elasticsearch)) it should return OK to client. However, it should (in a
+      thread or using events; whichever is best) also update Elasticsearch 'in the background'/asynchronously
+      in order to 'copy' the ACID data from PostgreSQL to Elasticsearch (for indexing/searching). If for
+      some reason the update to Elasticsearch fails, a batch job running every 5 second (or so) should look
+      for `isDirty:true` records in PostgreSQL (index for this?) and update Elasticsearch accordingly and
+      after that set the `isDirty:false` in PostgreSQL. The controller should also have endpoints for
+      searching but will not search in PostgreSQL but use the existing service for Elasticseach for that.
+- [ ] Merge current branch into master
+- [ ] Add JavaDoc description to methods where missing.
+- [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
+- [ ] Seems that note-v1_mapping.json is not used when creating the index? At least in Kibana index shows mapping as being different
+- [ ] An endpoint (API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID) for returning everything related to an externalGuid is missing
+- [ ] Use TestContainers for ElasticSearch in tests instead of relying on an existing Elasticsearch being available
+- [ ] NotesData uses Date's. Shouldn't it use ZonedDateTime or similar?
+- [ ] Add logs, handle exceptions and other validations if any
+- [ ] Record class
+
+
+## Under consideration
+
+- [ ] Open search API support, flag based to switch between rest high level client and open search?
+- [ ] Do need an entry that represent an item? Ex: if YouTube represents externalGuid, each video on it is an
+      item. for every video,we may find list of entries with threads.
+- Below two uses cases are covered with same fix
+  - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads. 
+  - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
+- [ ] Handling more than 1k thread entries? Wasn't this solved by V3?
+
+## Later phase(s)
+
+- [ ] Restrict size of content?
+- [ ] Actuator health and info endpoints
+- [ ] SpringDoc open search
+- [ ] Delete only histories?
+- [ ] POC on Logging and tracing
+- [ ] Authentication and authorization
+- [ ] Scalability - Istio API gateway?
+
+
+## Fixed
+
+- [X] Add more fields to NoteEntry. Should likewise be present in entities for PostgreSQL and Elasticsearch.
 - [X] Make IntegrationTest work again.
-- [ ] Update NoteEntry/PGNoteEntity/NotesData models. New properties have a comment behind them: 
+- [X] Update NoteEntry/PGNoteEntity/NotesData models. New properties have a comment behind them:
 
 
     UUID guid,
@@ -37,21 +82,8 @@
     List<NoteEntry> threads,
     List<NoteEntry> history
 
-- [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
-      `ApiController`that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
-      (not for querying/searching). Whenever this has saved to PostgreSQL (also setting an `isDirty` field
-      (only in PostgreSQL, not in Elasticsearch)) it should return OK to client. However, it should (in a
-      thread or using events; whichever is best) also update Elasticsearch 'in the background'/asynchronously
-      in order to 'copy' the ACID data from PostgreSQL to Elasticsearch (for indexing/searching). If for
-      some reason the update to Elasticsearch fails, a batch job running every 5 second (or so) should look
-      for `isDirty:true` records in PostgreSQL (index for this?) and update Elasticsearch accordingly and
-      after that set the `isDirty:false` in PostgreSQL. The controller should also have endpoints for
-      searching but will not search in PostgreSQL but use the existing service for Elasticseach for that.
 - [X] Fix error in PSRTest.deleteEntries(). `Expected: 1, Actual: 11` - Its supposed to be 11. as the response earlier was in tree for delete, it was 1. for improved performance its flatten now.
 - [X] Fix errors related to Hibernate and 2003 errors introduced lately (`org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: Invocation of init method failed; nested exception is javax.persistence.PersistenceException: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.MappingException: No Dialect mapping for JDBC type: 2003`)
-- [ ] Merge current branch into master
-- [ ] Add JavaDoc description to methods where missing.
-- [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
 - [X] Fix support for storing `customJson` as part of an entry. Saving with this:
 
 
@@ -83,39 +115,8 @@ whereas it should simply be:
       "timestampEnd": 2
     }
 
-- [ ] Seems that note-v1_mapping.json is not used when creating the index? At least in Kibana index shows mapping as being different
 - [X] Implement AdminResource (currently commented out code)
-- [ ] An endpoint (API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID) for returning everything related to an externalGuid is missing
-- [ ] Use TestContainers for ElasticSearch in tests instead of relying on an existing Elasticsearch being available
-- [ ] NotesData uses Date's. Shouldn't it use ZonedDateTime or similar?
-- [ ] Add logs, handle exceptions and other validations if any
-- [ ] Record class
-
-
-## Under consideration
-
-- [ ] Open search API support, flag based to switch between rest high level client and open search?
-- [ ] Do need an entry that represent an item? Ex: if YouTube represents externalGuid, each video on it is an
-      item. for every video,we may find list of entries with threads.
-- Below two uses cases are covered with same fix
-  - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads. 
-  - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
-- [ ] Handling more than 1k thread entries? Wasn't this solved by V3?
-
-## Later phase(s)
-
-- [ ] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
-- [ ] Restrict size of content?
-- [ ] Actuator health and info endpoints
-- [ ] SpringDoc open search
-- [ ] Delete only histories?
-- [ ] POC on Logging and tracing
-- [ ] Authentication and authorization
-- [ ] Scalability - lstio API gateway?
-
-
-## Fixed
-
+- [X] Do we need `NotesProcessorV1` and `NotesProcessorV2`? If not they should be removed. - not required, but I think let's remove them once testing is done
 - [x] Refactor package for Elasticsearch stuff from `com.acme.poc.notes.elasticsearch` to `com.acme.poc.notes.persistence.elasticsearch`
 - [x] Refactor package for REST service from `com.acme.poc.note.*` to `com.acme.poc.note.restservice.*`
 - [x] [Proposal for changing guid names](documentation/NotesGuidOverview.drawio.png) (PNG with embedded Draw.io diagram)
