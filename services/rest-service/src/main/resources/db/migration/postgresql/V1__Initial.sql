@@ -1,6 +1,7 @@
 
 -- noinspection SqlNoDataSourceInspectionForFile
 CREATE TABLE IF NOT EXISTS Notes (
+
         guid                    UUID            NOT NULL PRIMARY KEY,
         externalDataSource      varchar(50)     NOT NULL,
         externalGuid            UUID            NOT NULL,
