@@ -10,6 +10,7 @@ import com.acme.poc.notes.restservice.service.generics.interfaces.INotesCrudOper
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,54 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         this.crudRepository = crudRepository;
     }
 
+
+    /**
+     * Create new entry or a thread if entryGuidParent is provided
+     *
+     * @param entity Data for creating a new note entry
+     * @return T that is created and stored in Elasticsearch
+     */
+    @Override
+    public E create(E entity) {
+        log.debug("{}", LogUtil.method());
+        if(ObjectUtils.isEmpty(entity.getGuid())) {
+            entity.setGuid(UUID.randomUUID());
+        }
+        if(ObjectUtils.isEmpty(entity.getEntryGuid())) {
+            entity.setEntryGuid(UUID.randomUUID());
+        }
+        if(ObjectUtils.isEmpty(entity.getThreadGuid())) {
+            entity.setThreadGuid(UUID.randomUUID());
+        }
+        if(ObjectUtils.isEmpty(entity.getCreated())) {
+            entity.setCreated(ESUtil.getCurrentDate());
+        }
+        
+        if (entity.getEntryGuidParent() != null) {  // It's a thread that needs to be created
+            List<E> existingEntry = getProcessed(SearchByEntryGuid.builder()
+                    .searchGuid(entity.getEntryGuidParent().toString())
+                    .includeVersions(false)
+                    .includeArchived(true)
+                    .build());
+            if (existingEntry == null || existingEntry.isEmpty()) {
+                throwRestError(NotesAPIError.ERROR_NEW_RESPONSE_NO_THREAD_GUID, entity.getEntryGuidParent());
+                return null;
+            }
+            E existingEntryFirst = existingEntry.get(0);
+            if (existingEntryFirst.getArchived() != null) {
+                throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD, existingEntryFirst.getExternalGuid(), existingEntryFirst.getEntryGuid());
+                return null;
+            }
+            entity.setThreadGuid(existingEntryFirst.getThreadGuid());
+            entity.setExternalGuid(existingEntryFirst.getExternalGuid());
+            log.debug("Creating a thread for externalGuid: {}, entryGuid: {}", entity.getExternalGuid().toString(), entity.getEntryGuid().toString());
+        } else {
+            log.debug("Creating a new entry for externalGuid: {}", entity.getExternalGuid());
+        }
+        E newEntry = update(entity);
+        log.debug("Successfully created a new entry entryGuid: {} ", newEntry.getEntryGuid());
+        return newEntry;
+    }
 
     /**
      * Search entry by guid
@@ -169,6 +218,22 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         E existingEntry = searchResult.get(0);
         return update(existingEntry, entity);
     }
+    
+    @Override
+    public E update(E entity) {
+        E newEntry = null;
+        try {
+            newEntry = (E) crudRepository.save(entity);
+            if (newEntry == null) {
+                log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"ES returned null value"));
+                throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),"ES returned null value");
+            }
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),e.getMessage());
+        }
+        return newEntry;
+    }
 
     private E update(E existingEntity, E updatedEntity) {
         log.debug("{}", LogUtil.method());
@@ -186,17 +251,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         existingEntity.setGuid(UUID.randomUUID());
         existingEntity.setCreated(ESUtil.getCurrentDate());
         existingEntity.setContent(updatedEntity.getContent());
-        E updated =null;
-        try {
-            updated = (E) crudRepository.save(existingEntity);
-            if (updated == null) {
-                log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),"ES returned null value"));
-                throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),"ES returned null value");
-            }
-        } catch (Exception e) {
-            log.error(String.format(NotesAPIError.ERROR_ON_ELASTICSEARCH.errorMessage(),LogUtil.method(),e.getMessage()),e);
-            throwRestError(NotesAPIError.ERROR_ON_ELASTICSEARCH,LogUtil.method(),e.getMessage());
-        }
+        E updated = update(existingEntity);
         log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", updatedEntity.getExternalGuid(), updatedEntity.getEntryGuid(), existingEntity.getContent(), updatedEntity.getContent());
         return updated;
     }

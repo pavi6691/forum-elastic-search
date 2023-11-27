@@ -21,4 +21,7 @@ public interface DTOMapper {
     NotesData toESEntity(NoteEntry noteEntry);
     NoteEntry toDTO(NotesData notesData);
 
+    // ES to PG, for search on elasticsearch for PGSQL crud operations
+    PGNoteEntity toPG(NotesData pgNoteEntity);
+
 }

@@ -40,8 +40,8 @@ public class NotesAPIErrorTest {
                      ERROR_ENTRY_HAS_BEEN_MODIFIED,
                      ERROR_TIMEOUT_DELETE,
                      ERROR_NOT_FOUND,
-                     ERROR_SERVER, 
-                     ERROR_ON_ELASTICSEARCH -> {
+                     ERROR_SERVER,
+                        ERROR_ON_DB_OPERATION -> {
                          String s = String.format("Checking: %s (%s, %s, \"%s\")", notesAPIError.name(), notesAPIError.httpStatusCode(), notesAPIError.errorCode(), notesAPIError.errorMessage());
                          System.out.println(s);
                          assertTrue(Arrays.stream(VALID_HTTP_STATUS_CODES).anyMatch(i -> i == notesAPIError.httpStatusCode()), () -> String.format("httpStatusCode: %s is not between valid values", notesAPIError.httpStatusCode()));

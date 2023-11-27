@@ -20,7 +20,4 @@ public interface INotesClientService<E> {
     List<E> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
     List<E> deleteArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery);
     List<E> deleteArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery);
-    // common operations
-    E create(E entity);
-
 }

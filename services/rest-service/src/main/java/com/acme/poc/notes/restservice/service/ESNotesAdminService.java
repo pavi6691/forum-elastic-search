@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -25,13 +26,10 @@ public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
     private int default_size_configured;
 
     ElasticsearchOperations elasticsearchOperations;
-    ESNotesClientService esNotesClientService;
 
-
-    public ESNotesAdminService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations, ESNotesClientService esNotesClientService) {
+    public ESNotesAdminService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations) {
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
-        this.esNotesClientService = esNotesClientService;
     }
 
 
@@ -41,8 +39,9 @@ public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
      * @return search result from elastics search response
      */
     @Override
-    protected List<NotesData> execSearchQuery(IQuery query) {
-        return esNotesClientService.execSearchQuery(query);
+    protected List<NotesData> searchQuery(IQuery query) {
+        return elasticsearchOperations.search(getEsQuery(query), NotesData.class).stream()
+                .map(sh -> sh.getContent()).collect(Collectors.toList());
     }
     
     /**

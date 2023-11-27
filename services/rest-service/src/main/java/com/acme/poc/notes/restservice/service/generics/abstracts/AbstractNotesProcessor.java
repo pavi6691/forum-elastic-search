@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice.service.generics.abstracts;
 
+import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
@@ -8,11 +9,19 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchBy
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByThreadGuid;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +35,8 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Service
 public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
 
+    @Value("${default.number.of.entries.to.return}")
+    private int default_size_configured;
 
     /**
      * 1. Gets all entries along with threads and histories for externalGuid and content field
@@ -62,7 +73,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     protected List<E> getUnprocessed(IQuery query) {
         List<E> searchHits = null;
         try {
-            searchHits = execSearchQuery(query);
+            searchHits = searchQuery(query);
             if (query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
                 // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
                 if (searchHits != null) {
@@ -79,7 +90,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                                     .searchGuid(rootEntry.getThreadGuid().toString())
                                     .createdDateTime(rootEntry.getCreated().getTime())
                                     .build();
-                            searchHits = execSearchQuery(entryQuery);
+                            searchHits = searchQuery(entryQuery);
                         }
                     }
                 }
@@ -90,13 +101,35 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
         }
         return searchHits;
     }
+    
+    protected NativeSearchQuery getEsQuery(IQuery query) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
+                .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
+                .withSort(Sort.by(Sort.Order.asc(EsNotesFields.CREATED.getEsFieldName())));
+        if (query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
+            String searchAfter = query.searchAfter().toString();
+            try {
+                if (getTimeUnit(Long.valueOf(searchAfter))) {
+                    searchQueryBuilder.withSearchAfter(List.of(searchAfter));
+                } else {
+                    searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(searchAfter).toInstant().toEpochMilli()));
+                }
+            } catch (ParseException e) {
+                throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, String.format(searchAfter,NotesConstants.TIMESTAMP_ISO8601,searchAfter));
+            }
+        }
+        NativeSearchQuery searchQuery  = searchQueryBuilder.build();
+        searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
+        return searchQuery;
+    }
 
     /**
      * Executes IQuery
      * @param query 
      * @return search result from elastics search response
      */
-    protected abstract List<E> execSearchQuery(IQuery query);
+    protected abstract List<E> searchQuery(IQuery query);
 
     /**
      * Out of all multiple entries and their threads and histories, figures out and process -

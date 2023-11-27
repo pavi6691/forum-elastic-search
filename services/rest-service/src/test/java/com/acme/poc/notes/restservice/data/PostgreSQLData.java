@@ -26,11 +26,9 @@ public class PostgreSQLData {
             .externalGuid(TEST_EXTERNAL_GUID)
             .threadGuid(TEST_THREAD_GUID)
             .entryGuid(TEST_ENTRY_GUID)
-            .entryGuidParent(TEST_ENTRY_GUID_PARENT)
             .type(TEST_TYPE)
             .content(TEST_CONTENT)
             .created(Date.from(TEST_ZDT_CREATED.toInstant()))
-            .archived(Date.from(TEST_ZDT_ARCHIVED.toInstant()))
             .build();
 
 }
