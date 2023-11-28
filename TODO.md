@@ -12,6 +12,7 @@
 
 
 ## Current phase
+- [ ] Create `ApiController` with all CRUD endpoints; some for PostgreSQL/Elasticsearch and some only for Elasticsearch.
 - [ ] Make Query requests generic for all databases. compose in search method
 - [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
 - [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
