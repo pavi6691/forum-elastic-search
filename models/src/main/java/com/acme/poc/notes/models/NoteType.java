@@ -1,5 +1,7 @@
 package com.acme.poc.notes.models;
 
+import lombok.Getter;
+
 import java.util.List;
 
 
@@ -12,6 +14,7 @@ import java.util.List;
  *     <li>which types of notes can be a direct child of the specific note type</li>
  * </ul>
  */
+@Getter
 public enum NoteType {
 
     NOTE   ("note"  , true , true ) { @Override boolean isNote()   { return true; }},
@@ -23,26 +26,17 @@ public enum NoteType {
         REMARK.allowedChildTypes = null;
     }
 
-
     private final String typeValue;
     private final boolean allowAsRoot;
     private List<NoteType> allowedChildTypes;
     private final boolean allowCustomJson;
-
-
+    
     NoteType(String typeValue, boolean allowAsRoot, boolean allowCustomJson) {
         this.typeValue = typeValue;
         this.allowAsRoot = allowAsRoot;
         this.allowCustomJson = allowCustomJson;
     }
-
-
     boolean isNote()   { return false; }
     boolean isRemark() { return false; }
-
-    String typeValue() { return typeValue; }
-    boolean allowAsRoot() { return allowAsRoot; }
-    List<NoteType> allowedChildTypes() { return allowedChildTypes; }
-    boolean allowCustomJson() { return allowCustomJson; }
 
 }

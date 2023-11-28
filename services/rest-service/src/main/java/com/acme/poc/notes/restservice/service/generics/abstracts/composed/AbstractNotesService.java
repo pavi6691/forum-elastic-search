@@ -16,13 +16,13 @@ import java.util.UUID;
  * @param <E>
  */
 public abstract class AbstractNotesService<E extends INoteEntity<E>> extends AbstractNotesClientService<E> implements INotesAdminService<E> {
-    private AbstractNotesAdminService<E> abstractNotesAdminService;
+    private INotesAdminService<E> adminService;
     
     protected abstract List<E> search(IQuery query);
     
     public AbstractNotesService(CrudRepository crudRepository) {
         super(crudRepository);
-        abstractNotesAdminService = new AbstractNotesAdminService<E>(crudRepository) {
+        adminService = new AbstractNotesAdminService<E>(crudRepository) {
             @Override
             protected List<E> search(IQuery query) {
                 return AbstractNotesService.this.search(query);
@@ -32,31 +32,31 @@ public abstract class AbstractNotesService<E extends INoteEntity<E>> extends Abs
     
     @Override
     public List<E> getAll(String indexName) {
-        return abstractNotesAdminService.getAll(indexName);
+        return adminService.getAll(indexName);
     }
 
     @Override
     public List<E> searchByExternalGuid(SearchByExternalGuid query) {
-        return abstractNotesAdminService.searchByExternalGuid(query);
+        return adminService.searchByExternalGuid(query);
     }
 
     @Override
     public List<E> deleteByExternalGuid(UUID externalGuid) {
-        return abstractNotesAdminService.deleteByExternalGuid(externalGuid);
+        return adminService.deleteByExternalGuid(externalGuid);
     }
 
     @Override
     public List<E> deleteByEntryGuid(UUID entryGuid) {
-        return abstractNotesAdminService.deleteByEntryGuid(entryGuid);
+        return adminService.deleteByEntryGuid(entryGuid);
     }
 
     @Override
     public List<E> deleteByThreadGuid(UUID threadGuid) {
-        return abstractNotesAdminService.deleteByThreadGuid(threadGuid);
+        return adminService.deleteByThreadGuid(threadGuid);
     }
 
     @Override
     public E deleteByGuid(UUID guid) {
-        return abstractNotesAdminService.deleteByGuid(guid);
+        return adminService.deleteByGuid(guid);
     }
 }

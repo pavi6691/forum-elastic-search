@@ -21,22 +21,22 @@ public class NoteTypeTest {
     void testAllEnums() {
         Arrays.stream(NoteType.values()).forEach(noteType -> {
             String s = String.format("Checking: %s", noteType.name());
-            assertEquals(noteType.name().toLowerCase(), noteType.typeValue());
+            assertEquals(noteType.name().toLowerCase(), noteType.getTypeValue());
             String result = switch (noteType) {
                 case NOTE -> {
                     assertTrue(noteType.isNote());
                     assertFalse(noteType.isRemark());
-                    assertTrue(noteType.allowAsRoot());
-                    assertTrue(noteType.allowCustomJson());
-                    assertEquals(NOTE.allowedChildTypes(), noteType.allowedChildTypes());
+                    assertTrue(noteType.isAllowAsRoot());
+                    assertTrue(noteType.isAllowCustomJson());
+                    assertEquals(NOTE.getAllowedChildTypes(), noteType.getAllowedChildTypes());
                     yield s;
                 }
                 case REMARK -> {
                     assertFalse(noteType.isNote());
                     assertTrue(noteType.isRemark());
-                    assertFalse(noteType.allowAsRoot());
-                    assertFalse(noteType.allowCustomJson());
-                    assertEquals(REMARK.allowedChildTypes(), noteType.allowedChildTypes());
+                    assertFalse(noteType.isAllowAsRoot());
+                    assertFalse(noteType.isAllowCustomJson());
+                    assertEquals(REMARK.getAllowedChildTypes(), noteType.getAllowedChildTypes());
                     yield s;
                 }
             };
