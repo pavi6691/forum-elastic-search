@@ -15,4 +15,5 @@ public interface INotesCrudOperations<E> {
     E delete(UUID keyGuid);
     List<E> getAll(IQuery query);
     E update(E entry);
+
 }

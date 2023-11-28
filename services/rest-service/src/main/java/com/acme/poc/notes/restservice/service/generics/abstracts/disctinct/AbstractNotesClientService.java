@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
+
 /**
  * This allows operations that a clients can perform
  * @param <E>
@@ -30,11 +31,13 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Slf4j
 @Service
 public abstract class AbstractNotesClientService<E extends INoteEntity<E>> extends AbstractNotesCrudService<E> implements INotesClientService<E> {
-    
+
+
     public AbstractNotesClientService(CrudRepository crudRepository) {
         super(crudRepository);
     }
-    
+
+
     /**
      * Archive by updating existing entry. updates archived field on elastic search with current date and time.
      *

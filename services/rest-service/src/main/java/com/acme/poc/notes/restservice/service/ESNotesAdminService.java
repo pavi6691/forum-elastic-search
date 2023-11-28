@@ -27,6 +27,7 @@ public class ESNotesAdminService extends AbstractNotesService<NotesData> {
     ElasticsearchOperations elasticsearchOperations;
     ESNotesClientService esNotesClientService;
 
+
     public ESNotesAdminService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations,
                                ESNotesClientService esNotesClientService) {
         super(esNotesRepository);
@@ -74,4 +75,5 @@ public class ESNotesAdminService extends AbstractNotesService<NotesData> {
             throw new RuntimeException(e);
         }
     }
+
 }

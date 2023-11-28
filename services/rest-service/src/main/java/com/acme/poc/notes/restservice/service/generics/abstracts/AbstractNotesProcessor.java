@@ -25,6 +25,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Service
 public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
 
+
     /**
      * 1. Gets all entries along with threads and histories for externalGuid and content field
      * 2. Process response and build threads and histories
@@ -129,10 +130,10 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                 if (threadMapping.containsKey(entry.getEntryGuid())) {
                     updateVersions(threadMapping.get(entry.getEntryGuid()), entry, query,results);
                 } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
-                    if(query.getResultFormat() == ResultFormat.TREE) {
+                    if (query.getResultFormat() == ResultFormat.TREE) {
                         addChild(threadMapping.get(entry.getEntryGuidParent()), entry, query);
-                    } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
-                        if(entriesAddedToResults.contains(entry.getEntryGuidParent())) {
+                    } else if (query.getResultFormat() == ResultFormat.FLATTEN) {
+                        if (entriesAddedToResults.contains(entry.getEntryGuidParent())) {
                             entriesAddedToResults.add(entry.getEntryGuid());
                             results.add(entry);
                         }
@@ -141,11 +142,9 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                 if (!threadMapping.containsKey(entry.getEntryGuid())) {
                     if (!threadMapping.containsKey(entry.getEntryGuidParent())) {
                         // New thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
-                        if ((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty()) ||
-                                query.searchAfter() != null) {
+                        if ((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty()) || query.searchAfter() != null) {
                             threadMapping.put(entry.getEntryGuid(), entry);
-                            if (!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null &&
-                                    !entriesAddedToResults.contains(entry.getEntryGuidParent()))) {
+                            if (!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && !entriesAddedToResults.contains(entry.getEntryGuidParent()))) {
                                 addNewThread(results, entry, query);
                                 entriesAddedToResults.add(entry.getEntryGuid());
                             }
@@ -156,8 +155,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                         threadMapping.put(entry.getEntryGuid(), entry);
                     } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
                         threadMapping.put(entry.getEntryGuid(), entry);
-                        if (entry.getArchived() != null && !entriesAddedToResults.contains(entry.getEntryGuidParent()) &&
-                                threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
+                        if (entry.getArchived() != null && !entriesAddedToResults.contains(entry.getEntryGuidParent()) && threadMapping.get(entry.getEntryGuidParent()).getArchived() == null) {
                             addNewThread(results, entry, query);
                             entriesAddedToResults.add(entry.getEntryGuid());
                         }
@@ -231,13 +229,13 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param query
      */
     protected void addNewThread(List<E> results,E newEntry, IQuery query) {
-        if(query.getResultFormat() == ResultFormat.TREE) {
+        if (query.getResultFormat() == ResultFormat.TREE) {
             if (query.getSortOrder() == SortOrder.ASC) {
                 results.add(newEntry);
             } else {
                 results.add(0, newEntry);
             }
-        } else if(query.getResultFormat() == ResultFormat.FLATTEN) {
+        } else if (query.getResultFormat() == ResultFormat.FLATTEN) {
             results.add(newEntry);
         }
     }

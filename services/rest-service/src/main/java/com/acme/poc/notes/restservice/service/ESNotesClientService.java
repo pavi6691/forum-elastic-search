@@ -35,6 +35,7 @@ public class ESNotesClientService extends AbstractNotesClientService<NotesData> 
     
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
+
     ElasticsearchOperations elasticsearchOperations;
 
 
@@ -42,6 +43,7 @@ public class ESNotesClientService extends AbstractNotesClientService<NotesData> 
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
     }
+
 
     /**
      * Executes IQuery

@@ -47,16 +47,16 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
     @Override
     public E create(E entity) {
         log.debug("{}", LogUtil.method());
-        if(ObjectUtils.isEmpty(entity.getGuid())) {
+        if (ObjectUtils.isEmpty(entity.getGuid())) {
             entity.setGuid(UUID.randomUUID());
         }
-        if(ObjectUtils.isEmpty(entity.getEntryGuid())) {
+        if (ObjectUtils.isEmpty(entity.getEntryGuid())) {
             entity.setEntryGuid(UUID.randomUUID());
         }
-        if(ObjectUtils.isEmpty(entity.getThreadGuid())) {
+        if (ObjectUtils.isEmpty(entity.getThreadGuid())) {
             entity.setThreadGuid(UUID.randomUUID());
         }
-        if(ObjectUtils.isEmpty(entity.getCreated())) {
+        if (ObjectUtils.isEmpty(entity.getCreated())) {
             entity.setCreated(ESUtil.getCurrentDate());
         }
         
@@ -97,8 +97,7 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
         log.debug("{} guid: {}", LogUtil.method(), guid.toString());
         return (E) crudRepository.findById(guid).orElse(null);
     }
-    
-    
+
     @Override
     public List<E> get(IQuery query) {
         log.debug("{}", LogUtil.method());
@@ -167,7 +166,7 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
             log.error("No entries found for request: {}", query.getClass().getSimpleName());
             throwRestError(NotesAPIError.ERROR_NOT_FOUND);
         }
-        log.debug("Number of entries found: {}",searchHitList.size());
+        log.debug("Number of entries found: {}", searchHitList.size());
         return searchHitList;
     }
 

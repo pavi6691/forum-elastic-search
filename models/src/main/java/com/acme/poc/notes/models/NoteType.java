@@ -26,16 +26,20 @@ public enum NoteType {
         REMARK.allowedChildTypes = null;
     }
 
+
     private final String typeValue;
     private final boolean allowAsRoot;
     private List<NoteType> allowedChildTypes;
     private final boolean allowCustomJson;
-    
+
+
     NoteType(String typeValue, boolean allowAsRoot, boolean allowCustomJson) {
         this.typeValue = typeValue;
         this.allowAsRoot = allowAsRoot;
         this.allowCustomJson = allowCustomJson;
     }
+
+
     boolean isNote()   { return false; }
     boolean isRemark() { return false; }
 

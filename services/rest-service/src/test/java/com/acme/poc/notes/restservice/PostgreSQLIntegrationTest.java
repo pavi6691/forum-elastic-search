@@ -2,12 +2,12 @@ package com.acme.poc.notes.restservice;
 
 import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
 import com.acme.poc.notes.restservice.service.ESNotesClientService;
 import com.acme.poc.notes.restservice.service.PSQLNotesClientService;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -21,6 +21,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
 import static com.acme.poc.notes.restservice.data.PostgreSQLData.*;
 import static org.junit.jupiter.api.Assertions.*;
 
