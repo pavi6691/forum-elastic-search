@@ -1,12 +1,12 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts;
+package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchAll;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByExternalGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByThreadGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchAll;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByThreadGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
@@ -14,10 +14,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-
+/**
+ * This allows operations that only admin can perform
+ * @param <E>
+ */
 @Slf4j
 @Service
-public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E> implements INotesAdminService<E> {
+public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extends AbstractNotesCrudService<E> implements INotesAdminService<E> {
 
 
     public AbstractNotesAdminService(CrudRepository crudRepository) {
@@ -38,7 +41,7 @@ public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extend
     @Override
     public List<E> searchByExternalGuid(SearchByExternalGuid query) {
         log.debug("{} externalGuid: {}", LogUtil.method(), query.getSearchGuid());
-        return search(query);
+        return get(query);
     }
 
     @Override

@@ -1,21 +1,21 @@
-package com.acme.poc.notes.restservice.persistence.elasticsearch.queries;
+package com.acme.poc.notes.restservice.service.generics.queries;
 
 import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesProcessor;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.AbstractQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.NotesFields;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Iterator;
 
 
 /**
- * Query to search archived entries by entryGuid.
+ * Query to search archived entries by External Guid.
  * Filter is done in {@link AbstractNotesProcessor#process(IQuery, Iterator)}
  * For any entryGuid (not archived), if their threads are archived, then return them too
  */
 @SuperBuilder
-public class SearchArchivedByEntryGuid extends AbstractQuery {
+public class SearchArchivedByExternalGuid extends AbstractQuery {
 
     private static final String QUERY = """
             {
@@ -26,18 +26,25 @@ public class SearchArchivedByEntryGuid extends AbstractQuery {
                                 "{FIELDNAME}": "%s"
                             }
                         }
+                    ],
+                    "filter": [
+                        {
+                            "exists": {
+                                "field": "archived"
+                            }
+                        }
                     ]
                 }
             }
             """
-            .replace("{FIELDNAME}", EsNotesFields.ENTRY.getEsFieldName());
+            .replace("{FIELDNAME}", NotesFields.EXTERNAL.getEsFieldName());
 
 
     @Override
     public boolean includeArchived() {
         return true;
     }
-
+    
     @Override
     public String buildQuery() {
         return String.format(QUERY, searchGuid);

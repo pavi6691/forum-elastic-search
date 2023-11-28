@@ -1,6 +1,6 @@
-package com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics;
+package com.acme.poc.notes.restservice.service.generics.queries.generics;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
 import org.elasticsearch.search.sort.SortOrder;
 
 

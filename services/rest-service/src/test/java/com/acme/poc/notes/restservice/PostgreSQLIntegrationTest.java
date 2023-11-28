@@ -2,9 +2,10 @@ package com.acme.poc.notes.restservice;
 
 import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByExternalGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
+import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
 import com.acme.poc.notes.restservice.service.ESNotesClientService;
 import com.acme.poc.notes.restservice.service.PSQLNotesClientService;
 import com.acme.poc.notes.restservice.util.DTOMapper;
@@ -13,10 +14,10 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -34,6 +35,9 @@ public class PostgreSQLIntegrationTest extends BaseTest {
 
     @Autowired
     private PSQLNotesClientService psqlNotesClientService;
+    
+    @Autowired
+    private PGNotesRepository pgNotesRepository;
 
     @Autowired
     private ESNotesClientService esNotesClientService;
@@ -67,12 +71,10 @@ public class PostgreSQLIntegrationTest extends BaseTest {
     void savingAllNulls() {
         PGNoteEntity entity = DTOMapper.INSTANCE.toEntity(TEST_NOTE_ALL_NULLS);
 
-        ResponseStatusException responseStatusException = assertThrows(ResponseStatusException.class, () -> {
-            psqlNotesClientService.update(entity);
-        });
+        JpaSystemException jpaSystemException = assertThrows(JpaSystemException.class, () -> pgNotesRepository.save(entity));
 
-        log.info("Exception: {}", responseStatusException.getMessage());
-        assertTrue(responseStatusException.getMessage().contains("ids for this class must be manually assigned before calling save()"));
+        log.info("Exception: {}", jpaSystemException.getMessage());
+        assertTrue(jpaSystemException.getMessage().startsWith("ids for this class must be manually assigned before calling save()"));
     }
 
     @Test
@@ -90,7 +92,7 @@ public class PostgreSQLIntegrationTest extends BaseTest {
     @Order(3)
     @DisplayName("Find by guid")
     void findByGuid() {
-        PGNoteEntity byGuid = psqlNotesClientService.getByGuid(TEST_GUID);
+        PGNoteEntity byGuid = psqlNotesClientService.get(TEST_GUID);
         assertEquals(TEST_NOTE.guid(), byGuid.getGuid());
     }
 
@@ -100,9 +102,9 @@ public class PostgreSQLIntegrationTest extends BaseTest {
     void delete() {
         NotesData savedEntity = esNotesClientService.create(DTOMapper.INSTANCE.toESEntity(TEST_NOTE));
         IQuery query = SearchByExternalGuid.builder().searchGuid(savedEntity.getExternalGuid().toString()).build();
-        assertEquals(savedEntity.getGuid(),psqlNotesClientService.getByGuid(savedEntity.getGuid()).getGuid());
+        assertEquals(savedEntity.getGuid(),psqlNotesClientService.get(savedEntity.getGuid()).getGuid());
         psqlNotesClientService.delete(query);
-        assertEquals(null,psqlNotesClientService.getByGuid(savedEntity.getGuid()));
+        assertEquals(null,psqlNotesClientService.get(savedEntity.getGuid()));
     }
 
 }

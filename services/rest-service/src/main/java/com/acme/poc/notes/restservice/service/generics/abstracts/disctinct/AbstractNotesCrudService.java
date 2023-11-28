@@ -1,11 +1,12 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts;
+package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesCrudOperations;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
@@ -24,7 +25,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
 @Slf4j
 @Service
-public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesCrudOperations<E> {
+public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesCrudOperations<E> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_number_of_entries;
@@ -32,7 +33,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     protected CrudRepository crudRepository;
 
 
-    public AbstractNotesCrudOperations(CrudRepository crudRepository) {
+    public AbstractNotesCrudService(CrudRepository crudRepository) {
         this.crudRepository = crudRepository;
     }
 
@@ -80,7 +81,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         } else {
             log.debug("Creating a new entry for externalGuid: {}", entity.getExternalGuid());
         }
-        E newEntry = update(entity);
+        E newEntry = save(entity);
         log.debug("Successfully created a new entry entryGuid: {} ", newEntry.getEntryGuid());
         return newEntry;
     }
@@ -92,13 +93,14 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      * @return Entry from Elasticsearch for given guid
      */
     @Override
-    public E getByGuid(UUID guid) {
+    public E get(UUID guid) {
         log.debug("{} guid: {}", LogUtil.method(), guid.toString());
         return (E) crudRepository.findById(guid).orElse(null);
     }
     
+    
     @Override
-    public List<E> search(IQuery query) {
+    public List<E> get(IQuery query) {
         log.debug("{}", LogUtil.method());
         return getProcessed(query);
     }
@@ -112,7 +114,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     @Override
     public List<E> delete(IQuery query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
-        List<E> searchHitList = getAllEntries(query);
+        List<E> searchHitList = getAll(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
         try {
@@ -142,7 +144,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     }
 
     @Override
-    public List<E> getAllEntries(IQuery query) {
+    public List<E> getAll(IQuery query) {
         log.debug("{}", LogUtil.method());
         long startTime = System.currentTimeMillis();
         boolean timeout = false;
@@ -177,62 +179,32 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      * @param entity
      * @return updated entry
      */
-    @Override
-    public E updateByGuid(E entity) {
-        log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), entity.getExternalGuid(), entity.getEntryGuid());
-        if (entity.getGuid() == null) {
-            throwRestError(NotesAPIError.ERROR_MISSING_GUID);
-        }
-
-        E existingEntry = getByGuid(entity.getGuid());
-        if (existingEntry == null) {
-            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, entity.getGuid());
-        }
-
-        return update(existingEntry, entity);
-    }
-
-    /**
-     * Update entry by entryGuid. if guid is not provided 
-     * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
-     * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
-     *
-     * @param entity
-     * @return updated entry
-     */
-    @Override
-    public E updateByEntryGuid(E entity) {
-        log.debug("{} externalGuid: {}, entryGuid: {}", LogUtil.method(), entity.getExternalGuid(), entity.getEntryGuid());
-        if (entity.getEntryGuid() == null) {
-            throwRestError(NotesAPIError.ERROR_MISSING_ENTRY_GUID);
-        }
-
-        List<E> searchResult = getProcessed(SearchByEntryGuid.builder()
-                .searchGuid(entity.getEntryGuid().toString())
-                .includeVersions(false)
-                .includeArchived(true)
-                .build());
-        if (searchResult == null || searchResult.isEmpty()) {
-            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, entity.getEntryGuid());
-        }
-        E existingEntry = searchResult.get(0);
-        return update(existingEntry, entity);
-    }
     
     @Override
     public E update(E entity) {
-        E newEntry = null;
-        try {
-            newEntry = (E) crudRepository.save(entity);
-            if (newEntry == null) {
-                log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"ES returned null value"));
-                throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),"ES returned null value");
+        log.debug("{} guid: {}, externalGuid: {}, entryGuid: {}", LogUtil.method(), entity.getGuid(),
+                entity.getExternalGuid(), entity.getEntryGuid());
+        if (entity.getGuid() == null && entity.getEntryGuid() == null) {
+            throwRestError(NotesAPIError.ERROR_MISSING_PROPERTIES_FOR_UPDATE);
+            return null;
+        } else if (entity.getGuid() != null) {
+            E existingEntry = get(entity.getGuid());
+            if (existingEntry == null) {
+                throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, entity.getGuid());
             }
-        } catch (Exception e) {
-            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),e.getMessage()),e);
-            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),e.getMessage());
+            return update(existingEntry, entity);
+        } else {
+            List<E> searchResult = getProcessed(SearchByEntryGuid.builder()
+                    .searchGuid(entity.getEntryGuid().toString())
+                    .includeVersions(false)
+                    .includeArchived(true)
+                    .build());
+            if (searchResult == null || searchResult.isEmpty()) {
+                throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, entity.getEntryGuid());
+            }
+            E existingEntry = searchResult.get(0);
+            return update(existingEntry, entity);
         }
-        return newEntry;
     }
 
     private E update(E existingEntity, E updatedEntity) {
@@ -251,9 +223,23 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         existingEntity.setGuid(UUID.randomUUID());
         existingEntity.setCreated(ESUtil.getCurrentDate());
         existingEntity.setContent(updatedEntity.getContent());
-        E updated = update(existingEntity);
+        E newEntryUpdated = save(existingEntity);
         log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", updatedEntity.getExternalGuid(), updatedEntity.getEntryGuid(), existingEntity.getContent(), updatedEntity.getContent());
-        return updated;
+        return newEntryUpdated;
     }
-
+    
+    private E save(E existingEntity) {
+        E newEntryUpdated = null;
+        try {
+            newEntryUpdated = (E) crudRepository.save(existingEntity);
+            if (newEntryUpdated == null) {
+                log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"ES returned null value"));
+                throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),"ES returned null value");
+            }
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),e.getMessage()),e);
+            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),e.getMessage());
+        }
+        return newEntryUpdated;
+    }
 }

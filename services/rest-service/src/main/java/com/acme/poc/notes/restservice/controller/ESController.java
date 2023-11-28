@@ -2,8 +2,8 @@ package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.*;
 import com.acme.poc.notes.restservice.service.ESNotesClientService;
+import com.acme.poc.notes.restservice.service.generics.queries.*;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -42,25 +42,18 @@ public class ESController {
         return ResponseEntity.ok(notesService.create(notesData));
     }
 
-    @Operation(summary = "Update an existing entry by guid", description = "Update an existing entry by guid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
-    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_GUID)
+    @Operation(summary = "Update an existing entry by guid/entryGuid", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
     public ResponseEntity<NotesData> updateByGuid(@RequestBody NotesData notesData) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.updateByGuid(notesData));
-    }
-
-    @Operation(summary = "Update an existing entry by entryGuid", description = "Update an existing entry by entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
-    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE_BY_ENTRY_GUID)
-    public ResponseEntity<NotesData> updateByEntryGuid(@RequestBody NotesData notesData) {
-        log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.updateByEntryGuid(notesData));
+        return ResponseEntity.ok(notesService.update(notesData));
     }
 
     @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
     public ResponseEntity<NotesData> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.getByGuid(UUID.fromString(guid.toString())));
+        return ResponseEntity.ok(notesService.get(UUID.fromString(guid.toString())));
     }
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })

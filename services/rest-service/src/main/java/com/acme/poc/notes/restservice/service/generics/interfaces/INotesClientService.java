@@ -1,10 +1,10 @@
 package com.acme.poc.notes.restservice.service.generics.interfaces;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByContent;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByExternalGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByContent;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
 
 import java.util.List;
 import java.util.UUID;

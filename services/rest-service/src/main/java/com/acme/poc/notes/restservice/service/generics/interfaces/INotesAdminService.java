@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.service.generics.interfaces;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByExternalGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
 
 import java.util.List;
 import java.util.UUID;

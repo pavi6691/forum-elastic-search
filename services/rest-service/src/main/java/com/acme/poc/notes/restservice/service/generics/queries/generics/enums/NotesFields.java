@@ -1,7 +1,7 @@
-package com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums;
+package com.acme.poc.notes.restservice.service.generics.queries.generics.enums;
 
 
-public enum EsNotesFields {
+public enum NotesFields {
 
     GUID ("guid"),
     EXTERNAL ("externalGuid"),
@@ -17,7 +17,7 @@ public enum EsNotesFields {
     private String indexFieldName ="";
 
 
-    EsNotesFields(String indexFieldName) {
+    NotesFields(String indexFieldName) {
         this.indexFieldName = indexFieldName;
     }
 

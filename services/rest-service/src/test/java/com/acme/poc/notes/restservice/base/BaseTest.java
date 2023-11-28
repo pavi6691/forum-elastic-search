@@ -7,7 +7,7 @@ import com.acme.poc.notes.restservice.data.ElasticSearchData;
 import com.acme.poc.notes.restservice.service.ESNotesClientService;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
 import com.acme.poc.notes.restservice.service.PSQLNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesClientService;
+import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesClientService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +72,7 @@ public class BaseTest {
         newEntry.setContent(content);
         newEntry.setEntryGuid(existingEntry.getEntryGuid());
         newEntry.setCreated(existingEntry.getCreated());
-        INoteEntity newThreadUpdated = esNotesService.updateByGuid(newEntry);
+        INoteEntity newThreadUpdated = esNotesService.update(newEntry);
         assertEquals(existingEntry.getExternalGuid(), newThreadUpdated.getExternalGuid());
         assertEquals(existingEntry.getEntryGuid(), newThreadUpdated.getEntryGuid());
         assertEquals(existingEntry.getThreadGuid(), newThreadUpdated.getThreadGuid());

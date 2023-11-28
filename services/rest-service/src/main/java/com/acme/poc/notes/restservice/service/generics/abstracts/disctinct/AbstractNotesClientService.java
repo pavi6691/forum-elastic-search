@@ -1,14 +1,14 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts;
+package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByExternalGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByContent;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByExternalGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByContent;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.AbstractQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesClientService;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
@@ -23,25 +23,16 @@ import java.util.UUID;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
-
+/**
+ * This allows operations that a clients can perform
+ * @param <E>
+ */
 @Slf4j
 @Service
-public abstract class AbstractNotesClientService<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E> implements INotesClientService<E> {
-
-
+public abstract class AbstractNotesClientService<E extends INoteEntity<E>> extends AbstractNotesCrudService<E> implements INotesClientService<E> {
+    
     public AbstractNotesClientService(CrudRepository crudRepository) {
         super(crudRepository);
-    }
-
-    /**
-     * Search entry by guid
-     *
-     * @param guid
-     * @return Entry from Elasticsearch for given guid
-     */
-    public E getByGuid(UUID guid) {
-        log.debug("{} guid: {}", LogUtil.method(), guid.toString());
-        return (E) crudRepository.findById(guid).orElse(null);
     }
     
     /**
@@ -53,7 +44,7 @@ public abstract class AbstractNotesClientService<E extends INoteEntity<E>> exten
     @Override
     public List<E> archive(IQuery query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
-        List<E> searchHitList = getAllEntries(query);
+        List<E> searchHitList = getAll(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
         try {
@@ -64,7 +55,7 @@ public abstract class AbstractNotesClientService<E extends INoteEntity<E>> exten
         }
         AbstractQuery getArchived = (AbstractQuery)query;
         getArchived.setIncludeArchived(true);
-        return process(getArchived, getAllEntries(getArchived).stream().iterator());
+        return process(getArchived, getAll(getArchived).stream().iterator());
     }
 
     /**
@@ -87,26 +78,26 @@ public abstract class AbstractNotesClientService<E extends INoteEntity<E>> exten
     @Override
     public List<E> searchByEntryGuid(SearchByEntryGuid iQuery) {
         log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return search(iQuery);
+        return get(iQuery);
     }
 
     @Override
     public List<E> searchByContent(SearchByContent iQuery) {
         log.debug("{} content: {}", LogUtil.method(), iQuery.getContentToSearch());
         iQuery.setResultFormat(ResultFormat.FLATTEN);
-        return search(iQuery);
+        return get(iQuery);
     }
 
     @Override
     public List<E> searchArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery) {
         log.debug("{} externalGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return search(iQuery);
+        return get(iQuery);
     }
 
     @Override
     public List<E> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery) {
         log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return search(iQuery);
+        return get(iQuery);
     }
 
     @Override

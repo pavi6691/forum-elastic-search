@@ -4,8 +4,7 @@ package com.acme.poc.notes.core.enums;
 public enum NotesAPIError {
 
     ERROR_CLIENT_REQUEST                   (400, 4000, "Client request error"),
-    ERROR_MISSING_GUID                     (400, 4001, "Missing property guid"),
-    ERROR_MISSING_ENTRY_GUID               (400, 4002, "Missing property entryGuid"),
+    ERROR_MISSING_PROPERTIES_FOR_UPDATE    (400, 4001, "Missing property guid and entryGuid. should be provided at least one"),
     ERROR_MISSING_THREAD_GUID              (400, 4003, "Missing property threadGuid"),
     ERROR_MISSING_THREAD_PARENT_GUID       (400, 4004, "Missing property threadParentGuid"),
     ERROR_MISSING_CREATED                  (400, 4005, "Missing property created"),

@@ -1,8 +1,8 @@
-package com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics;
+package com.acme.poc.notes.restservice.service.generics.queries.generics;
 
 import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesProcessor;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.NotesFields;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -40,10 +40,10 @@ public abstract class AbstractQuery implements IQuery {
                   }
             }
             """
-            .replace("{FIELDNAME}", EsNotesFields.CREATED.getEsFieldName());
+            .replace("{FIELDNAME}", NotesFields.CREATED.getEsFieldName());
 
     @Getter
-    protected EsNotesFields searchField = EsNotesFields.ENTRY;
+    protected NotesFields searchField = NotesFields.ENTRY;
     @Getter
     protected String searchGuid;
     @Getter

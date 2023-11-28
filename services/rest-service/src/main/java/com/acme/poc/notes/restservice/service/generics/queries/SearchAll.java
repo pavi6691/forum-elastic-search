@@ -1,6 +1,6 @@
-package com.acme.poc.notes.restservice.persistence.elasticsearch.queries;
+package com.acme.poc.notes.restservice.service.generics.queries;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.AbstractQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.AbstractQuery;
 import lombok.experimental.SuperBuilder;
 
 

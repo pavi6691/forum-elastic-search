@@ -24,9 +24,8 @@ public class NotesAPIErrorTest {
     void testAllEnums() {
         Arrays.stream(NotesAPIError.values()).forEach(notesAPIError -> {
             String result = switch (notesAPIError) {
-                case ERROR_CLIENT_REQUEST,
-                     ERROR_MISSING_GUID,
-                     ERROR_MISSING_ENTRY_GUID,
+                case ERROR_CLIENT_REQUEST, 
+                     ERROR_MISSING_PROPERTIES_FOR_UPDATE,
                      ERROR_MISSING_THREAD_GUID,
                      ERROR_MISSING_THREAD_PARENT_GUID,
                      ERROR_MISSING_CREATED,

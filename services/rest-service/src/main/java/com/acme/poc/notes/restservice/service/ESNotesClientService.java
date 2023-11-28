@@ -3,12 +3,12 @@ package com.acme.poc.notes.restservice.service;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchArchivedByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.queries.generics.enums.EsNotesFields;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.NotesFields;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
-import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesClientService;
+import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesClientService;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,9 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Slf4j
 @Service
 public class ESNotesClientService extends AbstractNotesClientService<NotesData> {
-
+    
+    @Value("${default.number.of.entries.to.return}")
+    private int default_size_configured;
     ElasticsearchOperations elasticsearchOperations;
 
 
@@ -47,9 +49,31 @@ public class ESNotesClientService extends AbstractNotesClientService<NotesData> 
      * @return search result from elastics search response
      */
     @Override
-    protected List<NotesData> searchQuery(IQuery query) {
+    protected List<NotesData> search(IQuery query) {
         return elasticsearchOperations.search(getEsQuery(query), NotesData.class).stream()
                 .map(sh -> sh.getContent()).collect(Collectors.toList());
+    }
+
+    public NativeSearchQuery getEsQuery(IQuery query) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
+                .withQuery(QueryBuilders.wrapperQuery(query.buildQuery()))
+                .withSort(Sort.by(Sort.Order.asc(NotesFields.CREATED.getEsFieldName())));
+        if (query.searchAfter() != null && !(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid)) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
+            String searchAfter = query.searchAfter().toString();
+            try {
+                if (getTimeUnit(Long.valueOf(searchAfter))) {
+                    searchQueryBuilder.withSearchAfter(List.of(searchAfter));
+                } else {
+                    searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(searchAfter).toInstant().toEpochMilli()));
+                }
+            } catch (ParseException e) {
+                throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, String.format(searchAfter,NotesConstants.TIMESTAMP_ISO8601,searchAfter));
+            }
+        }
+        NativeSearchQuery searchQuery  = searchQueryBuilder.build();
+        searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
+        return searchQuery;
     }
 
 }
