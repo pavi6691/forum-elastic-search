@@ -32,7 +32,7 @@ public abstract class AbstractNotesClientOperations<E extends INoteEntity<E>> ex
 
 
     /**
-     * Archive by updating existing entry. updates archived field on elastic search with current date and time.
+     * Archive by updating existing entry. updates archived field on database with current date and time.
      *
      * @param query - archive is done querying by either externalGuid / entryGuid
      * @return archived entries
@@ -55,7 +55,7 @@ public abstract class AbstractNotesClientOperations<E extends INoteEntity<E>> ex
     }
 
     /**
-     * Archive by updating existing entry. updates archived field on elastic search with current date and time.
+     * Archive by updating existing entry. updates archived field on database with current date and time.
      *
      * @param guid - archive is done querying by guid
      * @return archived entries

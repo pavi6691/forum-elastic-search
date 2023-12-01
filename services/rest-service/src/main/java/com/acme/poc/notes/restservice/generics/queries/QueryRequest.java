@@ -5,15 +5,15 @@ import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import lombok.*;
-import org.elasticsearch.search.sort.SortOrder;
 
+import javax.swing.*;
 import java.util.*;
 
 
 /**
  * Abstraction to search by any fields. Returns entries created after passed time in millis.
  * Ability to filter out historical/archived records or to select both.
- * Filter is not done on elastic search but in {@link AbstractNotesProcessor#process(IQueryRequest, Iterator)}
+ * Filter is not done on database but in {@link AbstractNotesProcessor#process(IQueryRequest, Iterator)}
  */
 @AllArgsConstructor
 @NoArgsConstructor
@@ -33,7 +33,7 @@ public class QueryRequest implements IQueryRequest {
     @Getter
     private int size;
     @Getter @Builder.Default
-    private SortOrder sortOrder = SortOrder.ASC;
+    private SortOrder sortOrder = SortOrder.ASCENDING;
     @Getter @Setter @Builder.Default
     private ResultFormat resultFormat = ResultFormat.TREE;
     @Override

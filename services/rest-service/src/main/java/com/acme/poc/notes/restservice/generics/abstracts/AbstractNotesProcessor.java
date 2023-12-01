@@ -8,8 +8,9 @@ import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
+
+import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +39,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
         log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
         List<E> searchHits = getUnprocessed(query);
         if (searchHits != null && searchHits.size() > 0) {
-            log.debug("Number of results from elastic search = {}", searchHits.size());
+            log.debug("Number of results from db search = {}", searchHits.size());
             return process(query, searchHits.iterator());
         } else {
             log.error("no results found for request = {}", query.getClass().getSimpleName());
@@ -47,7 +48,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     }
 
     /**
-     * Execute search queries on elastic search
+     * Execute search queries on database
      * It's not possible to search all threads and history entries by entryGuid. So
      *   - Search for main(root) entry first(for externalGuid/entryGuid), 
      *   - then call for all subsequent entries by externalGuid and entries created after main entry that's requested.
@@ -92,7 +93,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     /**
      * Executes IQueryRequest
      * @param query 
-     * @return search result from elastics search response
+     * @return search result from database
      */
     protected abstract List<E> search(IQueryRequest query);
 
@@ -101,7 +102,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * 1. Individual entry - which has no parent
      * 2. Threads - which has parent
      * 3. Histories - which has already an older entry, replace it with new and add the current one to histories
-     * 4. For request by entryGuid, query gets all entries that are created after the requested one. so result set from elasticsearch may contain 
+     * 4. For request by entryGuid, query gets all entries that are created after the requested one. so result set from database may contain 
      *    other entries that not belongs to requested entry thread. as they may have been created/updated for others but after this entry is created. 
      *    So further filter is done as below -
      *      - For entry request, exclude all other entries that doesn't belongs to the request one. only one record stored in results list
@@ -191,7 +192,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                 history.setCreated(existingEntry.getCreated());
                 history.setCustomJson(existingEntry.getCustomJson());
                 if (query.getResultFormat() == ResultFormat.TREE) {
-                    if (query.getSortOrder() == SortOrder.ASC) {
+                    if (query.getSortOrder() == SortOrder.ASCENDING) {
                         existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
                     } else {
                         existingEntry.addHistory(history, 0);
@@ -215,7 +216,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param query
      */
     protected void addChild(E existingEntry,E newEntry, IQueryRequest query) {
-        if (query.getSortOrder() == SortOrder.ASC) {
+        if (query.getSortOrder() == SortOrder.ASCENDING) {
             existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);
         } else {
             existingEntry.addThreads(newEntry, 0);
@@ -232,7 +233,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      */
     protected void addNewThread(List<E> results,E newEntry, IQueryRequest query) {
         if (query.getResultFormat() == ResultFormat.TREE) {
-            if (query.getSortOrder() == SortOrder.ASC) {
+            if (query.getSortOrder() == SortOrder.ASCENDING) {
                 results.add(newEntry);
             } else {
                 results.add(0, newEntry);

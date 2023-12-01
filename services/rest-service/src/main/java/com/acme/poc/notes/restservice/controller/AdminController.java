@@ -9,10 +9,10 @@ import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

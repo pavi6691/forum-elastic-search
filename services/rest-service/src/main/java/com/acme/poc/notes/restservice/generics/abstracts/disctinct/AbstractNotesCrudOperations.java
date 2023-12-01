@@ -45,7 +45,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      * Create new entry or a thread if entryGuidParent is provided
      *
      * @param entity Data for creating a new note entry
-     * @return T that is created and stored in Elasticsearch
+     * @return T that is created and stored in database
      */
     @Override
     public E create(E entity) {
@@ -93,7 +93,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      * Search entry by guid
      *
      * @param guid
-     * @return Entry from Elasticsearch for given guid
+     * @return Entry from database for given guid
      */
     @Override
     public E get(UUID guid) {
