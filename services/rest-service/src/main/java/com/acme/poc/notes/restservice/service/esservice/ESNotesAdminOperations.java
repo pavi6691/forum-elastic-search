@@ -16,7 +16,7 @@ import java.util.List;
 
 
 @Slf4j
-@Service
+@Service("ESNotesAdminOperations")
 public class ESNotesAdminOperations extends AbstractNotesAdminOperations<NotesData> {
 
     @Value("${default.number.of.entries.to.return}")

@@ -12,8 +12,8 @@
 
 
 ## Current phase
-- [ ] In `AdminController` the constructors argument `public AdminController(INotesAdminOperations notesAdminService)` fails in IntelliJ with `Could not autowire. There is more than one bean of 'INotesAdminOperations' type.`.
-- [ ] Make use of `NoteSortOrder` instead of `javax.swing.SortOrder`.
+- [X] In `AdminController` the constructors argument `public AdminController(INotesAdminOperations notesAdminService)` fails in IntelliJ with `Could not autowire. There is more than one bean of 'INotesAdminOperations' type.`.
+- [X] Make use of `NoteSortOrder` instead of `javax.swing.SortOrder`.
 - [ ] Create `ApiController` with all CRUD endpoints; some for PostgreSQL/Elasticsearch and some only for Elasticsearch.
 - [ ] Make Query requests generic for all databases. compose in search method
 - [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.

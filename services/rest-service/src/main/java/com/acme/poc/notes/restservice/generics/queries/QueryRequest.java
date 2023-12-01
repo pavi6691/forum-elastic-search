@@ -1,12 +1,11 @@
 package com.acme.poc.notes.restservice.generics.queries;
 
+import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import lombok.*;
-
-import javax.swing.*;
 import java.util.*;
 
 
@@ -33,11 +32,11 @@ public class QueryRequest implements IQueryRequest {
     @Getter
     private int size;
     @Getter @Builder.Default
-    private SortOrder sortOrder = SortOrder.ASCENDING;
+    private NoteSortOrder sortOrder = NoteSortOrder.ASCENDING;
     @Getter @Setter @Builder.Default
     private ResultFormat resultFormat = ResultFormat.TREE;
     @Override
-    public SortOrder getSortOrder() {
+    public NoteSortOrder getSortOrder() {
         return sortOrder;
     }
     @Override

@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
@@ -15,8 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.swing.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +67,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
                                                         @RequestParam(required = false) String searchAfter,
                                                         @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) SortOrder sortOrder) {
+                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.ENTRY)
@@ -89,7 +88,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
                                                         @RequestParam(required = false) String searchAfter,
                                                         @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) SortOrder sortOrder) {
+                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.CONTENT)
@@ -139,7 +138,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                         @RequestParam(required = false) String searchAfter,
                                                         @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) SortOrder sortOrder) {
+                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.EXTERNAL)
@@ -158,7 +157,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                         @RequestParam(required = false) String searchAfter,
                                                         @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) SortOrder sortOrder) {
+                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.ENTRY)

@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Match;
@@ -14,8 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.swing.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
@@ -67,7 +66,7 @@ public class ApiController {
             @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
             @RequestParam(required = false) String searchAfter,
             @RequestParam(required = false, defaultValue = "0") int size,
-            @RequestParam(required = false) SortOrder sortOrder) {
+            @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(psqlNotesClientOperations.getByQuery(QueryRequest.builder()
                 .searchField(Match.ENTRY)

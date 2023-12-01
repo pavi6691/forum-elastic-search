@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.generics.interfaces.INotesAdminOperations;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
@@ -9,10 +10,9 @@ import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import javax.swing.*;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -26,7 +26,7 @@ public class AdminController {
     INotesAdminOperations<NotesData> notesAdminService;
 
 
-    public AdminController(INotesAdminOperations notesAdminService) {
+    public AdminController(@Qualifier("ESNotesAdminOperations") INotesAdminOperations notesAdminService) {
         this.notesAdminService = notesAdminService;
     }
 
@@ -46,7 +46,7 @@ public class AdminController {
                                                     @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
                                                     @RequestParam(required = false) String searchAfter,
                                                     @RequestParam(required = false, defaultValue = "0") int size,
-                                                    @RequestParam(required = false) SortOrder sortOrder) {
+                                                    @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesAdminService.getByQuery(QueryRequest.builder()
                 .searchField(Match.EXTERNAL)

@@ -2,6 +2,7 @@ package com.acme.poc.notes.restservice.generics.abstracts;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
@@ -10,8 +11,6 @@ import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import javax.swing.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -184,7 +183,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                 E history = existingEntry.getInstance(existingEntry);
                 ESUtil.clearHistoryAndThreads(history);
                 if (query.getResultFormat() == ResultFormat.TREE) {
-                    if (query.getSortOrder() == SortOrder.ASCENDING) {
+                    if (query.getSortOrder() == NoteSortOrder.ASCENDING) {
                         existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);
                     } else {
                         existingEntry.addHistory(history, 0);
@@ -208,7 +207,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param query
      */
     protected void addChild(E existingEntry,E newEntry, IQueryRequest query) {
-        if (query.getSortOrder() == SortOrder.ASCENDING) {
+        if (query.getSortOrder() == NoteSortOrder.ASCENDING) {
             existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);
         } else {
             existingEntry.addThreads(newEntry, 0);
@@ -225,7 +224,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      */
     protected void addNewThread(List<E> results,E newEntry, IQueryRequest query) {
         if (query.getResultFormat() == ResultFormat.TREE) {
-            if (query.getSortOrder() == SortOrder.ASCENDING) {
+            if (query.getSortOrder() == NoteSortOrder.ASCENDING) {
                 results.add(newEntry);
             } else {
                 results.add(0, newEntry);
