@@ -10,7 +10,6 @@ public interface INotesClientOperations<E> {
 
     List<E> archive(IQueryRequest iQueryRequest);
     List<E> archive(UUID guid);
-    List<E> getByQuery(IQueryRequest iQueryRequest);
-    List<E> deleteArchivedByExternalGuid(IQueryRequest iQueryRequest);
-    List<E> deleteArchivedByEntryGuid(IQueryRequest iQueryRequest);
+    List<E> get(IQueryRequest iQueryRequest);
+    List<E> delete(IQueryRequest iQueryRequest);
 }

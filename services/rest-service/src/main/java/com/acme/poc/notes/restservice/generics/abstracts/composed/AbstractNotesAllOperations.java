@@ -34,28 +34,18 @@ public abstract class AbstractNotesAllOperations<E extends INoteEntity<E>> exten
 
 
     @Override
-    public List<E> getAll(String indexName) {
-        return adminService.getAll(indexName);
+    public List<E> get(String indexName) {
+        return adminService.get(indexName);
     }
 
     @Override
-    public List<E> deleteByExternalGuid(UUID externalGuid) {
-        return adminService.deleteByExternalGuid(externalGuid);
+    public List<E> delete(IQueryRequest queryRequest) {
+        return adminService.delete(queryRequest);
     }
 
     @Override
-    public List<E> deleteByEntryGuid(UUID entryGuid) {
-        return adminService.deleteByEntryGuid(entryGuid);
-    }
-
-    @Override
-    public List<E> deleteByThreadGuid(UUID threadGuid) {
-        return adminService.deleteByThreadGuid(threadGuid);
-    }
-
-    @Override
-    public E deleteByGuid(UUID guid) {
-        return adminService.deleteByGuid(guid);
+    public E delete(UUID guid) {
+        return adminService.delete(guid);
     }
 
 }

@@ -5,10 +5,10 @@ import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Match;
-import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientOperations;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientService;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -36,13 +36,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PostgreSQLIntegrationTest extends BaseTest {
 
     @Autowired
-    private PSQLNotesClientOperations psqlNotesClientService;
+    private PSQLNotesClientService psqlNotesClientService;
     
     @Autowired
     private PGNotesRepository pgNotesRepository;
 
     @Autowired
-    private ESNotesClientOperations esNotesClientService;
+    private ESNotesClientService esNotesClientService;
 
     private static final String POSTGRESQL_IMAGE = "postgres:15.5-alpine";
 

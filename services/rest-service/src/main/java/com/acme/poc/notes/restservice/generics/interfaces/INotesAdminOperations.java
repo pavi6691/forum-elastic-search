@@ -8,10 +8,8 @@ import java.util.UUID;
 
 public interface INotesAdminOperations<E> {
 
-    List<E> getAll(String indexName);
-    List<E> getByQuery(IQueryRequest iQueryRequest);
-    List<E> deleteByExternalGuid(UUID externalGuid);
-    List<E> deleteByEntryGuid(UUID entryGuid);
-    List<E> deleteByThreadGuid(UUID threadGuid);
-    E deleteByGuid(UUID guid);
+    List<E> get(String indexName);
+    List<E> get(IQueryRequest iQueryRequest);
+    List<E> delete(IQueryRequest externalGuid);
+    E delete(UUID guid);
 }

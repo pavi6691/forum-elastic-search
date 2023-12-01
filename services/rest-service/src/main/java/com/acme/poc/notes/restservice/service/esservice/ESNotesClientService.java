@@ -28,8 +28,8 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
  * Service to perform elastic search operations
  */
 @Slf4j
-@Service("ESNotesClientOperations")
-public class ESNotesClientOperations extends AbstractNotesClientOperations<NotesData> {
+@Service("ESNotesClientService")
+public class ESNotesClientService extends AbstractNotesClientOperations<NotesData> {
     
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
@@ -37,7 +37,7 @@ public class ESNotesClientOperations extends AbstractNotesClientOperations<Notes
     ElasticsearchOperations elasticsearchOperations;
 
 
-    public ESNotesClientOperations(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
+    public ESNotesClientService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
     }

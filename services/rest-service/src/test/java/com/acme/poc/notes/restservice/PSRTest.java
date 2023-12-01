@@ -2,6 +2,7 @@ package com.acme.poc.notes.restservice;
 
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.BaseTest;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
@@ -112,7 +113,7 @@ public class PSRTest extends BaseTest {
                 .searchData(EXTERNAL_GUID.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
-        List<NotesData> searchResult = notesAdminService.getByQuery(query);
+        List<NotesData> searchResult = notesAdminService.get(query);
         validateAll(searchResult, 1, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES, 0);
         log.info("Found {} entries", NUMBER_OF_ENTRIES + 1);
     }
@@ -120,10 +121,15 @@ public class PSRTest extends BaseTest {
     @Test
     @Order(3)
     void deleteEntries() {
-        List<NotesData> searchResult = notesAdminService.deleteByExternalGuid(EXTERNAL_GUID);
+        List<NotesData> searchResult = notesAdminService.delete(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(EXTERNAL_GUID.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
+                .resultFormat(ResultFormat.FLATTEN)
+                .build());
         log.info("Deleted {} entries", searchResult.size());
         validateAll(searchResult, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES + 1, 0, 0);
-        searchResult = notesAdminService.getByQuery(QueryRequest.builder()
+        searchResult = notesAdminService.get(QueryRequest.builder()
                 .searchField(Match.EXTERNAL)
                 .searchData(EXTERNAL_GUID.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))

@@ -4,7 +4,7 @@ import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Match;
@@ -26,10 +26,10 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
 public class ESController {
 
-    ESNotesClientOperations notesService;
+    ESNotesClientService notesService;
 
 
-    public ESController(ESNotesClientOperations notesService) {
+    public ESController(ESNotesClientService notesService) {
         this.notesService = notesService;
     }
 
@@ -69,7 +69,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Match.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
@@ -90,7 +90,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Match.CONTENT)
                 .searchData(searchData)
                 .resultFormat(ResultFormat.FLATTEN)
@@ -140,7 +140,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Match.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
@@ -159,7 +159,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Match.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
@@ -173,7 +173,7 @@ public class ESController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.deleteArchivedByExternalGuid((QueryRequest.builder()
+        return ResponseEntity.ok(notesService.delete((QueryRequest.builder()
                 .searchField(Match.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
@@ -184,7 +184,7 @@ public class ESController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<NotesData>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.deleteArchivedByEntryGuid(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.delete(QueryRequest.builder()
                 .searchField(Match.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))

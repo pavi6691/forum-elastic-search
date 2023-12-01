@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.service.pgsqlservice;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
@@ -15,17 +15,17 @@ import java.util.stream.Collectors;
 /**
  * Perform crud operations on POSTGRESQL and search is done on elasticsearch
  */
-@Service("PSQLNotesClientOperations")
-public class PSQLNotesClientOperations extends AbstractNotesCrudOperations<PGNoteEntity> {
+@Service("PSQLNotesClientService")
+public class PSQLNotesClientService extends AbstractNotesCrudOperations<PGNoteEntity> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
 
     ElasticsearchOperations elasticsearchOperations;
-    ESNotesClientOperations esNotesClientService;
+    ESNotesClientService esNotesClientService;
 
 
-    public PSQLNotesClientOperations(PGNotesRepository pgNotesRepository, ElasticsearchOperations elasticsearchOperations, ESNotesClientOperations esNotesClientService) {
+    public PSQLNotesClientService(PGNotesRepository pgNotesRepository, ElasticsearchOperations elasticsearchOperations, ESNotesClientService esNotesClientService) {
         super(pgNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
         this.esNotesClientService = esNotesClientService;

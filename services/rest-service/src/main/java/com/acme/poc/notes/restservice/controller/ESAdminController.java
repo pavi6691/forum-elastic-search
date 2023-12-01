@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminOperations;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_ADMIN + NotesConstants.API_ENDPOINT_ADMIN_ES)
 public class ESAdminController {
 
-    ESNotesAdminOperations notesAdminService;
+    ESNotesAdminService notesAdminService;
 
 
-    public ESAdminController(ESNotesAdminOperations notesAdminService) {
+    public ESAdminController(ESNotesAdminService notesAdminService) {
         this.notesAdminService = notesAdminService;
     }
 

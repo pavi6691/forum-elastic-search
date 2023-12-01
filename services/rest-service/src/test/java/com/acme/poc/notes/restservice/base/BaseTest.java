@@ -4,9 +4,9 @@ import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.data.ElasticSearchData;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminOperations;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
-import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientOperations;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminService;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientService;
 import com.acme.poc.notes.restservice.generics.abstracts.disctinct.AbstractNotesClientOperations;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,14 +23,14 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BaseTest {
 
     @Autowired
-    protected ESNotesClientOperations esNotesService;
+    protected ESNotesClientService esNotesService;
 
     @Autowired
-    protected PSQLNotesClientOperations psqlNotesClientService;
+    protected PSQLNotesClientService psqlNotesClientService;
     @Autowired
-    protected PSQLNotesClientOperations psqlNotesService;
+    protected PSQLNotesClientService psqlNotesService;
     @Autowired
-    protected ESNotesAdminOperations notesAdminService;
+    protected ESNotesAdminService notesAdminService;
     @Autowired
     protected ESNotesRepository repository;
 

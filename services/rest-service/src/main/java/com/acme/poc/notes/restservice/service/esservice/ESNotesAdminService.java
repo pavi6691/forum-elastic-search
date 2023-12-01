@@ -16,18 +16,18 @@ import java.util.List;
 
 
 @Slf4j
-@Service("ESNotesAdminOperations")
-public class ESNotesAdminOperations extends AbstractNotesAdminOperations<NotesData> {
+@Service("ESNotesAdminService")
+public class ESNotesAdminService extends AbstractNotesAdminOperations<NotesData> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
 
     ElasticsearchOperations elasticsearchOperations;
-    com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations esNotesClientService;
+    ESNotesClientService esNotesClientService;
 
 
-    public ESNotesAdminOperations(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations,
-                                  com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations esNotesClientService) {
+    public ESNotesAdminService(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations,
+                               ESNotesClientService esNotesClientService) {
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
         this.esNotesClientService = esNotesClientService;

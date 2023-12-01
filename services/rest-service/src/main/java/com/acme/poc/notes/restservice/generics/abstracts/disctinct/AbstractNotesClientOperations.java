@@ -39,7 +39,7 @@ public abstract class AbstractNotesClientOperations<E extends INoteEntity<E>> ex
      */
     @Override
     public List<E> archive(IQueryRequest query) {
-        log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
+        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "archive", query.getSearchField(), query.getSearchData());
         List<E> searchHitList = getAll(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
@@ -62,25 +62,13 @@ public abstract class AbstractNotesClientOperations<E extends INoteEntity<E>> ex
      */
     @Override
     public List<E> archive(UUID guid) {
-        log.debug("{} guid: {}", LogUtil.method(), guid.toString());
+        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "archive", "guid", guid);
         Optional<E> result = crudRepository.findById(guid);
         if (!result.isPresent()) {
             throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, guid);
         }
         archive(List.of(result.get()));
         return List.of((E) crudRepository.findById(guid).orElse(null));
-    }
-
-    @Override
-    public List<E> deleteArchivedByExternalGuid(IQueryRequest iQueryRequest) {
-        log.debug("{} externalGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
-        return delete(iQueryRequest);
-    }
-
-    @Override
-    public List<E> deleteArchivedByEntryGuid(IQueryRequest iQueryRequest) {
-        log.debug("{} entryGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
-        return delete(iQueryRequest);
     }
 
     private void archive(List<E> entriesToArchive) {

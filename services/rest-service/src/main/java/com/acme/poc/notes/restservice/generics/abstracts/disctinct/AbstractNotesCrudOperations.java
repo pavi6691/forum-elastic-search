@@ -97,13 +97,13 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      */
     @Override
     public E get(UUID guid) {
-        log.debug("{} guid: {}", LogUtil.method(), guid.toString());
+        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "get", "guid", guid);
         return (E) crudRepository.findById(guid).orElse(null);
     }
 
     @Override
-    public List<E> getByQuery(IQueryRequest query) {
-        log.debug("{}", LogUtil.method());
+    public List<E> get(IQueryRequest query) {
+        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "get by query", query.getSearchField(), query.getSearchData());
         return getProcessed(query);
     }
 
@@ -115,7 +115,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      */
     @Override
     public List<E> delete(IQueryRequest query) {
-        log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
+        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "delete by query", query.getSearchField(), query.getSearchData());
         List<E> searchHitList = getAll(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
@@ -131,7 +131,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
 
     @Override
     public E delete(UUID keyGuid) {
-        log.debug("{} keyGuid: {}", LogUtil.method(), keyGuid);
+        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "delete by guid", "guid", keyGuid);
         E entity = (E) crudRepository.findById(keyGuid).orElse(null);
         if (entity != null) {
             crudRepository.deleteById(keyGuid);
@@ -147,7 +147,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
 
     @Override
     public List<E> getAll(IQueryRequest query) {
-        log.debug("{}", LogUtil.method());
+        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "get all entries", query.getSearchField(), query.getSearchData());
         long startTime = System.currentTimeMillis();
         boolean timeout = false;
         List<E> searchHitList = new ArrayList<>();
@@ -184,8 +184,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     
     @Override
     public E update(E entity) {
-        log.debug("{} guid: {}, externalGuid: {}, entryGuid: {}", LogUtil.method(), entity.getGuid(),
-                entity.getExternalGuid(), entity.getEntryGuid());
+        log.debug("{} request: {}, entryGuid: {}, data: {}", LogUtil.method(), "update", entity.getEntryGuid(), entity.getContent());
         if (entity.getGuid() == null && entity.getEntryGuid() == null) {
             throwRestError(NotesAPIError.ERROR_MISSING_PROPERTIES_FOR_UPDATE);
             return null;
