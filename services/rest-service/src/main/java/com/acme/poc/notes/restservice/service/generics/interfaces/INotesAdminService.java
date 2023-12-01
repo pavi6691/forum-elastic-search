@@ -14,5 +14,4 @@ public interface INotesAdminService<E> {
     List<E> deleteByEntryGuid(UUID entryGuid);
     List<E> deleteByThreadGuid(UUID threadGuid);
     E deleteByGuid(UUID guid);
-
 }

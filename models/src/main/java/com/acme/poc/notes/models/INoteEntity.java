@@ -1,4 +1,6 @@
 package com.acme.poc.notes.models;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
@@ -25,10 +27,35 @@ public interface INoteEntity<E> {
     void setCreated(Date created);
     Date getArchived();
     void setArchived(Date archived);
-    default Collection<E> getHistory() {return new ArrayList<>();}
-    default Collection<E> getThreads() {return new ArrayList<>();}
-    default void addThreads(INoteEntity threads, int index) {}
-    default void addHistory(INoteEntity history, int index) {}
+    default List<E> getHistory() {return Collections.emptyList();}
+    default List<E> getThreads() {return Collections.emptyList();}
+    default void setThreads(List<E> threads){}
+    default void setHistory(List<E> history) {}
+    @JsonIgnore
+    default void addThreads(INoteEntity threads, int index) {
+        if (getThreads() == null) {
+            setThreads(new LinkedList<>());
+        }
+        getThreads().add(index, (E) threads);
+    }
+    @JsonIgnore
+    default void addHistory(INoteEntity history, int index) {
+        if (getHistory() == null) {
+            setHistory(new LinkedList<>());
+        }
+        getHistory().add(index, (E) history);
+    }
+    
+    @JsonIgnore
+    static <T> T fromJson(String json, Class<T> eClass) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(json, mapper.getTypeFactory().constructType(eClass));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @JsonIgnore
     E getInstance();
 
 }

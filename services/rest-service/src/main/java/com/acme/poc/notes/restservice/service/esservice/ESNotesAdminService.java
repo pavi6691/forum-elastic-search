@@ -65,12 +65,13 @@ public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
             IndexOperations indexOperations = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
             if (!indexOperations.exists()) {
                 indexOperations.create();
-                return new ObjectMapper().writeValueAsString(indexOperations.getInformation());
+//                return new ObjectMapper().writeValueAsString(indexOperations.getInformation());
+                return indexOperations.getInformation().get(0).getName();
             } else {
                 log.info("Index already exists: {} ", indexName);
                 return String.format("Index already exists: %s", indexName);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("Exception while creating index: " + indexName, e);
             throw new RuntimeException(e);
         }

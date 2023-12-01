@@ -4,8 +4,8 @@ import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.data.ElasticSearchData;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminService;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
 import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientService;
 import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesClientService;
 import org.json.JSONArray;
@@ -30,7 +30,7 @@ public class BaseTest {
     @Autowired
     protected PSQLNotesClientService psqlNotesService;
     @Autowired
-    protected INotesAdminService notesAdminService;     // TODO Fix "Could not autowire"
+    protected ESNotesAdminService notesAdminService;
     @Autowired
     protected ESNotesRepository repository;
 
@@ -171,7 +171,7 @@ public class BaseTest {
         try {
             jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
             for (int i = 0; i < jsonArray.length(); i++) {
-                NotesData data = (NotesData) NotesData.fromJson(jsonArray.getString(i));
+                NotesData data = INoteEntity.fromJson(jsonArray.getString(i),NotesData.class);
                 entries.put(data.getGuid().toString(), data);
             }
         } catch (JSONException e) {

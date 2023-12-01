@@ -2,6 +2,10 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
 import org.hibernate.annotations.Type;
 
@@ -42,11 +46,9 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     private Date created;
     private Date archived;
     private Boolean isDirty;
-
-
     @Override
+    @JsonIgnore
     public PGNoteEntity getInstance() {
         return new PGNoteEntity();
     }
-
 }
