@@ -1,15 +1,15 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
+package com.acme.poc.notes.restservice.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
-import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesProcessor;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesCrudOperations;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesProcessor;
+import com.acme.poc.notes.restservice.generics.interfaces.INotesCrudOperations;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
 @Slf4j
 @Service
-public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesCrudOperations<E> {
+public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesCrudOperations<E> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_number_of_entries;
@@ -36,7 +36,7 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
     protected CrudRepository crudRepository;
 
 
-    public AbstractNotesCrudService(CrudRepository crudRepository) {
+    public AbstractNotesCrudOperations(CrudRepository crudRepository) {
         this.crudRepository = crudRepository;
     }
 

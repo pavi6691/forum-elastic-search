@@ -1,12 +1,12 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
+package com.acme.poc.notes.restservice.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.generics.interfaces.INotesAdminOperations;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
@@ -22,10 +22,10 @@ import java.util.UUID;
  */
 @Slf4j
 @Service
-public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extends AbstractNotesCrudService<E> implements INotesAdminService<E> {
+public abstract class AbstractNotesAdminOperations<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E> implements INotesAdminOperations<E> {
 
 
-    public AbstractNotesAdminService(CrudRepository crudRepository) {
+    public AbstractNotesAdminOperations(CrudRepository crudRepository) {
         super(crudRepository);
     }
 

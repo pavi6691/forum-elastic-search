@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.service.generics.queries.enums;
+package com.acme.poc.notes.restservice.generics.queries.enums;
 
 public enum Filter {
     INCLUDE_ARCHIVED("archived"),

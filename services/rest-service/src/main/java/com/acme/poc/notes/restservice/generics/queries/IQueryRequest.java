@@ -1,8 +1,8 @@
-package com.acme.poc.notes.restservice.service.generics.queries;
+package com.acme.poc.notes.restservice.generics.queries;
 
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.Set;

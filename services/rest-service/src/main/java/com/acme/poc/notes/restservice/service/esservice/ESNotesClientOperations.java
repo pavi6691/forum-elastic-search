@@ -3,10 +3,10 @@ package com.acme.poc.notes.restservice.service.esservice;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
-import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesClientService;
+import com.acme.poc.notes.restservice.generics.abstracts.disctinct.AbstractNotesClientOperations;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +29,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
  */
 @Slf4j
 @Service
-public class ESNotesClientService extends AbstractNotesClientService<NotesData> {
+public class ESNotesClientOperations extends AbstractNotesClientOperations<NotesData> {
     
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
@@ -37,7 +37,7 @@ public class ESNotesClientService extends AbstractNotesClientService<NotesData> 
     ElasticsearchOperations elasticsearchOperations;
 
 
-    public ESNotesClientService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations) {
+    public ESNotesClientOperations(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations) {
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
     }
@@ -56,7 +56,7 @@ public class ESNotesClientService extends AbstractNotesClientService<NotesData> 
     
     public NativeSearchQuery getEsQuery(IQueryRequest query) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.wrapperQuery(ESQueryBuilder.build(query)))
+                .withQuery(QueryBuilders.wrapperQuery(com.acme.poc.notes.restservice.service.esservice.ESQueryBuilder.build(query)))
                 .withSort(Sort.by(Sort.Order.asc(Match.CREATED.getMatch())));
         if (query.searchAfter() != null && !(query.getSearchField().equals(Match.ENTRY))) {
             SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);

@@ -1,10 +1,10 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts.composed;
+package com.acme.poc.notes.restservice.generics.abstracts.composed;
 
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
-import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesAdminService;
-import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
+import com.acme.poc.notes.restservice.generics.abstracts.disctinct.AbstractNotesAdminOperations;
+import com.acme.poc.notes.restservice.generics.abstracts.disctinct.AbstractNotesClientOperations;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.interfaces.INotesAdminOperations;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
@@ -15,19 +15,19 @@ import java.util.UUID;
  * This is composed of all features of admin and client. this can be extended to perform all operations
  * @param <E>
  */
-public abstract class AbstractNotesService<E extends INoteEntity<E>> extends AbstractNotesClientService<E> implements INotesAdminService<E> {
+public abstract class AbstractNotesAllOperations<E extends INoteEntity<E>> extends AbstractNotesClientOperations<E> implements INotesAdminOperations<E> {
 
-    private INotesAdminService<E> adminService;
+    private INotesAdminOperations<E> adminService;
     
     protected abstract List<E> search(IQueryRequest query);
     
 
-    public AbstractNotesService(CrudRepository crudRepository) {
+    public AbstractNotesAllOperations(CrudRepository crudRepository) {
         super(crudRepository);
-        adminService = new AbstractNotesAdminService<E>(crudRepository) {
+        adminService = new AbstractNotesAdminOperations<E>(crudRepository) {
             @Override
             protected List<E> search(IQueryRequest query) {
-                return AbstractNotesService.this.search(query);
+                return AbstractNotesAllOperations.this.search(query);
             }
         };
     }

@@ -1,10 +1,10 @@
 package com.acme.poc.notes.restservice.service.pgsqlservice;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
-import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesCrudService;
+import com.acme.poc.notes.restservice.generics.abstracts.disctinct.AbstractNotesCrudOperations;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class PSQLNotesClientService extends AbstractNotesCrudService<PGNoteEntity> {
+public class PSQLNotesClientOperations extends AbstractNotesCrudOperations<PGNoteEntity> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
 
     ElasticsearchOperations elasticsearchOperations;
-    ESNotesClientService esNotesClientService;
+    ESNotesClientOperations esNotesClientService;
 
 
-    public PSQLNotesClientService(PGNotesRepository pgNotesRepository, ElasticsearchOperations elasticsearchOperations, ESNotesClientService esNotesClientService) {
+    public PSQLNotesClientOperations(PGNotesRepository pgNotesRepository, ElasticsearchOperations elasticsearchOperations, ESNotesClientOperations esNotesClientService) {
         super(pgNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
         this.esNotesClientService = esNotesClientService;

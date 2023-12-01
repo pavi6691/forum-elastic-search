@@ -4,10 +4,10 @@ import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.data.ElasticSearchData;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminService;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
-import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesClientService;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminOperations;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientOperations;
+import com.acme.poc.notes.restservice.generics.abstracts.disctinct.AbstractNotesClientOperations;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,19 +23,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BaseTest {
 
     @Autowired
-    protected ESNotesClientService esNotesService;
+    protected ESNotesClientOperations esNotesService;
 
     @Autowired
-    protected PSQLNotesClientService psqlNotesClientService;
+    protected PSQLNotesClientOperations psqlNotesClientService;
     @Autowired
-    protected PSQLNotesClientService psqlNotesService;
+    protected PSQLNotesClientOperations psqlNotesService;
     @Autowired
-    protected ESNotesAdminService notesAdminService;
+    protected ESNotesAdminOperations notesAdminService;
     @Autowired
     protected ESNotesRepository repository;
 
 
-    protected INoteEntity createNewEntry(INoteEntity newExternalEntry, AbstractNotesClientService iNotesService) {
+    protected INoteEntity createNewEntry(INoteEntity newExternalEntry, AbstractNotesClientOperations iNotesService) {
         INoteEntity entryCreated = iNotesService.create(newExternalEntry);
         assertEquals(newExternalEntry.getExternalGuid(), entryCreated.getExternalGuid());
         assertEquals(newExternalEntry.getContent(), entryCreated.getContent());

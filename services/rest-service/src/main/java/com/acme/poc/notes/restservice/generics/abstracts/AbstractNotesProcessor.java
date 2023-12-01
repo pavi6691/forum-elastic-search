@@ -1,12 +1,12 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts;
+package com.acme.poc.notes.restservice.generics.abstracts;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;

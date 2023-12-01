@@ -1,11 +1,10 @@
 package com.acme.poc.notes.restservice.service.esservice;
 
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesAdminService;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.abstracts.disctinct.AbstractNotesAdminOperations;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.util.LogUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -13,23 +12,22 @@ import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 
 
 @Slf4j
 @Service
-public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
+public class ESNotesAdminOperations extends AbstractNotesAdminOperations<NotesData> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
 
     ElasticsearchOperations elasticsearchOperations;
-    ESNotesClientService esNotesClientService;
+    com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations esNotesClientService;
 
 
-    public ESNotesAdminService(ESNotesRepository esNotesRepository,ElasticsearchOperations elasticsearchOperations,
-                               ESNotesClientService esNotesClientService) {
+    public ESNotesAdminOperations(ESNotesRepository esNotesRepository, ElasticsearchOperations elasticsearchOperations,
+                                  com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations esNotesClientService) {
         super(esNotesRepository);
         this.elasticsearchOperations = elasticsearchOperations;
         this.esNotesClientService = esNotesClientService;

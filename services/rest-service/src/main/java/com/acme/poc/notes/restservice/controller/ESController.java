@@ -2,10 +2,10 @@ package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
+import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,10 +26,10 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
 public class ESController {
 
-    ESNotesClientService notesService;
+    ESNotesClientOperations notesService;
 
 
-    public ESController(ESNotesClientService notesService) {
+    public ESController(ESNotesClientOperations notesService) {
         this.notesService = notesService;
     }
 

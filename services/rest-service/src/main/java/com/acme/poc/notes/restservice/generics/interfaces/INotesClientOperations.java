@@ -1,12 +1,12 @@
-package com.acme.poc.notes.restservice.service.generics.interfaces;
+package com.acme.poc.notes.restservice.generics.interfaces;
 
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 
-public interface INotesClientService<E> {
+public interface INotesClientOperations<E> {
 
     List<E> archive(IQueryRequest iQueryRequest);
     List<E> archive(UUID guid);

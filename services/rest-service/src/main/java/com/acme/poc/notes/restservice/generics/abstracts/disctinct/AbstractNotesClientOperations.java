@@ -1,11 +1,11 @@
-package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
+package com.acme.poc.notes.restservice.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesClientService;
+import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.generics.interfaces.INotesClientOperations;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +23,10 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
  */
 @Slf4j
 @Service
-public abstract class AbstractNotesClientService<E extends INoteEntity<E>> extends AbstractNotesCrudService<E> implements INotesClientService<E> {
+public abstract class AbstractNotesClientOperations<E extends INoteEntity<E>> extends AbstractNotesCrudOperations<E> implements INotesClientOperations<E> {
 
 
-    public AbstractNotesClientService(CrudRepository crudRepository) {
+    public AbstractNotesClientOperations(CrudRepository crudRepository) {
         super(crudRepository);
     }
 

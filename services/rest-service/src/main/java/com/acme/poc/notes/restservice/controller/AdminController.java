@@ -2,10 +2,10 @@ package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
-import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.interfaces.INotesAdminOperations;
+import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +23,10 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_ADMIN)
 public class AdminController {
 
-    INotesAdminService<NotesData> notesAdminService;
+    INotesAdminOperations<NotesData> notesAdminService;
 
 
-    public AdminController(INotesAdminService notesAdminService) {
+    public AdminController(INotesAdminOperations notesAdminService) {
         this.notesAdminService = notesAdminService;
     }
 
