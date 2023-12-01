@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.restservice.service.ESNotesAdminService;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;

@@ -2,13 +2,9 @@ package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByEntryGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByExternalGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByContent;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.AbstractQuery;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesClientService;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
@@ -16,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
@@ -45,7 +38,7 @@ public abstract class AbstractNotesClientService<E extends INoteEntity<E>> exten
      * @return archived entries
      */
     @Override
-    public List<E> archive(IQuery query) {
+    public List<E> archive(IQueryRequest query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<E> searchHitList = getAll(query);
         query.setResultFormat(ResultFormat.FLATTEN);
@@ -56,9 +49,9 @@ public abstract class AbstractNotesClientService<E extends INoteEntity<E>> exten
             log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(), LogUtil.method(), e.getMessage()), e);
             throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION, LogUtil.method(), e.getMessage());
         }
-        AbstractQuery getArchived = (AbstractQuery)query;
-        getArchived.setIncludeArchived(true);
-        return process(getArchived, getAll(getArchived).stream().iterator());
+        query.getFilters().remove(Filter.EXCLUDE_ARCHIVED);
+        query.getFilters().add(Filter.INCLUDE_ARCHIVED);
+        return process(query, getAll(query).stream().iterator());
     }
 
     /**
@@ -79,40 +72,40 @@ public abstract class AbstractNotesClientService<E extends INoteEntity<E>> exten
     }
 
     @Override
-    public List<E> searchByEntryGuid(SearchByEntryGuid iQuery) {
-        log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return get(iQuery);
+    public List<E> searchByEntryGuid(IQueryRequest iQueryRequest) {
+        log.debug("{} entryGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
+        return get(iQueryRequest);
     }
 
     @Override
-    public List<E> searchByContent(SearchByContent iQuery) {
-        log.debug("{} content: {}", LogUtil.method(), iQuery.getContentToSearch());
-        iQuery.setResultFormat(ResultFormat.FLATTEN);
-        return get(iQuery);
+    public List<E> searchByContent(IQueryRequest iQueryRequest) {
+        log.debug("{} content: {}", LogUtil.method(), iQueryRequest.getSearchData());
+        iQueryRequest.setResultFormat(ResultFormat.FLATTEN);
+        return get(iQueryRequest);
     }
 
     @Override
-    public List<E> searchArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery) {
-        log.debug("{} externalGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return get(iQuery);
+    public List<E> searchArchivedByExternalGuid(IQueryRequest iQueryRequest) {
+        log.debug("{} externalGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
+        return get(iQueryRequest);
     }
 
     @Override
-    public List<E> searchArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery) {
-        log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return get(iQuery);
+    public List<E> searchArchivedByEntryGuid(IQueryRequest iQueryRequest) {
+        log.debug("{} entryGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
+        return get(iQueryRequest);
     }
 
     @Override
-    public List<E> deleteArchivedByExternalGuid(SearchArchivedByExternalGuid iQuery) {
-        log.debug("{} externalGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return delete(iQuery);
+    public List<E> deleteArchivedByExternalGuid(IQueryRequest iQueryRequest) {
+        log.debug("{} externalGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
+        return delete(iQueryRequest);
     }
 
     @Override
-    public List<E> deleteArchivedByEntryGuid(SearchArchivedByEntryGuid iQuery) {
-        log.debug("{} entryGuid: {}", LogUtil.method(), iQuery.getSearchGuid());
-        return delete(iQuery);
+    public List<E> deleteArchivedByEntryGuid(IQueryRequest iQueryRequest) {
+        log.debug("{} entryGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
+        return delete(iQueryRequest);
     }
 
     private void archive(List<E> entriesToArchive) {

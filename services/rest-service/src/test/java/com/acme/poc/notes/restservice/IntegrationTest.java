@@ -4,8 +4,10 @@ import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.data.ElasticSearchData;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.queries.*;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
@@ -18,10 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -89,10 +88,10 @@ public class IntegrationTest extends BaseTest {
                         .content("New External Entry - 1")
                         .build(),
                 esNotesService);
-        SearchByExternalGuid querySearchByExternalGuid = SearchByExternalGuid.builder()
-                .searchGuid(newEntryCreated.getExternalGuid().toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        IQueryRequest querySearchByExternalGuid = QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(newEntryCreated.getExternalGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
         List<NotesData> searchResult = notesAdminService.searchByExternalGuid(querySearchByExternalGuid);
         validateAll(searchResult, 1, 1, 0, 0);
@@ -118,10 +117,10 @@ public class IntegrationTest extends BaseTest {
         validateAll(searchResult, 1, 5, 4, 0);
         INoteEntity thread5 = createThread(thread4, "New External Entry-Thread-5");
         INoteEntity thread6 = createThread(thread5, "New External Entry-Thread-6");
-        esNotesService.archive(SearchByEntryGuid.builder()
-                .searchGuid(thread5.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        esNotesService.archive(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread5.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         
         // Create Thread 1-1
@@ -147,132 +146,140 @@ public class IntegrationTest extends BaseTest {
 
 
         // Search by EntryId for a thread
-        SearchByEntryGuid querySearchByEntryGuid = SearchByEntryGuid.builder()
-                .searchGuid(thread1.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        IQueryRequest querySearchByEntryGuid = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchByEntryGuid(querySearchByEntryGuid);
         validateAll(searchResult, 1, 5, 2, 2);
 
         // Search by EntryId for a thread with no histories
-        SearchByEntryGuid searchBy_Thread_1_Entry = SearchByEntryGuid.builder()
-                .searchGuid(thread1.getEntryGuid().toString())
-                .includeVersions(false)
-                .includeArchived(true)
+        IQueryRequest searchBy_Thread_1_Entry = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1.getEntryGuid().toString())
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchByEntryGuid(searchBy_Thread_1_Entry);
         validateAll(searchResult, 1, 3, 2, 0);
 
-        searchBy_Thread_1_Entry = SearchByEntryGuid.builder()
-                .searchGuid(thread1_2.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        searchBy_Thread_1_Entry = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1_2.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build();
         esNotesService.archive(searchBy_Thread_1_Entry);
 
         // Search archived by external entry
-        SearchArchivedByExternalGuid querySearchArchived_thread1_2 = SearchArchivedByExternalGuid.builder()
-                .searchGuid(thread1_2.getExternalGuid().toString())
-                .includeVersions(true)
+        IQueryRequest querySearchArchived_thread1_2 = QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(thread1_2.getExternalGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByExternalGuid(querySearchArchived_thread1_2);
         validateAll(searchResult, 2, 4, 1, 1);
 
         // Search archived by external entry with no histories
-        SearchArchivedByExternalGuid querySearchArchived_thread1_2_no_histories = SearchArchivedByExternalGuid.builder()
-                .searchGuid(thread1_2.getExternalGuid().toString())
-                .includeVersions(false)
+        IQueryRequest querySearchArchived_thread1_2_no_histories = QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(thread1_2.getExternalGuid().toString())
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByExternalGuid(querySearchArchived_thread1_2_no_histories);
         validateAll(searchResult, 2, 3, 1, 0);
 
         // Search archived by entry test 1
-        SearchArchivedByEntryGuid thread1_query = SearchArchivedByEntryGuid.builder()
-                .searchGuid(thread1.getEntryGuid().toString())
-                .includeVersions(true)
+        IQueryRequest thread1_query = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByEntryGuid(thread1_query);
         validateAll(searchResult, 1, 2, 0, 1);
 
         // Search archived by entry test 2
-        SearchArchivedByEntryGuid thread1_2_query = SearchArchivedByEntryGuid.builder()
-                .searchGuid(thread1_2.getEntryGuid().toString())
-                .includeVersions(false)
+        IQueryRequest thread1_2_query = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1_2.getEntryGuid().toString())
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByEntryGuid(thread1_2_query);
         validateAll(searchResult, 1, 1, 0, 0);
 
         // Create Thread 1-1-1
         createThread(thread1_1,"New External Entry-Thread-1-1-1");
-        searchResult = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
-                .searchGuid(newEntryCreated.getExternalGuid().toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        searchResult = notesAdminService.searchByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(newEntryCreated.getExternalGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(searchResult, 1, 12, 9, 2);
 
         // Archive another entry (total two different threads archived), expected multiple results
-        IQuery archive_1_1 = SearchByEntryGuid.builder()
-                .searchGuid(thread1_1.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        IQueryRequest archive_1_1 = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1_1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build();
         esNotesService.archive(archive_1_1);
 
         // Search archived. by external guid
-        SearchArchivedByExternalGuid querySearchArchivedByExternal = SearchArchivedByExternalGuid.builder()
-                .searchGuid(newEntryCreated.getExternalGuid().toString())
-                .includeVersions(true)
+        IQueryRequest querySearchArchivedByExternal = QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(newEntryCreated.getExternalGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByExternalGuid(querySearchArchivedByExternal);
         validateAll(searchResult, 3, 6, 2, 1);
 
         // Search archived. By entry guid
-        SearchArchivedByEntryGuid querySearchArchivedByEntry = SearchArchivedByEntryGuid.builder()
-                .searchGuid(newEntryCreated.getEntryGuid().toString())
-                .includeVersions(true)
+        IQueryRequest querySearchArchivedByEntry = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(newEntryCreated.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByEntryGuid(querySearchArchivedByEntry);
         validateAll(searchResult, 3, 6, 2, 1);
 
         // Search multiple threads archived. both may have further threads. by entry guid
-        SearchArchivedByEntryGuid querySearchArchived_thread1 = SearchArchivedByEntryGuid.builder()
-                .searchGuid(thread1.getEntryGuid().toString())
-                .includeVersions(true)
+        IQueryRequest querySearchArchived_thread1 = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByEntryGuid(querySearchArchived_thread1);
         validateAll(searchResult, 2, 4, 1, 1);
 
-        List<NotesData> resultDelete = esNotesService.deleteArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
-                .searchGuid(thread1_1.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        List<NotesData> resultDelete = esNotesService.deleteArchivedByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1_1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build());
         validateAll(resultDelete, 2, 2, 0, 0);
         searchResult = notesAdminService.searchByExternalGuid(querySearchByExternalGuid);
         validateAll(searchResult, 1, 10, 7, 2);
 
         // Archive another entry (total two different threads archived), expected multiple results
-        SearchByEntryGuid query_thread1 = SearchByEntryGuid.builder()
-                .searchGuid(thread1.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        IQueryRequest query_thread1 = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchByEntryGuid(query_thread1);
         validateAll(searchResult, 1, 4, 1, 2);
         esNotesService.archive(query_thread1);
 
         // Select one archived entry of many threads on the same layer. and some other is also archived
-        IQuery archive_thread3 = SearchByEntryGuid.builder()
-                .searchGuid(thread3.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        IQueryRequest archive_thread3 = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread3.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build();
         esNotesService.archive(archive_thread3);
-        SearchArchivedByEntryGuid search_archived_thread1 = SearchArchivedByEntryGuid.builder()
-                .searchGuid(thread1.getEntryGuid().toString())
-                .includeVersions(true)
+        IQueryRequest search_archived_thread1 = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         searchResult = esNotesService.searchArchivedByEntryGuid(search_archived_thread1);
         validateAll(searchResult, 1, 4, 1, 2);
@@ -293,9 +300,10 @@ public class IntegrationTest extends BaseTest {
         searchResult = notesAdminService.searchByExternalGuid(querySearchByExternalGuid);
         validateAll(searchResult, 2, 11, 7, 2);
 
-        SearchArchivedByEntryGuid queryArchivedRootEntry = SearchArchivedByEntryGuid.builder()
-                .searchGuid(newEntryCreated.getEntryGuid().toString())
-                .includeVersions(true)
+        IQueryRequest queryArchivedRootEntry = QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(newEntryCreated.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
         resultDelete = esNotesService.deleteArchivedByEntryGuid(queryArchivedRootEntry);
         checkDuplicates(resultDelete,new HashSet<>());
@@ -304,16 +312,16 @@ public class IntegrationTest extends BaseTest {
         searchResult = notesAdminService.searchByExternalGuid(querySearchByExternalGuid);
         validateAll(searchResult, 2, 4, 2, 0);
         INoteEntity thread_4_1 = createThread(thread4, "New External Entry-Thread-4-1");
-        searchResult = esNotesService.archive(SearchByEntryGuid.builder()
-                .searchGuid(thread_4_1.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        searchResult = esNotesService.archive(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread_4_1.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(searchResult, 1, 1, 0, 0);
-        searchResult = esNotesService.archive(SearchByEntryGuid.builder()
-                .searchGuid(thread2.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        searchResult = esNotesService.archive(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(thread2.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(searchResult, 1, 1, 0, 0);
         searchResult = esNotesService.searchArchivedByEntryGuid(queryArchivedRootEntry);
@@ -321,10 +329,10 @@ public class IntegrationTest extends BaseTest {
 
         // This make sure it archives entire entry. where some thread entry have already been archived.
         // So when searched results should contain one entry with all threads
-        searchResult = esNotesService.archive(SearchByEntryGuid.builder()
-                .searchGuid(newEntryCreated.getEntryGuid().toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        searchResult = esNotesService.archive(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(newEntryCreated.getEntryGuid().toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(searchResult, 4, 4, 0, 0);
         searchResult = esNotesService.searchArchivedByEntryGuid(queryArchivedRootEntry);
@@ -333,7 +341,7 @@ public class IntegrationTest extends BaseTest {
         validateAll(resultDelete, 4, 4, 0, 0);
         
         // Delete
-        resultDelete = notesAdminService.deleteByExternalGuid(UUID.fromString(querySearchByExternalGuid.getSearchGuid()));
+        resultDelete = notesAdminService.deleteByExternalGuid(UUID.fromString(querySearchByExternalGuid.getSearchData()));
         validateAll(resultDelete, 1, 1, 0, 0);
         searchResult = notesAdminService.searchByExternalGuid(querySearchByExternalGuid);
         validateAll(searchResult, 0, 0, 0, 0);
@@ -387,50 +395,50 @@ public class IntegrationTest extends BaseTest {
 
     @Test
     void getByExternalGuid_all() {
-        List<NotesData> result = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
-                .searchGuid("10a14259-ca84-4c7d-8d46-7ad398000002")
-                .includeVersions(true)
-                .includeArchived(true)
+        List<NotesData> result = notesAdminService.searchByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData("10a14259-ca84-4c7d-8d46-7ad398000002")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 3, 11, 6, 2);
     }
 
     @Test
     void getByExternalGuid_noHistories() {
-        List<NotesData> result = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
-                .searchGuid("10a14259-ca84-4c7d-8d46-7ad398000002")
-                .includeVersions(false)
-                .includeArchived(true)
+        List<NotesData> result = notesAdminService.searchByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData("10a14259-ca84-4c7d-8d46-7ad398000002")
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 3, 9, 6, 0);
     }
 
     @Test
     void getByExternalGuid_noArchive() {
-        List<NotesData> result = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
-                .searchGuid("10a14259-ca84-4c7d-8d46-7ad398000002")
-                .includeVersions(true)
-                .includeArchived(false)
+        List<NotesData> result = notesAdminService.searchByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData("10a14259-ca84-4c7d-8d46-7ad398000002")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 3, 7, 3, 1);
     }
 
     @Test
     void getByExternalGuid_noHistoryAndArchives() {
-        List<NotesData> result = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
-                .searchGuid("10a14259-ca84-4c7d-8d46-7ad398000002")
-                .includeVersions(false)
-                .includeArchived(false)
+        List<NotesData> result = notesAdminService.searchByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData("10a14259-ca84-4c7d-8d46-7ad398000002")
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 3, 6, 3, 0);
     }
 
     @Test
     void searchContent() {
-        List<NotesData> result = esNotesService.searchByContent(SearchByContent.builder()
-                .contentToSearch("content")
-                .includeVersions(true)
-                .includeArchived(true)
+        List<NotesData> result = esNotesService.searchByContent(QueryRequest.builder()
+                .searchField(Match.CONTENT)
+                .searchData("content")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         checkDuplicates(result,new HashSet<>());
         assertEquals(11, result.size());
@@ -438,100 +446,100 @@ public class IntegrationTest extends BaseTest {
 
     @Test
     void getByEntryGuid_all() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-                .includeVersions(true)
-                .includeArchived(true)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 4, 2, 1);
     }
 
     @Test
     void getByEntryGuid_all_test_1() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-                .includeVersions(true)
-                .includeArchived(true)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 8, 5, 2);
     }
 
     @Test
     void getByEntryGuid_all_test_2() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("06a418c3-7475-473e-9e9d-3e952d672d4c")
-                .includeVersions(true)
-                .includeArchived(true)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("06a418c3-7475-473e-9e9d-3e952d672d4c")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 6, 4, 1);
     }
 
     @Test
     void getByEntryGuid_noHistories() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-                .includeVersions(false)
-                .includeArchived(true)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 3, 2, 0);
     }
 
     @Test
     void getByEntryGuid_noHistories_test_1() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-                .includeVersions(false)
-                .includeArchived(true)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 6, 5, 0);
     }
 
     @Test
     void getByEntryGuid_noArchived_test_1() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-                .includeVersions(true)
-                .includeArchived(false)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         assertEquals(0, result.size());
     }
 
     @Test
     void getByEntryGuid_noArchived_test_2() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("16b8d331-92ab-424b-b69a-3181f6d80f5a")
-                .includeVersions(true)
-                .includeArchived(false)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("16b8d331-92ab-424b-b69a-3181f6d80f5a")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 1, 0, 0);
     }
 
     @Test
     void getByEntryGuid_noArchived_test_3() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-                .includeVersions(true)
-                .includeArchived(false)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 4, 2, 1);
     }
 
     @Test
     void getByEntryGuid_NoHistoriesAndArchives_test_1() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-                .includeVersions(false)
-                .includeArchived(false)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 0, 0, 0, 0);
     }
 
     @Test
     void getByEntryGuid_NoHistoriesAndArchives_test_2() {
-        List<NotesData> result = esNotesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid("ba7a0762-935d-43f3-acb0-c33d86e7f350")
-                .includeVersions(false)
-                .includeArchived(false)
+        List<NotesData> result = esNotesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData("ba7a0762-935d-43f3-acb0-c33d86e7f350")
+                .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 1, 3, 2, 0);
     }

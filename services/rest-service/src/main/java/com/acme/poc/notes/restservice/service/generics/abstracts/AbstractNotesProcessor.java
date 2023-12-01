@@ -2,13 +2,11 @@ package com.acme.poc.notes.restservice.service.generics.abstracts;
 
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByEntryGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchArchivedByExternalGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByThreadGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.AbstractQuery;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
@@ -36,7 +34,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * - filter only history
      * - filter both archived and histories
      */
-    protected List<E> getProcessed(IQuery query) {
+    protected List<E> getProcessed(IQueryRequest query) {
         log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
         List<E> searchHits = getUnprocessed(query);
         if (searchHits != null && searchHits.size() > 0) {
@@ -58,24 +56,25 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param query
      * @return
      */
-    protected List<E> getUnprocessed(IQuery query) {
+    protected List<E> getUnprocessed(IQueryRequest query) {
         List<E> searchHits = null;
         try {
             searchHits = search(query);
-            if (query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) {
+            if (query.getSearchField().equals(Match.ENTRY)) {
                 // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
                 if (searchHits != null) {
                     Iterator<E> rootEntries = searchHits.stream().iterator();
                     if (rootEntries != null && rootEntries.hasNext()) {
                         E rootEntry = rootEntries.next();
-                        if (query.includeArchived() || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
-                            IQuery entryQuery = SearchByThreadGuid.builder()
+                        if (query.getFilters().contains(Filter.INCLUDE_ARCHIVED) ||
+                                query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED) || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
+                            IQueryRequest entryQuery = QueryRequest.builder()
+                                    .searchField(Match.THREAD)
                                     .size(query.getSize())
                                     .sortOrder(query.getSortOrder())
-                                    .searchAfter(((AbstractQuery) query).getSearchAfter())
-                                    .includeArchived(query.includeArchived())
-                                    .includeVersions(query.includeVersions())
-                                    .searchGuid(rootEntry.getThreadGuid().toString())
+                                    .searchAfter(((QueryRequest) query).getSearchAfter())
+                                    .filters(query.getFilters())
+                                    .searchData(rootEntry.getThreadGuid().toString())
                                     .createdDateTime(rootEntry.getCreated().getTime())
                                     .build();
                             searchHits = search(entryQuery);
@@ -84,18 +83,18 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                 }
             }
         } catch (Exception e) {
-            log.error("Error: {}", e.getMessage());
+            log.info("Error: {}", e);
             throwRestError(NotesAPIError.ERROR_SERVER);
         }
         return searchHits;
     }
 
     /**
-     * Executes IQuery
+     * Executes IQueryRequest
      * @param query 
      * @return search result from elastics search response
      */
-    protected abstract List<E> search(IQuery query);
+    protected abstract List<E> search(IQueryRequest query);
 
     /**
      * Out of all multiple entries and their threads and histories, figures out and process -
@@ -116,7 +115,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param query
      * @return process results in tree format if {@link ResultFormat#TREE} else FLATTEN if {@link ResultFormat#FLATTEN}
      */
-    protected List<E> process(IQuery query, Iterator<E> esResults) {
+    protected List<E> process(IQueryRequest query, Iterator<E> esResults) {
         log.debug("Processing request = {}", query.getClass().getSimpleName());
         Map<UUID, E> threadMapping = new HashMap<>();
         List<E> results = new LinkedList<>();
@@ -142,16 +141,19 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                 if (!threadMapping.containsKey(entry.getEntryGuid())) {
                     if (!threadMapping.containsKey(entry.getEntryGuidParent())) {
                         // New thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
-                        if ((!(query instanceof SearchByEntryGuid || query instanceof SearchArchivedByEntryGuid) || threadMapping.isEmpty()) || query.searchAfter() != null) {
+                        if ((!(query.getSearchField().equals(Match.ENTRY)) || threadMapping.isEmpty()) ||
+                                query.searchAfter() != null) {
                             threadMapping.put(entry.getEntryGuid(), entry);
-                            if (!(query instanceof SearchArchivedByEntryGuid) || (entry.getArchived() != null && !entriesAddedToResults.contains(entry.getEntryGuidParent()))) {
+                            if (!(query.getSearchField().equals(Match.ENTRY) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) || 
+                                    (entry.getArchived() != null &&
+                                    !entriesAddedToResults.contains(entry.getEntryGuidParent()))) {
                                 addNewThread(results, entry, query);
                                 entriesAddedToResults.add(entry.getEntryGuid());
                             }
                         }
                     }
                     // This is the specific use case to find archived entries by entryGuid
-                    if (!(query instanceof SearchArchivedByEntryGuid)) {
+                    if (!(query.getSearchField().equals(Match.ENTRY) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED))) {
                         threadMapping.put(entry.getEntryGuid(), entry);
                     } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
                         threadMapping.put(entry.getEntryGuid(), entry);
@@ -174,9 +176,9 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param updatedEntry
      * @param query
      */
-    protected void updateVersions(E existingEntry, E updatedEntry, IQuery query,Collection<E> results) {
+    protected void updateVersions(E existingEntry, E updatedEntry, IQueryRequest query, Collection<E> results) {
         if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
-            if (query.includeVersions()) {
+            if (query.getFilters().contains(Filter.INCLUDE_VERSIONS)) {
                 E history = existingEntry.getInstance(); // TODO is getInstance proper way? make these setters dynamic, when any field added/removed
                 history.setGuid(existingEntry.getGuid());
                 history.setExternalGuid(existingEntry.getExternalGuid());
@@ -212,7 +214,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param newEntry
      * @param query
      */
-    protected void addChild(E existingEntry,E newEntry, IQuery query) {
+    protected void addChild(E existingEntry,E newEntry, IQueryRequest query) {
         if (query.getSortOrder() == SortOrder.ASC) {
             existingEntry.addThreads(newEntry, existingEntry.getThreads() != null ? existingEntry.getThreads().size() : 0);
         } else {
@@ -228,7 +230,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param newEntry
      * @param query
      */
-    protected void addNewThread(List<E> results,E newEntry, IQuery query) {
+    protected void addNewThread(List<E> results,E newEntry, IQueryRequest query) {
         if (query.getResultFormat() == ResultFormat.TREE) {
             if (query.getSortOrder() == SortOrder.ASC) {
                 results.add(newEntry);
@@ -246,9 +248,11 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param entry
      * @return true when not to select archived entry. And true for only archived request
      */
-    protected boolean filterArchived(IQuery query, E entry, Collection<E> results) {
-        return ((!query.includeArchived() && entry.getArchived() != null) ||
-                (query instanceof SearchArchivedByExternalGuid) && entry.getArchived() == null && !results.isEmpty());
+    protected boolean filterArchived(IQueryRequest query, E entry, Collection<E> results) {
+        return ((!query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED) && !query.getFilters().contains(Filter.INCLUDE_ARCHIVED) && 
+                        entry.getArchived() != null) ||
+                (query.getSearchField().equals(Match.EXTERNAL) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) 
+                        && entry.getArchived() == null && !results.isEmpty());
     }
 
     protected static boolean getTimeUnit(long timeValue) {

@@ -3,9 +3,11 @@ package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.service.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesCrudOperations;
 import com.acme.poc.notes.restservice.util.ESUtil;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
@@ -61,10 +64,10 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
         }
         
         if (entity.getEntryGuidParent() != null) {  // It's a thread that needs to be created
-            List<E> existingEntry = getProcessed(SearchByEntryGuid.builder()
-                    .searchGuid(entity.getEntryGuidParent().toString())
-                    .includeVersions(false)
-                    .includeArchived(true)
+            List<E> existingEntry = getProcessed(QueryRequest.builder()
+                    .searchField(Match.ENTRY)
+                    .searchData(entity.getEntryGuidParent().toString())
+                    .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                     .build());
             if (existingEntry == null || existingEntry.isEmpty()) {
                 throwRestError(NotesAPIError.ERROR_NEW_RESPONSE_NO_THREAD_GUID, entity.getEntryGuidParent());
@@ -99,7 +102,7 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
     }
 
     @Override
-    public List<E> get(IQuery query) {
+    public List<E> get(IQueryRequest query) {
         log.debug("{}", LogUtil.method());
         return getProcessed(query);
     }
@@ -111,7 +114,7 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
      * @return deleted entries
      */
     @Override
-    public List<E> delete(IQuery query) {
+    public List<E> delete(IQueryRequest query) {
         log.debug("{} request: {}", LogUtil.method(), query.getClass().getSimpleName());
         List<E> searchHitList = getAll(query);
         query.setResultFormat(ResultFormat.FLATTEN);
@@ -143,7 +146,7 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
     }
 
     @Override
-    public List<E> getAll(IQuery query) {
+    public List<E> getAll(IQueryRequest query) {
         log.debug("{}", LogUtil.method());
         long startTime = System.currentTimeMillis();
         boolean timeout = false;
@@ -193,10 +196,10 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
             }
             return update(existingEntry, entity);
         } else {
-            List<E> searchResult = getProcessed(SearchByEntryGuid.builder()
-                    .searchGuid(entity.getEntryGuid().toString())
-                    .includeVersions(false)
-                    .includeArchived(true)
+            List<E> searchResult = getProcessed(QueryRequest.builder()
+                    .searchField(Match.ENTRY)
+                    .searchData(entity.getEntryGuid().toString())
+                    .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                     .build());
             if (searchResult == null || searchResult.isEmpty()) {
                 throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, entity.getEntryGuid());
@@ -232,8 +235,8 @@ public abstract class AbstractNotesCrudService<E extends INoteEntity<E>> extends
         try {
             newEntryUpdated = (E) crudRepository.save(existingEntity);
             if (newEntryUpdated == null) {
-                log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"ES returned null value"));
-                throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),"ES returned null value");
+                log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"DataBase returned null value"));
+                throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),"DataBase returned null value");
             }
         } catch (Exception e) {
             log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),e.getMessage()),e);

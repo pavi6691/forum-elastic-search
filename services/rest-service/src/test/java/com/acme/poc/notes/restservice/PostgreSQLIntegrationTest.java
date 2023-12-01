@@ -2,12 +2,13 @@ package com.acme.poc.notes.restservice;
 
 import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
-import com.acme.poc.notes.restservice.service.ESNotesClientService;
-import com.acme.poc.notes.restservice.service.PSQLNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientService;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -102,7 +103,8 @@ public class PostgreSQLIntegrationTest extends BaseTest {
     @DisplayName("Find by guid")
     void delete() {
         NotesData savedEntity = esNotesClientService.create(DTOMapper.INSTANCE.toESEntity(TEST_NOTE));
-        IQuery query = SearchByExternalGuid.builder().searchGuid(savedEntity.getExternalGuid().toString()).build();
+        IQueryRequest query = QueryRequest.builder().searchField(Match.EXTERNAL).searchData(savedEntity.getExternalGuid().toString())
+                .build();
         assertEquals(savedEntity.getGuid(),psqlNotesClientService.get(savedEntity.getGuid()).getGuid());
         psqlNotesClientService.delete(query);
         assertEquals(null,psqlNotesClientService.get(savedEntity.getGuid()));

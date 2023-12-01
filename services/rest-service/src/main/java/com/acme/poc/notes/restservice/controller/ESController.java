@@ -2,8 +2,10 @@ package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.ESNotesClientService;
-import com.acme.poc.notes.restservice.service.generics.queries.*;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -66,10 +69,11 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchByEntryGuid(SearchByEntryGuid.builder()
-                .searchGuid(entryGuid.toString())
-                .includeVersions(includeVersions)
-                .includeArchived(includeArchived)
+        return ResponseEntity.ok(notesService.searchByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(entryGuid.toString())
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
+                        includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
                 .searchAfter(searchAfter)
                 .size(size)
                 .sortOrder(sortOrder)
@@ -79,17 +83,18 @@ public class ESController {
     @Operation(summary = "Search entries", description = "Return entries that matches the search.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_CONTENT)
     public ResponseEntity<List<NotesData>> searchContent(
-                                                        @RequestParam String search,
+                                                        @RequestParam String searchData,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
                                                         @RequestParam(required = false) String searchAfter,
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchByContent(SearchByContent.builder()
-                .contentToSearch(search)
-                .includeVersions(includeVersions)
-                .includeArchived(includeArchived)
+        return ResponseEntity.ok(notesService.searchByContent(QueryRequest.builder()
+                .searchField(Match.CONTENT)
+                .searchData(searchData)
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
+                        includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
                 .searchAfter(searchAfter)
                 .size(size)
                 .sortOrder(sortOrder)
@@ -107,10 +112,10 @@ public class ESController {
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.archive(SearchByExternalGuid.builder()
-                .searchGuid(externalGuid.toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(externalGuid.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build()));
     }
 
@@ -118,10 +123,10 @@ public class ESController {
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<NotesData>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.archive(SearchByEntryGuid.builder()
-                .searchGuid(entryGuid.toString())
-                .includeVersions(true)
-                .includeArchived(false)
+        return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(entryGuid.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build()));
     }
 
@@ -134,10 +139,10 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchArchivedByExternalGuid(SearchArchivedByExternalGuid.builder()
-                .searchGuid(externalGuid.toString())
-                .includeArchived(true)
-                .includeVersions(includeVersions)
+        return ResponseEntity.ok(notesService.searchArchivedByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(externalGuid.toString())
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .searchAfter(searchAfter)
                 .size(size)
                 .sortOrder(sortOrder)
@@ -153,10 +158,10 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
-                .searchGuid(entryGuid.toString())
-                .includeArchived(true)
-                .includeVersions(includeVersions)
+        return ResponseEntity.ok(notesService.searchArchivedByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(entryGuid.toString())
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .searchAfter(searchAfter)
                 .size(size)
                 .sortOrder(sortOrder)
@@ -167,21 +172,21 @@ public class ESController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<NotesData>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.deleteArchivedByExternalGuid((SearchArchivedByExternalGuid.builder()
-                .searchGuid(externalGuid.toString())
-                .includeVersions(true)
-                .includeArchived(true))
-                .build()));
+        return ResponseEntity.ok(notesService.deleteArchivedByExternalGuid((QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(externalGuid.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
+                .build())));
     }
 
     @Operation(summary = "Delete archived entry by entryGuid", description = "Delete archived entry by entryGuid. Will also delete all responses to this entry.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<NotesData>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.deleteArchivedByEntryGuid(SearchArchivedByEntryGuid.builder()
-                .searchGuid(entryGuid.toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        return ResponseEntity.ok(notesService.deleteArchivedByEntryGuid(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(entryGuid.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build()));
     }
 

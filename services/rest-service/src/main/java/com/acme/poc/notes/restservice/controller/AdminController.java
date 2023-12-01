@@ -2,8 +2,10 @@ package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -45,10 +48,11 @@ public class AdminController {
                                                     @RequestParam(required = false, defaultValue = "0") int size,
                                                     @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
-                .searchGuid(externalGuid.toString())
-                .includeVersions(includeVersions)
-                .includeArchived(includeArchived)
+        return ResponseEntity.ok(notesAdminService.searchByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(externalGuid.toString())
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
+                        includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
                 .size(size)
                 .searchAfter(searchAfter)
                 .sortOrder(sortOrder)

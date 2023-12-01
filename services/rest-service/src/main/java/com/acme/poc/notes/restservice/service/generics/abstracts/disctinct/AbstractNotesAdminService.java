@@ -2,16 +2,17 @@ package com.acme.poc.notes.restservice.service.generics.abstracts.disctinct;
 
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.service.generics.interfaces.INotesAdminService;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchAll;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByEntryGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByThreadGuid;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.enums.ResultFormat;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -33,25 +34,24 @@ public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extend
     public List<E> getAll(String indexName) {
         log.debug("{} index: {}", LogUtil.method(), indexName);
         return getProcessed(
-                SearchAll.builder()
-                        .includeVersions(true)
-                        .includeArchived(true)
+                QueryRequest.builder()
+                        .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                         .build());
     }
 
     @Override
-    public List<E> searchByExternalGuid(SearchByExternalGuid query) {
-        log.debug("{} externalGuid: {}", LogUtil.method(), query.getSearchGuid());
-        return get(query);
+    public List<E> searchByExternalGuid(IQueryRequest iQueryRequest) {
+        log.debug("{} externalGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
+        return get(iQueryRequest);
     }
 
     @Override
     public List<E> deleteByExternalGuid(UUID externalGuid) {
         log.debug("{} externalGuid: {}", LogUtil.method(), externalGuid.toString());
-        return delete(SearchByExternalGuid.builder()
-                .searchGuid(externalGuid.toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        return delete(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(externalGuid.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
                 .build());
     }
@@ -59,10 +59,10 @@ public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extend
     @Override
     public List<E> deleteByEntryGuid(UUID entryGuid) {
         log.debug("{} entryGuid: {}", LogUtil.method(), entryGuid.toString());
-        return delete(SearchByEntryGuid.builder()
-                .searchGuid(entryGuid.toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        return delete(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(entryGuid.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
                 .build());
     }
@@ -70,10 +70,10 @@ public abstract class AbstractNotesAdminService<E extends INoteEntity<E>> extend
     @Override
     public List<E> deleteByThreadGuid(UUID threadGuid) {
         log.debug("{} threadGuid: {}", LogUtil.method(), threadGuid.toString());
-        return delete(SearchByThreadGuid.builder()
-                .searchGuid(threadGuid.toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        return delete(QueryRequest.builder()
+                .searchField(Match.THREAD)
+                .searchData(threadGuid.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
                 .build());
     }

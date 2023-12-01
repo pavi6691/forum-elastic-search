@@ -3,7 +3,10 @@ package com.acme.poc.notes.restservice;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.BaseTest;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.queries.SearchByExternalGuid;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.service.generics.queries.enums.Match;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +17,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -88,17 +92,17 @@ public class PSRTest extends BaseTest {
                 .content("New External Entry-1")
                 .build(),esNotesService);
         IntStream.range(0, NUMBER_OF_ENTRIES)
-                .forEach(i -> createThread((NotesData) entry, "New External Entry-Thread-" + i));
+                .forEach(i -> createThread(entry, "New External Entry-Thread-" + i));
         log.info("Created {} entries", NUMBER_OF_ENTRIES + 1);
     }
 
     @Test
     @Order(2)
     void searchEntries() {
-        SearchByExternalGuid query = SearchByExternalGuid.builder()
-                .searchGuid(EXTERNAL_GUID.toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        IQueryRequest query = QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(EXTERNAL_GUID.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
         List<NotesData> searchResult = notesAdminService.searchByExternalGuid(query);
         validateAll(searchResult, 1, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES, 0);
@@ -111,10 +115,10 @@ public class PSRTest extends BaseTest {
         List<NotesData> searchResult = notesAdminService.deleteByExternalGuid(EXTERNAL_GUID);
         log.info("Deleted {} entries", searchResult.size());
         validateAll(searchResult, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES + 1, 0, 0);
-        searchResult = notesAdminService.searchByExternalGuid(SearchByExternalGuid.builder()
-                .searchGuid(EXTERNAL_GUID.toString())
-                .includeVersions(true)
-                .includeArchived(true)
+        searchResult = notesAdminService.searchByExternalGuid(QueryRequest.builder()
+                .searchField(Match.EXTERNAL)
+                .searchData(EXTERNAL_GUID.toString())
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build());
         validateAll(searchResult, 0, 0, 0, 0);
 

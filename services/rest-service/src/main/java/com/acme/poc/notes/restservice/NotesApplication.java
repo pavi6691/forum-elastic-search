@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice;
 
-import com.acme.poc.notes.restservice.service.ESNotesAdminService;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;

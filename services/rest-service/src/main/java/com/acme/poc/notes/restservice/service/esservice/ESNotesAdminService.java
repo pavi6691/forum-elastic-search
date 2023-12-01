@@ -1,9 +1,9 @@
-package com.acme.poc.notes.restservice.service;
+package com.acme.poc.notes.restservice.service.esservice;
 
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
+import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesAdminService;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
-import com.acme.poc.notes.restservice.service.generics.abstracts.composed.AbstractNotesService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class ESNotesAdminService extends AbstractNotesService<NotesData> {
+public class ESNotesAdminService extends AbstractNotesAdminService<NotesData> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
@@ -37,13 +37,13 @@ public class ESNotesAdminService extends AbstractNotesService<NotesData> {
 
 
     /**
-     * Executes IQuery
+     * Executes IQueryRequest
      * @param query
      * @return search result from elastics search response
      */
     @Override
-    protected List<NotesData> search(IQuery query) {
-        return esNotesClientService.get(query);
+    protected List<NotesData> search(IQueryRequest query) {
+        return esNotesClientService.search(query);
     }
     
     /**

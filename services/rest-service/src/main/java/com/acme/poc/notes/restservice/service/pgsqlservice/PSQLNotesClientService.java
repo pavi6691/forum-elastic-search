@@ -1,15 +1,14 @@
-package com.acme.poc.notes.restservice.service;
-
+package com.acme.poc.notes.restservice.service.pgsqlservice;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
+import com.acme.poc.notes.restservice.service.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
 import com.acme.poc.notes.restservice.service.generics.abstracts.disctinct.AbstractNotesCrudService;
-import com.acme.poc.notes.restservice.service.generics.queries.generics.IQuery;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +31,7 @@ public class PSQLNotesClientService extends AbstractNotesCrudService<PGNoteEntit
 
 
     @Override
-    protected List<PGNoteEntity> search(IQuery query) {
+    protected List<PGNoteEntity> search(IQueryRequest query) {
         return elasticsearchOperations.search(esNotesClientService.getEsQuery(query), NotesData.class).stream()
                 .map(sh -> sh.getContent())
                 .map(e -> DTOMapper.INSTANCE.toPG(e))
