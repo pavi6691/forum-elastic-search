@@ -15,6 +15,7 @@
 	<description>Notes REST service ...</description>
 
 	<properties>
+		<lombok.version>1.18.30</lombok.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<testcontainers.version>1.19.1</testcontainers.version>
 	</properties>

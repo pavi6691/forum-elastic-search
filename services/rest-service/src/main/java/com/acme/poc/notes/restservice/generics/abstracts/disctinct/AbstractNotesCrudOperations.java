@@ -209,12 +209,12 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         }
     }
 
-    private E update(E existingEntity, E updatedEntity) {
+    private E update(E existingEntity, E payloadEntry) {
         log.debug("{}", LogUtil.method());
-        if (updatedEntity.getCreated() == null) {
+        if (payloadEntry.getCreated() == null) {
             throwRestError(NotesAPIError.ERROR_MISSING_CREATED);
         }
-        if (!updatedEntity.getCreated().equals(existingEntity.getCreated())) {
+        if (!payloadEntry.getCreated().equals(existingEntity.getCreated())) {
             throwRestError(NotesAPIError.ERROR_ENTRY_HAS_BEEN_MODIFIED, existingEntity.getCreated());  // TODO Make sure we format all timestamps in {@link NotesConstants.TIMESTAMP_ISO8601} format (not here, but in throwRestError method)
         }
         if (existingEntity.getArchived() != null) {
@@ -222,11 +222,13 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         }
 
         ESUtil.clearHistoryAndThreads(existingEntity);
-        existingEntity.setGuid(UUID.randomUUID());
-        existingEntity.setCreated(ESUtil.getCurrentDate());
-        existingEntity.setContent(updatedEntity.getContent());
-        E newEntryUpdated = save(existingEntity);
-        log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", updatedEntity.getExternalGuid(), updatedEntity.getEntryGuid(), existingEntity.getContent(), updatedEntity.getContent());
+        E updating = existingEntity.getInstance(existingEntity);
+        updating.setContent(payloadEntry.getContent());
+        updating.setGuid(UUID.randomUUID());
+        updating.setCreated(ESUtil.getCurrentDate());
+        E newEntryUpdated = save(updating);
+        log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", payloadEntry.getExternalGuid(), 
+                payloadEntry.getEntryGuid(), existingEntity.getContent(), payloadEntry.getContent());
         return newEntryUpdated;
     }
     

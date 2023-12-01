@@ -5,6 +5,8 @@ import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.serialzation.CustomDateDeserializer;
 import com.acme.poc.notes.restservice.serialzation.CustomDateSerializer;
+import com.acme.poc.notes.restservice.util.DTOMapper;
+import com.acme.poc.notes.restservice.util.DTOMapperImpl;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -22,7 +24,7 @@ import java.util.*;
 @Document(indexName = "#{@indexName}", createIndex = false, writeTypeHint = WriteTypeHint.FALSE)
 @Getter
 @Setter
-@Builder()
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotesData implements INoteEntity<NotesData> {
@@ -82,9 +84,9 @@ public class NotesData implements INoteEntity<NotesData> {
     private Date archived;
     private List<NotesData> threads = null; // Answers/responses to this note
     private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by ???
-
     @Override
-    public NotesData getInstance() {
-        return new NotesData();
+    public NotesData getInstance(NotesData notesData) {
+        DTOMapperImpl mapper = new DTOMapperImpl(); // TODO DTOMapper.INSTANCE.from(notesData) classpath error
+        return mapper.from(notesData);
     }
 }

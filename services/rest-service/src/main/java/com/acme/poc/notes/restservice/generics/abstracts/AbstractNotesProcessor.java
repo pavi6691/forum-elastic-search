@@ -7,6 +7,7 @@ import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Match;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
+import com.acme.poc.notes.restservice.util.ESUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -180,17 +181,8 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     protected void updateVersions(E existingEntry, E updatedEntry, IQueryRequest query, Collection<E> results) {
         if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.getFilters().contains(Filter.INCLUDE_VERSIONS)) {
-                E history = existingEntry.getInstance(); // TODO is getInstance proper way? make these setters dynamic, when any field added/removed
-                history.setGuid(existingEntry.getGuid());
-                history.setExternalGuid(existingEntry.getExternalGuid());
-                history.setThreadGuid(existingEntry.getThreadGuid());
-                history.setEntryGuid(existingEntry.getEntryGuid());
-                history.setEntryGuidParent(existingEntry.getEntryGuidParent());
-                history.setType(existingEntry.getType());
-                history.setArchived(existingEntry.getArchived());
-                history.setContent(existingEntry.getContent());
-                history.setCreated(existingEntry.getCreated());
-                history.setCustomJson(existingEntry.getCustomJson());
+                E history = existingEntry.getInstance(existingEntry);
+                ESUtil.clearHistoryAndThreads(history);
                 if (query.getResultFormat() == ResultFormat.TREE) {
                     if (query.getSortOrder() == SortOrder.ASCENDING) {
                         existingEntry.addHistory(history, existingEntry.getHistory() != null ? existingEntry.getHistory().size() : 0);

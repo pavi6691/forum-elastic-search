@@ -56,6 +56,6 @@ public interface INoteEntity<E> {
         }
     }
     @JsonIgnore
-    E getInstance();
+    E getInstance(E toCopy);
 
 }

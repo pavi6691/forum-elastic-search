@@ -2,10 +2,7 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.acme.poc.notes.restservice.util.DTOMapperImpl;
 import lombok.*;
 import org.hibernate.annotations.Type;
 
@@ -47,8 +44,8 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     private Date archived;
     private Boolean isDirty;
     @Override
-    @JsonIgnore
-    public PGNoteEntity getInstance() {
-        return new PGNoteEntity();
+    public PGNoteEntity getInstance(PGNoteEntity pgNoteEntity) {
+        DTOMapperImpl mapper = new DTOMapperImpl(); // TODO DTOMapper.INSTANCE.from(notesData) classpath error
+        return mapper.from(pgNoteEntity);
     }
 }
