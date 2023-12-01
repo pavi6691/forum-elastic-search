@@ -48,7 +48,7 @@ public class AdminController {
                                                     @RequestParam(required = false, defaultValue = "0") int size,
                                                     @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesAdminService.searchByExternalGuid(QueryRequest.builder()
+        return ResponseEntity.ok(notesAdminService.getByQuery(QueryRequest.builder()
                 .searchField(Match.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,

@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface INotesAdminOperations<E> {
 
     List<E> getAll(String indexName);
-    List<E> searchByExternalGuid(IQueryRequest iQueryRequest);
+    List<E> getByQuery(IQueryRequest iQueryRequest);
     List<E> deleteByExternalGuid(UUID externalGuid);
     List<E> deleteByEntryGuid(UUID entryGuid);
     List<E> deleteByThreadGuid(UUID threadGuid);

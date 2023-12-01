@@ -55,7 +55,7 @@ public class PSRTest extends BaseTest {
                 .searchData(EXTERNAL_GUID.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
-        List<NotesData> searchResult = notesAdminService.searchByExternalGuid(query);
+        List<NotesData> searchResult = notesAdminService.getByQuery(query);
         validateAll(searchResult, 1, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES, 0);
         log.info("Found {} entries", NUMBER_OF_ENTRIES + 1);
     }
@@ -66,7 +66,7 @@ public class PSRTest extends BaseTest {
         List<NotesData> searchResult = notesAdminService.deleteByExternalGuid(EXTERNAL_GUID);
         log.info("Deleted {} entries", searchResult.size());
         validateAll(searchResult, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES + 1, 0, 0);
-        searchResult = notesAdminService.searchByExternalGuid(QueryRequest.builder()
+        searchResult = notesAdminService.getByQuery(QueryRequest.builder()
                 .searchField(Match.EXTERNAL)
                 .searchData(EXTERNAL_GUID.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))

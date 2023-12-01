@@ -72,31 +72,6 @@ public abstract class AbstractNotesClientOperations<E extends INoteEntity<E>> ex
     }
 
     @Override
-    public List<E> searchByEntryGuid(IQueryRequest iQueryRequest) {
-        log.debug("{} entryGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
-        return get(iQueryRequest);
-    }
-
-    @Override
-    public List<E> searchByContent(IQueryRequest iQueryRequest) {
-        log.debug("{} content: {}", LogUtil.method(), iQueryRequest.getSearchData());
-        iQueryRequest.setResultFormat(ResultFormat.FLATTEN);
-        return get(iQueryRequest);
-    }
-
-    @Override
-    public List<E> searchArchivedByExternalGuid(IQueryRequest iQueryRequest) {
-        log.debug("{} externalGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
-        return get(iQueryRequest);
-    }
-
-    @Override
-    public List<E> searchArchivedByEntryGuid(IQueryRequest iQueryRequest) {
-        log.debug("{} entryGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
-        return get(iQueryRequest);
-    }
-
-    @Override
     public List<E> deleteArchivedByExternalGuid(IQueryRequest iQueryRequest) {
         log.debug("{} externalGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
         return delete(iQueryRequest);

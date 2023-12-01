@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+ * Perform crud operations on POSTGRESQL and search is done on elasticsearch
+ */
 @Service
 public class PSQLNotesClientOperations extends AbstractNotesCrudOperations<PGNoteEntity> {
 

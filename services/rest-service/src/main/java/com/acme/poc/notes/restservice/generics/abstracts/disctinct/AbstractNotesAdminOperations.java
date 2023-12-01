@@ -40,12 +40,6 @@ public abstract class AbstractNotesAdminOperations<E extends INoteEntity<E>> ext
     }
 
     @Override
-    public List<E> searchByExternalGuid(IQueryRequest iQueryRequest) {
-        log.debug("{} externalGuid: {}", LogUtil.method(), iQueryRequest.getSearchData());
-        return get(iQueryRequest);
-    }
-
-    @Override
     public List<E> deleteByExternalGuid(UUID externalGuid) {
         log.debug("{} externalGuid: {}", LogUtil.method(), externalGuid.toString());
         return delete(QueryRequest.builder()

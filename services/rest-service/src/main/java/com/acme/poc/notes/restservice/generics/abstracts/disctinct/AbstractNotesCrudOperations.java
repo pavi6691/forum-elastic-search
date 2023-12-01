@@ -102,7 +102,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     }
 
     @Override
-    public List<E> get(IQueryRequest query) {
+    public List<E> getByQuery(IQueryRequest query) {
         log.debug("{}", LogUtil.method());
         return getProcessed(query);
     }

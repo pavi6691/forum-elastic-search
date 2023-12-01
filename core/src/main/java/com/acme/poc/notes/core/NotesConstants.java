@@ -11,6 +11,9 @@ public class NotesConstants {
     // Timeouts
     public static final long TIMEOUT_ARCHIVE = TimeUnit.SECONDS.toMillis(10);
     public static final long TIMEOUT_DELETE = TimeUnit.SECONDS.toMillis(10);
+    
+    //PostgreSQL 
+    public static final String POSTGRESQL_NOTES_TAG = "PostgreSQL API";
 
     // OpenAPI
     public static final String OPENAPI_NOTES_TAG = "Notes API";
@@ -35,6 +38,7 @@ public class NotesConstants {
     public static final String API_ENDPOINT_DELETE = "/DELETE";
     public static final String API_ENDPOINT_DEVOPS = "/devops";
     public static final String API_ENDPOINT_ADMIN = "/admin";
+    public static final String API_ENDPOINT_POSTGRESQL = "/pgsql";
 
     //
     // /api/v1/devops/...

@@ -10,7 +10,7 @@ public interface INotesCrudOperations<E> {
 
     E create(E entity);
     E get(UUID guid);
-    List<E> get(IQueryRequest iQueryRequest);
+    List<E> getByQuery(IQueryRequest iQueryRequest);
     List<E> delete(IQueryRequest iQueryRequest);
     E delete(UUID keyGuid);
     List<E> getAll(IQueryRequest iQueryRequest);

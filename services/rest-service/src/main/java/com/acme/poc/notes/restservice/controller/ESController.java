@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesClientOperations;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
@@ -69,7 +70,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchByEntryGuid(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
@@ -90,9 +91,10 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchByContent(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.CONTENT)
                 .searchData(searchData)
+                .resultFormat(ResultFormat.FLATTEN)
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
                         includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
                 .searchAfter(searchAfter)
@@ -139,7 +141,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchArchivedByExternalGuid(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
@@ -158,7 +160,7 @@ public class ESController {
                                                         @RequestParam(required = false, defaultValue = "0") int size,
                                                         @RequestParam(required = false) SortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.searchArchivedByEntryGuid(QueryRequest.builder()
+        return ResponseEntity.ok(notesService.getByQuery(QueryRequest.builder()
                 .searchField(Match.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
