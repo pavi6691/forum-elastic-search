@@ -45,48 +45,48 @@ public class IntegrationTest extends BaseTest {
     private static final String POSTGRESQL_IMAGE = "postgres:15.5-alpine";
     private static final String ELASTICSEARCH_IMAGE = "docker.elastic.co/elasticsearch/elasticsearch:6.8.12";
 
-//    @Container
-//    public static final PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer(POSTGRESQL_IMAGE)
-//            .withDatabaseName("acme")
-//            .withUsername("postgresql-username")
-//            .withPassword("postgresql-password");
-//    @Container
-//    public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
-//
-//
-//    @DynamicPropertySource
-//    static void setProperties(DynamicPropertyRegistry registry) {
-//        postgresqlContainer
-//                .withNetworkAliases("postgresql");
-//        postgresqlContainer.start();
-//
-//        elasticsearchContainer
-//                .withNetworkAliases("elasticsearch")
-//                .setWaitStrategy((new LogMessageWaitStrategy())
-//                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
-//                        .withStartupTimeout(Duration.ofSeconds(180L)));
-//        elasticsearchContainer.start();
-//
-//        registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
-//        registry.add("spring.datasource.username", () -> "postgresql-username");
-//        registry.add("spring.datasource.password", () -> "postgresql-password");
-//        registry.add("elasticsearch.host", () -> elasticsearchContainer.getHost() + ":" + elasticsearchContainer.getMappedPort(9200));
-//        registry.add("elasticsearch.clustername", () -> "");
-//        registry.add("index.name", () -> "note-v1");
-//        registry.add("default.number.of.entries.to.return", () -> 20);
-//        registry.add("service.thread.pool.size", () -> 8);
-//    }
-//
-//    @BeforeAll
-//    void setup() {
-//        elasticsearchContainer
-//                .withNetworkAliases("elasticsearch")
-//                .setWaitStrategy((new LogMessageWaitStrategy())
-//                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
-//                        .withStartupTimeout(Duration.ofSeconds(180L)));
-//        elasticsearchContainer.start();
-//        assertEquals(indexName,notesAdminService.createIndex(indexName));   // TODO This does not validate correctly
-//    }
+    @Container
+    public static final PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer(POSTGRESQL_IMAGE)
+            .withDatabaseName("acme")
+            .withUsername("postgresql-username")
+            .withPassword("postgresql-password");
+    @Container
+    public static final ElasticsearchContainer elasticsearchContainer = new ElasticsearchContainer(ELASTICSEARCH_IMAGE);
+
+
+    @DynamicPropertySource
+    static void setProperties(DynamicPropertyRegistry registry) {
+        postgresqlContainer
+                .withNetworkAliases("postgresql");
+        postgresqlContainer.start();
+
+        elasticsearchContainer
+                .withNetworkAliases("elasticsearch")
+                .setWaitStrategy((new LogMessageWaitStrategy())
+                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
+                        .withStartupTimeout(Duration.ofSeconds(180L)));
+        elasticsearchContainer.start();
+
+        registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", () -> "postgresql-username");
+        registry.add("spring.datasource.password", () -> "postgresql-password");
+        registry.add("elasticsearch.host", () -> elasticsearchContainer.getHost() + ":" + elasticsearchContainer.getMappedPort(9200));
+        registry.add("elasticsearch.clustername", () -> "");
+        registry.add("index.name", () -> "note-v1");
+        registry.add("default.number.of.entries.to.return", () -> 20);
+        registry.add("service.thread.pool.size", () -> 8);
+    }
+
+    @BeforeAll
+    void setup() {
+        elasticsearchContainer
+                .withNetworkAliases("elasticsearch")
+                .setWaitStrategy((new LogMessageWaitStrategy())
+                        .withRegEx(".*(\"message\":\\s?\"started[\\s?|\"].*|] started\n$)")
+                        .withStartupTimeout(Duration.ofSeconds(180L)));
+        elasticsearchContainer.start();
+        assertEquals(indexName,notesAdminService.createIndex(indexName));   // TODO This does not validate correctly
+    }
 
     @Test
     void crud() {
