@@ -1,0 +1,83 @@
+package com.acme.poc.notes.restservice.controller;
+
+import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientOperations;
+import com.acme.poc.notes.restservice.util.LogUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.swing.*;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+@Slf4j
+@RestController
+@RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_POSTGRESQL)
+public class ApiController {
+
+    PSQLNotesClientOperations psqlNotesClientOperations;
+
+    public ApiController(PSQLNotesClientOperations psqlNotesClientOperations) {
+        this.psqlNotesClientOperations = psqlNotesClientOperations;
+    }
+
+    @Operation(summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "DESCRIPTION", content = { @Content(mediaType = "application/json") }),
+            @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
+    })
+    @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
+    public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody PGNoteEntity notesData) {
+        log.debug("{}", LogUtil.method());
+        notesData.setIsDirty(true);
+        return ResponseEntity.ok(psqlNotesClientOperations.create(notesData));
+    }
+
+    @Operation(summary = "Update an existing entry by guid/entryGuid", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
+    public ResponseEntity<PGNoteEntity> updateByGuid(@RequestBody PGNoteEntity notesData) {
+        log.debug("{}", LogUtil.method());
+        notesData.setIsDirty(true);
+        return ResponseEntity.ok(psqlNotesClientOperations.update(notesData));
+    }
+
+    @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
+    public ResponseEntity<PGNoteEntity> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(psqlNotesClientOperations.get(UUID.fromString(guid.toString())));
+    }
+
+    @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
+    public ResponseEntity<List<PGNoteEntity>> searchByEntryGuid(
+            @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
+            @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(required = false) String searchAfter,
+            @RequestParam(required = false, defaultValue = "0") int size,
+            @RequestParam(required = false) SortOrder sortOrder) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(psqlNotesClientOperations.getByQuery(QueryRequest.builder()
+                .searchField(Match.ENTRY)
+                .searchData(entryGuid.toString())
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
+                        includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
+                .searchAfter(searchAfter)
+                .size(size)
+                .sortOrder(sortOrder)
+                .build()));
+    }
+    
+}
