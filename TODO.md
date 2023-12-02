@@ -12,6 +12,8 @@
 
 
 ## Current phase
+- [ ] Refactor `NotesData` to `ESNoteEntity` to align with PGNoteEntity.
+- [ ] Use `NoteEntry` as model from clients to controllers instead of `NotesData`/`ESNoteEntity` and `PGNoteEntity`.
 - [X] In `AdminController` the constructors argument `public AdminController(INotesAdminOperations notesAdminService)` fails in IntelliJ with `Could not autowire. There is more than one bean of 'INotesAdminOperations' type.`.
 - [X] Make use of `NoteSortOrder` instead of `javax.swing.SortOrder`.
 - [ ] Create `ApiController` with all CRUD endpoints; some for PostgreSQL/Elasticsearch and some only for Elasticsearch.
