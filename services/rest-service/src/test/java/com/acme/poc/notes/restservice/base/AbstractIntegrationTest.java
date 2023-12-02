@@ -13,28 +13,13 @@ import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+
 import java.util.*;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-
-@Testcontainers
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class BaseIntegrationTest<E extends INoteEntity<E>> extends BaseTest<E> {
+public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends AbstractBaseTest<E> {
     E entity;
     
-    public BaseIntegrationTest(INotesOperations<E> esNotesService, E entity) {
+    public AbstractIntegrationTest(INotesOperations<E> esNotesService, E entity) {
         super(esNotesService);
         this.entity = entity;
     }
@@ -308,53 +293,62 @@ public class BaseIntegrationTest<E extends INoteEntity<E>> extends BaseTest<E> {
         searchResult = notesService.get(querySearchByExternalGuid);
         validateAll(searchResult, 0, 0, 0, 0);
     }
-
-
+    
     @BeforeAll
-    void createEntries() throws JSONException {
-        JSONArray jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
-        for (int i = 0; i < jsonArray.length(); i++) {
-            List<E> entries = new ArrayList<>();
-            String jsonStringToStore = jsonArray.getString(i);
-            flatten(INoteEntity.fromJson(jsonStringToStore,entity.getClass()), entries);
-            entries.forEach(e -> {
-                if (e.getThreads() != null)
-                    e.getThreads().clear();
-                if (e.getHistory() != null)
-                    e.getHistory().clear();
-                E notesData = notesService.create(e);
-                assertEquals(notesData.getGuid(), e.getGuid());
-                assertEquals(notesData.getExternalGuid(), e.getExternalGuid());
-                assertEquals(notesData.getEntryGuid(), e.getEntryGuid());
-                assertEquals(notesData.getThreadGuid(), e.getThreadGuid());
-                assertEquals(notesData.getEntryGuidParent(), e.getEntryGuidParent());
-                assertEquals(notesData.getContent(), e.getContent());
-                assertEquals(notesData.getCreated(), e.getCreated());
-                assertEquals(notesData.getArchived(), e.getArchived());
-                assertEquals(notesData.getThreads(), e.getThreads());
-                assertEquals(notesData.getHistory(), e.getHistory());
-            });
-            notesService.archive(QueryRequest.builder()
-                    .searchField(Field.ENTRY)
-                    .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-                    .build());
+    protected void beforeAll() {
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                List<E> entries = new ArrayList<>();
+                String jsonStringToStore = jsonArray.getString(i);
+                flatten(INoteEntity.fromJson(jsonStringToStore,entity.getClass()), entries);
+                entries.forEach(e -> {
+                    if (e.getThreads() != null)
+                        e.getThreads().clear();
+                    if (e.getHistory() != null)
+                        e.getHistory().clear();
+                    E notesData = notesService.create(e);
+                    assertEquals(notesData.getGuid(), e.getGuid());
+                    assertEquals(notesData.getExternalGuid(), e.getExternalGuid());
+                    assertEquals(notesData.getEntryGuid(), e.getEntryGuid());
+                    assertEquals(notesData.getThreadGuid(), e.getThreadGuid());
+                    assertEquals(notesData.getEntryGuidParent(), e.getEntryGuidParent());
+                    assertEquals(notesData.getContent(), e.getContent());
+                    assertEquals(notesData.getCreated(), e.getCreated());
+                    assertEquals(notesData.getArchived(), e.getArchived());
+                    assertEquals(notesData.getThreads(), e.getThreads());
+                    assertEquals(notesData.getHistory(), e.getHistory());
+                });
+                notesService.archive(QueryRequest.builder()
+                        .searchField(Field.ENTRY)
+                        .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+                        .build());
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
     }
-
+    
     @AfterAll
-    void deleteEntries() throws JSONException {
-        JSONArray jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
-        for (int i = 0; i < jsonArray.length(); i++) {
-            List<E> entries = new ArrayList<>();
-            String jsonStringToStore = jsonArray.getString(i);
-            flatten(INoteEntity.fromJson(jsonStringToStore,entity.getClass()),entries);
-            entries.forEach(e -> {
-                if (e.getThreads() != null)
-                    e.getThreads().clear();
-                if (e.getHistory() != null)
-                    e.getHistory().clear();
-                notesService.delete(e.getGuid());
-            });
+    protected void afterAll() {
+        JSONArray jsonArray = null;
+        try {
+            jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                List<E> entries = new ArrayList<>();
+                String jsonStringToStore = jsonArray.getString(i);
+                flatten(INoteEntity.fromJson(jsonStringToStore,entity.getClass()),entries);
+                entries.forEach(e -> {
+                    if (e.getThreads() != null)
+                        e.getThreads().clear();
+                    if (e.getHistory() != null)
+                        e.getHistory().clear();
+                    notesService.delete(e.getGuid());
+                });
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
     }
 

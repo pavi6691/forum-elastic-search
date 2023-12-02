@@ -1,9 +1,8 @@
 package com.acme.poc.notes.restservice.pgsql;
 
-import com.acme.poc.notes.restservice.base.BaseTest;
+import com.acme.poc.notes.restservice.base.AbstractBaseTest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
 import static com.acme.poc.notes.restservice.base.data.PostgreSQLData.*;
 import static org.junit.jupiter.api.Assertions.*;
-
 
 @Slf4j
 @Testcontainers
@@ -25,10 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class PostgreSQLIntegrationTest extends BaseTest<PGNoteEntity> {
-    
-    @Autowired
-    ESNotesService esNotesService;
+public class PostgreSQLIntegrationTest extends AbstractBaseTest<PGNoteEntity> {
 
     @Autowired
     private PGNotesRepository pgNotesRepository;

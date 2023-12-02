@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.elasticsearch;
 
 import com.acme.poc.notes.models.INoteEntity;
-import com.acme.poc.notes.restservice.base.BaseTest;
+import com.acme.poc.notes.restservice.base.AbstractBaseTest;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
@@ -38,7 +38,7 @@ import java.util.stream.IntStream;
 @Configuration
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ESPSRTest extends BaseTest<NotesData> {
+public class ESPSRTest extends AbstractBaseTest<NotesData> {
 
     @Autowired
     public ESPSRTest(ESNotesService esNotesService) {

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.springframework.stereotype.Service;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -18,10 +17,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-
-@Service
-public class BaseTest<E extends INoteEntity<E>> {
+public abstract class AbstractBaseTest<E extends INoteEntity<E>> {
 
     private static final String POSTGRESQL_IMAGE = "postgres:15.5-alpine";
     @Container
@@ -39,7 +35,7 @@ public class BaseTest<E extends INoteEntity<E>> {
     }
     
     protected INotesOperations<E> notesService;
-    protected BaseTest(INotesOperations<E> notesService) {
+    protected AbstractBaseTest(INotesOperations<E> notesService) {
         this.notesService = notesService;
     }
 
