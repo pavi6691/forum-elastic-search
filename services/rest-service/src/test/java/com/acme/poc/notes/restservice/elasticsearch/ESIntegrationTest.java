@@ -12,7 +12,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import java.time.Duration;
 
-public class ESBaseIntegrationTest extends BaseIntegrationTest<NotesData> {
+public class ESIntegrationTest extends BaseIntegrationTest<NotesData> {
 
     @Value("${index.name}")
     private String indexName;
@@ -40,7 +40,7 @@ public class ESBaseIntegrationTest extends BaseIntegrationTest<NotesData> {
     }
     
     @Autowired
-    public ESBaseIntegrationTest(ESNotesService esNotesService, NotesData notesData) {
+    public ESIntegrationTest(ESNotesService esNotesService, NotesData notesData) {
         super(esNotesService, notesData);
     }
 }

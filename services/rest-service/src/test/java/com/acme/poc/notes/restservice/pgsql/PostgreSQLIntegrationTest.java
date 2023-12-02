@@ -1,12 +1,7 @@
 package com.acme.poc.notes.restservice.pgsql;
 
-import com.acme.poc.notes.restservice.base.BaseIntegrationTest;
 import com.acme.poc.notes.restservice.base.BaseTest;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
-import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
-import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
@@ -30,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class PostgreSQLBaseIntegrationTest extends BaseTest<PGNoteEntity> {
+public class PostgreSQLIntegrationTest extends BaseTest<PGNoteEntity> {
     
     @Autowired
     ESNotesService esNotesService;
@@ -39,7 +34,7 @@ public class PostgreSQLBaseIntegrationTest extends BaseTest<PGNoteEntity> {
     private PGNotesRepository pgNotesRepository;
 
     @Autowired
-    public PostgreSQLBaseIntegrationTest(PGSQLNotesService pgsqlNotesService) {
+    public PostgreSQLIntegrationTest(PGSQLNotesService pgsqlNotesService) {
         super(pgsqlNotesService);
     }
 
