@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.generics.abstracts.disctinct;
+package com.acme.poc.notes.restservice.generics.abstracts;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
@@ -6,10 +6,9 @@ import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
-import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesProcessor;
-import com.acme.poc.notes.restservice.generics.interfaces.INotesCrudOperations;
+import com.acme.poc.notes.restservice.generics.interfaces.INotesOperations;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -18,17 +17,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 
 
 @Slf4j
 @Service
-public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesCrudOperations<E> {
+public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesOperations<E> {
 
     @Value("${default.number.of.entries.to.return}")
     private int default_number_of_entries;
@@ -36,7 +32,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     protected CrudRepository crudRepository;
 
 
-    public AbstractNotesCrudOperations(CrudRepository crudRepository) {
+    public AbstractNotesOperations(CrudRepository crudRepository) {
         this.crudRepository = crudRepository;
     }
 
@@ -65,7 +61,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         
         if (entity.getEntryGuidParent() != null) {  // It's a thread that needs to be created
             List<E> existingEntry = getProcessed(QueryRequest.builder()
-                    .searchField(Match.ENTRY)
+                    .searchField(Field.ENTRY)
                     .searchData(entity.getEntryGuidParent().toString())
                     .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                     .build());
@@ -97,13 +93,13 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      */
     @Override
     public E get(UUID guid) {
-        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "get", "guid", guid);
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "get", "guid", guid);
         return (E) crudRepository.findById(guid).orElse(null);
     }
 
     @Override
     public List<E> get(IQueryRequest query) {
-        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "get by query", query.getSearchField(), query.getSearchData());
+        log.debug("{} request: {}, field: {}, data: {}", LogUtil.method(), "get by query", query.getSearchField(), query.getSearchData());
         return getProcessed(query);
     }
 
@@ -115,7 +111,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
      */
     @Override
     public List<E> delete(IQueryRequest query) {
-        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "delete by query", query.getSearchField(), query.getSearchData());
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "delete by query", query.getSearchField(), query.getSearchData());
         List<E> searchHitList = getAll(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
@@ -131,7 +127,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
 
     @Override
     public E delete(UUID keyGuid) {
-        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "delete by guid", "guid", keyGuid);
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "delete by guid", "guid", keyGuid);
         E entity = (E) crudRepository.findById(keyGuid).orElse(null);
         if (entity != null) {
             crudRepository.deleteById(keyGuid);
@@ -147,7 +143,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
 
     @Override
     public List<E> getAll(IQueryRequest query) {
-        log.debug("{} request: {}, byField: {}, data: {}", LogUtil.method(), "get all entries", query.getSearchField(), query.getSearchData());
+        log.debug("{} request: {}, search field: {}, uuid: {}", LogUtil.method(), "get all entries", query.getSearchField(), query.getSearchData());
         long startTime = System.currentTimeMillis();
         boolean timeout = false;
         List<E> searchHitList = new ArrayList<>();
@@ -174,7 +170,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     }
 
     /**
-     * Update entry by guid. if guid is not provided
+     * Update entry by guid/entryGuid. if guid is not provided
      * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
      * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
      *
@@ -184,7 +180,9 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
     
     @Override
     public E update(E entity) {
-        log.debug("{} request: {}, entryGuid: {}, data: {}", LogUtil.method(), "update", entity.getEntryGuid(), entity.getContent());
+        log.debug("{} request: {}, field: {}, uuid: {}, content: {}", LogUtil.method(), "update",
+                entity.getGuid() != null ? "guid" : "entryGuid",
+                entity.getGuid() != null ? entity.getGuid() : entity.getEntryGuid(), entity.getContent());
         if (entity.getGuid() == null && entity.getEntryGuid() == null) {
             throwRestError(NotesAPIError.ERROR_MISSING_PROPERTIES_FOR_UPDATE);
             return null;
@@ -196,7 +194,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
             return update(existingEntry, entity);
         } else {
             List<E> searchResult = getProcessed(QueryRequest.builder()
-                    .searchField(Match.ENTRY)
+                    .searchField(Field.ENTRY)
                     .searchData(entity.getEntryGuid().toString())
                     .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                     .build());
@@ -206,6 +204,74 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
             E existingEntry = searchResult.get(0);
             return update(existingEntry, entity);
         }
+    }
+
+    /**
+     * Archive by updating existing entry. updates archived field on database with current date and time.
+     *
+     * @param query - archive is done querying by either externalGuid / entryGuid
+     * @return archived entries
+     */
+    @Override
+    public List<E> archive(IQueryRequest query) {
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "archive", query.getSearchField(), query.getSearchData());
+        List<E> searchHitList = getAll(query);
+        query.setResultFormat(ResultFormat.FLATTEN);
+        List<E> processed = process(query, searchHitList.stream().iterator());
+        try {
+            archive(processed);
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(), LogUtil.method(), e.getMessage()), e);
+            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION, LogUtil.method(), e.getMessage());
+        }
+        query.getFilters().remove(Filter.EXCLUDE_ARCHIVED);
+        query.getFilters().add(Filter.INCLUDE_ARCHIVED);
+        return process(query, getAll(query).stream().iterator());
+    }
+
+    /**
+     * Archive by updating existing entry. updates archived field on database with current date and time.
+     *
+     * @param guid - archive is done querying by guid
+     * @return archived entries
+     */
+    @Override
+    public List<E> archive(UUID guid) {
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "archive", "guid", guid);
+        Optional<E> result = crudRepository.findById(guid);
+        if (!result.isPresent()) {
+            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, guid);
+        }
+        archive(List.of(result.get()));
+        return List.of((E) crudRepository.findById(guid).orElse(null));
+    }
+
+    /**
+     * Get all entries from index/table/collections/any data store
+     * @param dataStore
+     * @return
+     */
+    @Override
+    public List<E> get(String dataStore) {
+        log.debug("{} request: {}, data store name: {}", LogUtil.method(), "get from data store", dataStore);
+        return getProcessed(
+                QueryRequest.builder()
+                        .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
+                        .build());
+    }
+
+    private void archive(List<E> entriesToArchive) {
+        Date dateTime = ESUtil.getCurrentDate();
+        try {
+            entriesToArchive.forEach(entryToArchive -> {
+                entryToArchive.setArchived(dateTime);
+                crudRepository.save(entryToArchive);
+            });
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(), LogUtil.method(), e), e);
+            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(), e.getMessage());
+        }
+        log.debug("Number of entries archived: {}", entriesToArchive.size());
     }
 
     private E update(E existingEntity, E payloadEntry) {
@@ -221,7 +287,7 @@ public abstract class AbstractNotesCrudOperations<E extends INoteEntity<E>> exte
         }
 
         ESUtil.clearHistoryAndThreads(existingEntity);
-        E updating = existingEntity.getInstance(existingEntity);
+        E updating = existingEntity.copyThis();
         updating.setContent(payloadEntry.getContent());
         updating.setGuid(UUID.randomUUID());
         updating.setCreated(ESUtil.getCurrentDate());

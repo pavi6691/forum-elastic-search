@@ -3,7 +3,7 @@ package com.acme.poc.notes.restservice.generics.queries.enums;
 import lombok.Getter;
 
 @Getter
-public enum Match {
+public enum Field {
 
     GUID ("guid"),
     EXTERNAL ("externalGuid"),
@@ -18,7 +18,7 @@ public enum Match {
 
     private String match ="";
 
-    Match(String match) {
+    Field(String match) {
         this.match = match;
     }
 }

@@ -4,10 +4,10 @@ import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesClientService;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,10 +26,10 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
 public class ESController {
 
-    ESNotesClientService notesService;
+    ESNotesService notesService;
 
 
-    public ESController(ESNotesClientService notesService) {
+    public ESController(ESNotesService notesService) {
         this.notesService = notesService;
     }
 
@@ -70,7 +70,7 @@ public class ESController {
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
-                .searchField(Match.ENTRY)
+                .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
                         includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
@@ -91,7 +91,7 @@ public class ESController {
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
-                .searchField(Match.CONTENT)
+                .searchField(Field.CONTENT)
                 .searchData(searchData)
                 .resultFormat(ResultFormat.FLATTEN)
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
@@ -114,7 +114,7 @@ public class ESController {
     public ResponseEntity<List<NotesData>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
-                .searchField(Match.EXTERNAL)
+                .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build()));
@@ -125,7 +125,7 @@ public class ESController {
     public ResponseEntity<List<NotesData>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
-                .searchField(Match.ENTRY)
+                .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build()));
@@ -141,7 +141,7 @@ public class ESController {
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
-                .searchField(Match.EXTERNAL)
+                .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .searchAfter(searchAfter)
@@ -160,7 +160,7 @@ public class ESController {
                                                         @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
-                .searchField(Match.ENTRY)
+                .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .searchAfter(searchAfter)
@@ -174,7 +174,7 @@ public class ESController {
     public ResponseEntity<List<NotesData>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.delete((QueryRequest.builder()
-                .searchField(Match.EXTERNAL)
+                .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build())));
@@ -185,7 +185,7 @@ public class ESController {
     public ResponseEntity<List<NotesData>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.delete(QueryRequest.builder()
-                .searchField(Match.ENTRY)
+                .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build()));

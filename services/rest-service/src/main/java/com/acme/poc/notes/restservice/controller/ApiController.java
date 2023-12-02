@@ -4,10 +4,10 @@ import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
-import com.acme.poc.notes.restservice.service.pgsqlservice.PSQLNotesClientService;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,10 +26,10 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_POSTGRESQL)
 public class ApiController {
 
-    PSQLNotesClientService psqlNotesClientService;
+    PGSQLNotesService PGSQLNotesService;
 
-    public ApiController(PSQLNotesClientService psqlNotesClientService) {
-        this.psqlNotesClientService = psqlNotesClientService;
+    public ApiController(PGSQLNotesService PGSQLNotesService) {
+        this.PGSQLNotesService = PGSQLNotesService;
     }
 
     @Operation(summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
@@ -41,7 +41,7 @@ public class ApiController {
     public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody PGNoteEntity notesData) {
         log.debug("{}", LogUtil.method());
         notesData.setIsDirty(true);
-        return ResponseEntity.ok(psqlNotesClientService.create(notesData));
+        return ResponseEntity.ok(PGSQLNotesService.create(notesData));
     }
 
     @Operation(summary = "Update an existing entry by guid/entryGuid", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
@@ -49,14 +49,14 @@ public class ApiController {
     public ResponseEntity<PGNoteEntity> updateByGuid(@RequestBody PGNoteEntity notesData) {
         log.debug("{}", LogUtil.method());
         notesData.setIsDirty(true);
-        return ResponseEntity.ok(psqlNotesClientService.update(notesData));
+        return ResponseEntity.ok(PGSQLNotesService.update(notesData));
     }
 
     @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
     public ResponseEntity<PGNoteEntity> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(psqlNotesClientService.get(UUID.fromString(guid.toString())));
+        return ResponseEntity.ok(PGSQLNotesService.get(UUID.fromString(guid.toString())));
     }
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
@@ -69,8 +69,8 @@ public class ApiController {
             @RequestParam(required = false, defaultValue = "0") int size,
             @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(psqlNotesClientService.get(QueryRequest.builder()
-                .searchField(Match.ENTRY)
+        return ResponseEntity.ok(PGSQLNotesService.get(QueryRequest.builder()
+                .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
                         includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
@@ -90,8 +90,8 @@ public class ApiController {
             @RequestParam(required = false, defaultValue = "0") int size,
             @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(psqlNotesClientService.get(QueryRequest.builder()
-                .searchField(Match.EXTERNAL)
+        return ResponseEntity.ok(PGSQLNotesService.get(QueryRequest.builder()
+                .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
                         includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
@@ -105,8 +105,8 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(psqlNotesClientService.delete(QueryRequest.builder()
-                .searchField(Match.EXTERNAL)
+        return ResponseEntity.ok(PGSQLNotesService.delete(QueryRequest.builder()
+                .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
@@ -117,8 +117,8 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(psqlNotesClientService.delete(QueryRequest.builder()
-                .searchField(Match.ENTRY)
+        return ResponseEntity.ok(PGSQLNotesService.delete(QueryRequest.builder()
+                .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
@@ -129,8 +129,8 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(psqlNotesClientService.delete(QueryRequest.builder()
-                .searchField(Match.THREAD)
+        return ResponseEntity.ok(PGSQLNotesService.delete(QueryRequest.builder()
+                .searchField(Field.THREAD)
                 .searchData(threadGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
@@ -141,7 +141,7 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
     public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(psqlNotesClientService.delete(guid));
+        return ResponseEntity.ok(PGSQLNotesService.delete(guid));
     }
     
 }

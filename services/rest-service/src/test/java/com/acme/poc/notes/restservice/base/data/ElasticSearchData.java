@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.data;
+package com.acme.poc.notes.restservice.base.data;
 
 
 public class ElasticSearchData {
@@ -40,7 +40,6 @@ public class ElasticSearchData {
                             "entryGuidParent": "16b8d331-92ab-424b-b69a-3181f6d80f5a",
                             "content": "Content-thread-3-update-1",
                             "created": "2023-10-19T08:28:43.000000+05:30",
-                            "archived": "2023-10-20T10:20:54.000000+05:30",
                             "threads": [
                               {
                                 "guid": "350e4c01-4445-4304-b816-25ad62806390",
@@ -49,8 +48,7 @@ public class ElasticSearchData {
                                 "entryGuid": "68b787e4-f75e-4775-ba76-fc53928f72df",
                                 "entryGuidParent": "7f20d0eb-3907-4647-9584-3d7814cd3a55",
                                 "content": "Content-thread-4",
-                                "created": "2023-10-19T08:27:41.000000+05:30",
-                                "archived": "2023-10-20T10:20:54.000000+05:30"
+                                "created": "2023-10-19T08:27:41.000000+05:30"
                               },
                               {
                                 "guid": "b2189a45-fddc-4b15-adc1-5182491439ce",
@@ -59,8 +57,7 @@ public class ElasticSearchData {
                                 "entryGuid": "dcd0df45-8fe7-4b1c-ad30-f64c5a2b6e74",
                                 "entryGuidParent": "7f20d0eb-3907-4647-9584-3d7814cd3a55",
                                 "content": "Content-thread-5",
-                                "created": "2023-10-20T05:44:55.000000+05:30",
-                                "archived": "2023-10-20T10:20:52.000000+05:30"
+                                "created": "2023-10-20T05:44:55.000000+05:30"
                               }
                             ],
                             "history": [
@@ -71,8 +68,7 @@ public class ElasticSearchData {
                                 "entryGuid": "7f20d0eb-3907-4647-9584-3d7814cd3a55",
                                 "entryGuidParent": "16b8d331-92ab-424b-b69a-3181f6d80f5a",
                                 "content": "Content-thread-3",
-                                "created": "2023-10-19T08:16:37.000000+05:30",
-                                "archived": "2023-10-20T10:20:54.000000+05:30"
+                                "created": "2023-10-19T08:16:37.000000+05:30"
                               }
                             ]
                           }

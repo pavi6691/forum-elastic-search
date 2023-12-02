@@ -6,7 +6,7 @@ import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +61,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
         List<E> searchHits = null;
         try {
             searchHits = search(query);
-            if (query.getSearchField().equals(Match.ENTRY)) {
+            if (query.getSearchField().equals(Field.ENTRY)) {
                 // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
                 if (searchHits != null) {
                     Iterator<E> rootEntries = searchHits.stream().iterator();
@@ -70,7 +70,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                         if (query.getFilters().contains(Filter.INCLUDE_ARCHIVED) ||
                                 query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED) || rootEntry.getArchived() == null) { // Need results after first of entry these entries,
                             IQueryRequest entryQuery = QueryRequest.builder()
-                                    .searchField(Match.THREAD)
+                                    .searchField(Field.THREAD)
                                     .size(query.getSize())
                                     .sortOrder(query.getSortOrder())
                                     .searchAfter(((QueryRequest) query).getSearchAfter())
@@ -142,10 +142,10 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                 if (!threadMapping.containsKey(entry.getEntryGuid())) {
                     if (!threadMapping.containsKey(entry.getEntryGuidParent())) {
                         // New thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
-                        if ((!(query.getSearchField().equals(Match.ENTRY)) || threadMapping.isEmpty()) ||
+                        if ((!(query.getSearchField().equals(Field.ENTRY)) || threadMapping.isEmpty()) ||
                                 query.searchAfter() != null) {
                             threadMapping.put(entry.getEntryGuid(), entry);
-                            if (!(query.getSearchField().equals(Match.ENTRY) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) || 
+                            if (!(query.getSearchField().equals(Field.ENTRY) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) || 
                                     (entry.getArchived() != null &&
                                     !entriesAddedToResults.contains(entry.getEntryGuidParent()))) {
                                 addNewThread(results, entry, query);
@@ -154,7 +154,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                         }
                     }
                     // This is the specific use case to find archived entries by entryGuid
-                    if (!(query.getSearchField().equals(Match.ENTRY) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED))) {
+                    if (!(query.getSearchField().equals(Field.ENTRY) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED))) {
                         threadMapping.put(entry.getEntryGuid(), entry);
                     } else if (threadMapping.containsKey(entry.getEntryGuidParent())) {
                         threadMapping.put(entry.getEntryGuid(), entry);
@@ -180,7 +180,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     protected void updateVersions(E existingEntry, E updatedEntry, IQueryRequest query, Collection<E> results) {
         if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.getFilters().contains(Filter.INCLUDE_VERSIONS)) {
-                E history = existingEntry.getInstance(existingEntry);
+                E history = existingEntry.copyThis();
                 ESUtil.clearHistoryAndThreads(history);
                 if (query.getResultFormat() == ResultFormat.TREE) {
                     if (query.getSortOrder() == NoteSortOrder.ASCENDING) {
@@ -243,7 +243,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     protected boolean filterArchived(IQueryRequest query, E entry, Collection<E> results) {
         return ((!query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED) && !query.getFilters().contains(Filter.INCLUDE_ARCHIVED) && 
                         entry.getArchived() != null) ||
-                (query.getSearchField().equals(Match.EXTERNAL) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) 
+                (query.getSearchField().equals(Field.EXTERNAL) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) 
                         && entry.getArchived() == null && !results.isEmpty());
     }
 

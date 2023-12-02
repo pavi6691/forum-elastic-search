@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.data;
+package com.acme.poc.notes.restservice.base.data;
 
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.models.NoteType;

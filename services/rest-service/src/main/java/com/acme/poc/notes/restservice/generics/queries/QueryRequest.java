@@ -4,7 +4,7 @@ import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import lombok.*;
 import java.util.*;
 
@@ -20,7 +20,7 @@ import java.util.*;
 public class QueryRequest implements IQueryRequest {
 
     @Getter
-    private Match searchField = Match.ENTRY;
+    private Field searchField = Field.ENTRY;
     @Getter
     private String searchData;
     @Getter

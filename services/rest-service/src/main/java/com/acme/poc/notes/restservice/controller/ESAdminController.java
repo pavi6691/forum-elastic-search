@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesAdminService;
+import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
@@ -17,19 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_ADMIN + NotesConstants.API_ENDPOINT_ADMIN_ES)
 public class ESAdminController {
 
-    ESNotesAdminService notesAdminService;
+    ESNotesService esNotesService;
 
 
-    public ESAdminController(ESNotesAdminService notesAdminService) {
-        this.notesAdminService = notesAdminService;
+    public ESAdminController(ESNotesService esNotesService) {
+        this.esNotesService = esNotesService;
     }
 
 
     @Operation(summary = "Create initial index", description = "Create the initial index in Elasticsearch for Notes support", tags = { NotesConstants.OPENAPI_ELASTICSEARCH_ADMIN_TAG })
     @PostMapping(NotesConstants.API_ENDPOINT_ADMIN_ES_INDEX_CREATE)
-    public ResponseEntity<String> createIndex(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
+    public ResponseEntity<Object> createIndex(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
         log.debug("{} index: {}", LogUtil.method(), indexName);
-        return ResponseEntity.ok(notesAdminService.createIndex(indexName));
+        return ResponseEntity.ok(esNotesService.createDataStore(indexName));
     }
 
 }

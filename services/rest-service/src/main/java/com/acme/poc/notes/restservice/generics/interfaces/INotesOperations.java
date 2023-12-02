@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 
-public interface INotesCrudOperations<E> {
+public interface INotesOperations<E> {
 
     E create(E entity);
     E get(UUID guid);
@@ -15,5 +15,11 @@ public interface INotesCrudOperations<E> {
     E delete(UUID keyGuid);
     List<E> getAll(IQueryRequest iQueryRequest);
     E update(E entry);
+    List<E> archive(IQueryRequest iQueryRequest);
+    List<E> archive(UUID guid);
+    List<E> get(String indexName);
+    default Object createDataStore(String dataStoreName) {
+        return "override this method to create dataStore for database of your choice";
+    }
 
 }

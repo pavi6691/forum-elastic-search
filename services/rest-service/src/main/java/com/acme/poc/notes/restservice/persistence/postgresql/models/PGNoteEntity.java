@@ -2,15 +2,16 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.acme.poc.notes.restservice.util.DTOMapperImpl;
 import lombok.*;
 import org.hibernate.annotations.Type;
+import org.springframework.data.annotation.Transient;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -43,9 +44,18 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     private Date created;
     private Date archived;
     private Boolean isDirty;
+    @Transient
+    @OneToMany
+    private List<PGNoteEntity> threads = null; // Answers/responses to this note
+    @Transient
+    @OneToMany
+    private List<PGNoteEntity> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
-    public PGNoteEntity getInstance(PGNoteEntity pgNoteEntity) {
-        DTOMapperImpl mapper = new DTOMapperImpl(); // TODO DTOMapper.INSTANCE.from(notesData) classpath error
-        return mapper.from(pgNoteEntity);
+    public PGNoteEntity copyThis() {
+        return DTOMapper.INSTANCE.from(this);
+    }
+    @Override
+    public PGNoteEntity newInstance() {
+        return new PGNoteEntity();
     }
 }

@@ -6,8 +6,7 @@ import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static com.acme.poc.notes.restservice.data.PostgreSQLData.TEST_NOTE;
+import static com.acme.poc.notes.restservice.base.data.PostgreSQLData.TEST_NOTE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 

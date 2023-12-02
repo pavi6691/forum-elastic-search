@@ -85,8 +85,11 @@ public class NotesData implements INoteEntity<NotesData> {
     private List<NotesData> threads = null; // Answers/responses to this note
     private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
-    public NotesData getInstance(NotesData notesData) {
-        DTOMapperImpl mapper = new DTOMapperImpl(); // TODO DTOMapper.INSTANCE.from(notesData) classpath error
-        return mapper.from(notesData);
+    public NotesData copyThis() {
+        return DTOMapper.INSTANCE.from(this);
+    }
+    @Override
+    public NotesData newInstance() {
+        return new NotesData();
     }
 }

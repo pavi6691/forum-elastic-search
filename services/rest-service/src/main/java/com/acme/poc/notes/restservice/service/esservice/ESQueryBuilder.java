@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.service.esservice;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.generics.queries.enums.Match;
+import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 public class ESQueryBuilder {
 
     private static final String GET_ALL = """
@@ -30,7 +30,7 @@ public class ESQueryBuilder {
                   }
             }
             """
-            .replace("{FIELDNAME}", Match.CREATED.getMatch());
+            .replace("{FIELDNAME}", Field.CREATED.getMatch());
 
     private static final String GET_ARCHIVED_BY_ENTRY_GUID = """
             {
@@ -45,7 +45,7 @@ public class ESQueryBuilder {
                 }
             }
             """
-            .replace("{FIELDNAME}", Match.ENTRY.getMatch());
+            .replace("{FIELDNAME}", Field.ENTRY.getMatch());
 
     private static final String GET_ARCHIVED_BY_EXTERNAL_GUID = """
             {
@@ -67,7 +67,7 @@ public class ESQueryBuilder {
                 }
             }
             """
-            .replace("{FIELDNAME}", Match.EXTERNAL.getMatch());
+            .replace("{FIELDNAME}", Field.EXTERNAL.getMatch());
 
     private static final String SEARCH_CONTENT = """
             {
@@ -80,7 +80,7 @@ public class ESQueryBuilder {
                 }
             }
             """
-            .replace("{FIELDNAME}", Match.CONTENT.getMatch());
+            .replace("{FIELDNAME}", Field.CONTENT.getMatch());
     
     public static String build(IQueryRequest queryRequest) {
         switch (queryRequest.getSearchField()) {
