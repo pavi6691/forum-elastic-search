@@ -3,6 +3,8 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.util.DTOMapper;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.Transient;
@@ -20,6 +22,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
 
     @Id

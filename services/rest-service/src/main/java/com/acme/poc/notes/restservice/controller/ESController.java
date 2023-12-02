@@ -56,7 +56,7 @@ public class ESController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
     public ResponseEntity<ESNotesEntry> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.get(UUID.fromString(guid.toString())));
+        return ResponseEntity.ok(notesService.get(guid));
     }
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
