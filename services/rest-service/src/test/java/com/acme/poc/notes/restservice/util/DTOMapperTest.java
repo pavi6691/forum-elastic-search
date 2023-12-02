@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.util;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,7 @@ public class DTOMapperTest {
     @Test
     @DisplayName("Map from DTO to Elasticsearch entity")
     void mapDTOtoElasticsearchEntity() {
-        ESNotesEntry entity = DTOMapper.INSTANCE.toESEntity(TEST_NOTE);
+        ESNoteEntity entity = DTOMapper.INSTANCE.toESEntity(TEST_NOTE);
 
         assertEquals(TEST_NOTE.guid(), entity.getGuid());
         assertEquals(TEST_NOTE.externalGuid(), entity.getExternalGuid());
@@ -72,7 +72,7 @@ public class DTOMapperTest {
     @Test
     @DisplayName("Map from Elasticsearch entity to DTO")
     void mapElasticsearchEntityToDTO() {
-        ESNotesEntry entity = DTOMapper.INSTANCE.toESEntity(TEST_NOTE);
+        ESNoteEntity entity = DTOMapper.INSTANCE.toESEntity(TEST_NOTE);
         NoteEntry dto = DTOMapper.INSTANCE.toDTO(entity);
 
         assertEquals(entity.getGuid(), dto.guid());

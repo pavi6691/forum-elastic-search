@@ -26,7 +26,7 @@ import java.util.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ESNotesEntry implements INoteEntity<ESNotesEntry> {
+public class ESNoteEntity implements INoteEntity<ESNoteEntity> {
     
     @Id
     @Field(type = FieldType.Keyword, name = "guid")
@@ -81,14 +81,14 @@ public class ESNotesEntry implements INoteEntity<ESNotesEntry> {
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date archived;
-    private List<ESNotesEntry> threads = null; // Answers/responses to this note
-    private List<ESNotesEntry> history = null; // Previous versions of this entryGuid, sorted by ???
+    private List<ESNoteEntity> threads = null; // Answers/responses to this note
+    private List<ESNoteEntity> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
-    public ESNotesEntry copyThis() {
+    public ESNoteEntity copyThis() {
         return DTOMapper.INSTANCE.from(this);
     }
     @Override
-    public ESNotesEntry newInstance() {
-        return new ESNotesEntry();
+    public ESNoteEntity newInstance() {
+        return new ESNoteEntity();
     }
 }

@@ -1,5 +1,5 @@
 package com.acme.poc.notes.restservice.service.pgsqlservice;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
@@ -34,7 +34,7 @@ public class PGSQLNotesService extends AbstractNotesOperations<PGNoteEntity> {
 
     @Override
     protected List<PGNoteEntity> search(IQueryRequest query) {
-        return elasticsearchOperations.search(esNotesService.getEsQuery(query), ESNotesEntry.class).stream()
+        return elasticsearchOperations.search(esNotesService.getEsQuery(query), ESNoteEntity.class).stream()
                 .map(sh -> sh.getContent())
                 .map(e -> DTOMapper.INSTANCE.toPG(e))
                 .collect(Collectors.toList());

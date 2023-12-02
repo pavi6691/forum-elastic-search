@@ -1,5 +1,5 @@
 package com.acme.poc.notes.restservice.util;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import org.mapstruct.Mapper;
@@ -17,12 +17,12 @@ public interface DTOMapper {
     NoteEntry toDTO(PGNoteEntity pgNoteEntity);
 
     // Elasticsearch
-    ESNotesEntry toESEntity(NoteEntry noteEntry);
-    ESNotesEntry from(ESNotesEntry ESNotesEntry);
-    NoteEntry toDTO(ESNotesEntry ESNotesEntry);
+    ESNoteEntity toESEntity(NoteEntry noteEntry);
+    ESNoteEntity from(ESNoteEntity eSNoteEntity);
+    NoteEntry toDTO(ESNoteEntity eSNoteEntity);
 
     // ES to PG, for search on elasticsearch for PGSQL crud operations
-    PGNoteEntity toPG(ESNotesEntry pgNoteEntity);
+    PGNoteEntity toPG(ESNoteEntity pgNoteEntity);
     PGNoteEntity from(PGNoteEntity pgNoteEntity);
 
 }

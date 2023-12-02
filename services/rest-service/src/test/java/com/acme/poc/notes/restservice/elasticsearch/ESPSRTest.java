@@ -3,7 +3,7 @@ package com.acme.poc.notes.restservice.elasticsearch;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.AbstractBaseTest;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
@@ -38,7 +38,7 @@ import java.util.stream.IntStream;
 @Configuration
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ESPSRTest extends AbstractBaseTest<ESNotesEntry> {
+public class ESPSRTest extends AbstractBaseTest<ESNoteEntity> {
 
     @Autowired
     public ESPSRTest(ESNotesService esNotesService) {
@@ -74,7 +74,7 @@ public class ESPSRTest extends AbstractBaseTest<ESNotesEntry> {
     @Test
     @Order(1)
     void createEntries() {
-        INoteEntity entry = createNewEntry(ESNotesEntry.builder()
+        INoteEntity entry = createNewEntry(ESNoteEntity.builder()
                 .externalGuid(EXTERNAL_GUID)
                 .content("New External Entry-1")
                 .build());
@@ -91,7 +91,7 @@ public class ESPSRTest extends AbstractBaseTest<ESNotesEntry> {
                 .searchData(EXTERNAL_GUID.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
-        List<ESNotesEntry> searchResult = notesService.get(query);
+        List<ESNoteEntity> searchResult = notesService.get(query);
         validateAll(searchResult, 1, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES, 0);
         log.info("Found {} entries", NUMBER_OF_ENTRIES + 1);
     }
@@ -99,7 +99,7 @@ public class ESPSRTest extends AbstractBaseTest<ESNotesEntry> {
     @Test
     @Order(3)
     void deleteEntries() {
-        List<ESNotesEntry> searchResult = notesService.delete(QueryRequest.builder()
+        List<ESNoteEntity> searchResult = notesService.delete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .searchData(EXTERNAL_GUID.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))

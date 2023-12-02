@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.repositories;
 
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
@@ -10,5 +10,5 @@ import java.util.UUID;
 
 @Repository
 @Primary
-public interface ESNotesRepository extends ElasticsearchRepository<ESNotesEntry, UUID> {
+public interface ESNotesRepository extends ElasticsearchRepository<ESNoteEntity, UUID> {
 }

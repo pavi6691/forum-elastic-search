@@ -3,7 +3,7 @@ package com.acme.poc.notes.restservice.service.esservice;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesOperations;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
@@ -33,7 +33,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Slf4j
 @Service("esNotesService")
 @Primary
-public class ESNotesService extends AbstractNotesOperations<ESNotesEntry> {
+public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
     
     @Value("${default.number.of.entries.to.return}")
     private int default_size_configured;
@@ -53,8 +53,8 @@ public class ESNotesService extends AbstractNotesOperations<ESNotesEntry> {
      * @return search result from elastics search response
      */
     @Override
-    protected List<ESNotesEntry> search(IQueryRequest query) {
-        return elasticsearchOperations.search(getEsQuery(query), ESNotesEntry.class).stream()
+    protected List<ESNoteEntity> search(IQueryRequest query) {
+        return elasticsearchOperations.search(getEsQuery(query), ESNoteEntity.class).stream()
                 .map(sh -> sh.getContent()).collect(Collectors.toList());
     }
     
