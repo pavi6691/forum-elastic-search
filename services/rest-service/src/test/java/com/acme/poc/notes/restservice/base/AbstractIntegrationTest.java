@@ -308,17 +308,17 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
                         e.getThreads().clear();
                     if (e.getHistory() != null)
                         e.getHistory().clear();
-                    E notesData = notesService.create(e);
-                    assertEquals(notesData.getGuid(), e.getGuid());
-                    assertEquals(notesData.getExternalGuid(), e.getExternalGuid());
-                    assertEquals(notesData.getEntryGuid(), e.getEntryGuid());
-                    assertEquals(notesData.getThreadGuid(), e.getThreadGuid());
-                    assertEquals(notesData.getEntryGuidParent(), e.getEntryGuidParent());
-                    assertEquals(notesData.getContent(), e.getContent());
-                    assertEquals(notesData.getCreated(), e.getCreated());
-                    assertEquals(notesData.getArchived(), e.getArchived());
-                    assertEquals(notesData.getThreads(), e.getThreads());
-                    assertEquals(notesData.getHistory(), e.getHistory());
+                    E pgNoteEntity = notesService.create(e);
+                    assertEquals(pgNoteEntity.getGuid(), e.getGuid());
+                    assertEquals(pgNoteEntity.getExternalGuid(), e.getExternalGuid());
+                    assertEquals(pgNoteEntity.getEntryGuid(), e.getEntryGuid());
+                    assertEquals(pgNoteEntity.getThreadGuid(), e.getThreadGuid());
+                    assertEquals(pgNoteEntity.getEntryGuidParent(), e.getEntryGuidParent());
+                    assertEquals(pgNoteEntity.getContent(), e.getContent());
+                    assertEquals(pgNoteEntity.getCreated(), e.getCreated());
+                    assertEquals(pgNoteEntity.getArchived(), e.getArchived());
+                    assertEquals(pgNoteEntity.getThreads(), e.getThreads());
+                    assertEquals(pgNoteEntity.getHistory(), e.getHistory());
                 });
                 notesService.archive(QueryRequest.builder()
                         .searchField(Field.ENTRY)

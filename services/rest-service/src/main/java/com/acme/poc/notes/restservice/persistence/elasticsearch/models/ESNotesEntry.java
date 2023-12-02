@@ -6,7 +6,6 @@ import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.serialzation.CustomDateDeserializer;
 import com.acme.poc.notes.restservice.serialzation.CustomDateSerializer;
 import com.acme.poc.notes.restservice.util.DTOMapper;
-import com.acme.poc.notes.restservice.util.DTOMapperImpl;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -27,7 +26,7 @@ import java.util.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotesData implements INoteEntity<NotesData> {
+public class ESNotesEntry implements INoteEntity<ESNotesEntry> {
     
     @Id
     @Field(type = FieldType.Keyword, name = "guid")
@@ -82,14 +81,14 @@ public class NotesData implements INoteEntity<NotesData> {
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date archived;
-    private List<NotesData> threads = null; // Answers/responses to this note
-    private List<NotesData> history = null; // Previous versions of this entryGuid, sorted by ???
+    private List<ESNotesEntry> threads = null; // Answers/responses to this note
+    private List<ESNotesEntry> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
-    public NotesData copyThis() {
+    public ESNotesEntry copyThis() {
         return DTOMapper.INSTANCE.from(this);
     }
     @Override
-    public NotesData newInstance() {
-        return new NotesData();
+    public ESNotesEntry newInstance() {
+        return new ESNotesEntry();
     }
 }

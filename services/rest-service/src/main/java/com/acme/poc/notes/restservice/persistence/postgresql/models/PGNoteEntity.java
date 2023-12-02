@@ -2,9 +2,7 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
 import com.acme.poc.notes.restservice.util.DTOMapper;
-import com.acme.poc.notes.restservice.util.DTOMapperImpl;
 import lombok.*;
 import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.Transient;

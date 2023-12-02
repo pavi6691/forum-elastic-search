@@ -38,18 +38,18 @@ public class ApiController {
             @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
     })
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
-    public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody PGNoteEntity notesData) {
+    public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody PGNoteEntity pgNoteEntity) {
         log.debug("{}", LogUtil.method());
-        notesData.setIsDirty(true);
-        return ResponseEntity.ok(PGSQLNotesService.create(notesData));
+        pgNoteEntity.setIsDirty(true);
+        return ResponseEntity.ok(PGSQLNotesService.create(pgNoteEntity));
     }
 
     @Operation(summary = "Update an existing entry by guid/entryGuid", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
-    public ResponseEntity<PGNoteEntity> updateByGuid(@RequestBody PGNoteEntity notesData) {
+    public ResponseEntity<PGNoteEntity> updateByGuid(@RequestBody PGNoteEntity pgNoteEntity) {
         log.debug("{}", LogUtil.method());
-        notesData.setIsDirty(true);
-        return ResponseEntity.ok(PGSQLNotesService.update(notesData));
+        pgNoteEntity.setIsDirty(true);
+        return ResponseEntity.ok(PGSQLNotesService.update(pgNoteEntity));
     }
 
     @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })

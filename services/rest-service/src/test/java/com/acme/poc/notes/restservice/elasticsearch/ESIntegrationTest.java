@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.elasticsearch;
 import com.acme.poc.notes.restservice.base.AbstractIntegrationTest;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ import java.time.Duration;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
-public class ESIntegrationTest extends AbstractIntegrationTest<NotesData> {
+public class ESIntegrationTest extends AbstractIntegrationTest<ESNotesEntry> {
 
     @Value("${index.name}")
     private String indexName;
@@ -49,7 +49,7 @@ public class ESIntegrationTest extends AbstractIntegrationTest<NotesData> {
     }
 
     @Autowired
-    public ESIntegrationTest(ESNotesService esNotesService, NotesData notesData) {
-        super(esNotesService,notesData);
+    public ESIntegrationTest(ESNotesService esNotesService, ESNotesEntry ESNotesEntry) {
+        super(esNotesService, ESNotesEntry);
     }
 }

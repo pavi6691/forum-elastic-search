@@ -3,7 +3,7 @@ package com.acme.poc.notes.restservice.controller;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
-import com.acme.poc.notes.restservice.persistence.elasticsearch.models.NotesData;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNotesEntry;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
@@ -33,14 +33,14 @@ public class AdminController {
 
     @Operation(summary = "Get all notes", description = "Retrieve all notes", tags = { NotesConstants.OPENAPI_ADMIN_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_ADMIN_GET_ALL)
-    public ResponseEntity<List<NotesData>> getAll(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
+    public ResponseEntity<List<ESNotesEntry>> getAll(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.get(indexName));
     }
 
     @Operation(summary = "Get all notes by externalGuid", description = "Retrieve all notes by externalGuid", tags = { NotesConstants.OPENAPI_ADMIN_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_ADMIN_GET_ALL_BY_EXTERNAL_GUID)
-    public ResponseEntity<List<NotesData>> getByExternalGuid(
+    public ResponseEntity<List<ESNotesEntry>> getByExternalGuid(
                                                     @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
                                                     @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                     @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
@@ -61,7 +61,7 @@ public class AdminController {
 
     @Operation(summary = "Delete all notes by externalGuid", description = "Delete all notes by externalGuid", tags = { NotesConstants.OPENAPI_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_EXTERNAL_GUID)
-    public ResponseEntity<List<NotesData>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
+    public ResponseEntity<List<ESNotesEntry>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
@@ -73,7 +73,7 @@ public class AdminController {
 
     @Operation(summary = "Delete all notes by entryGuid", description = "Delete all notes by entryGuid", tags = { NotesConstants.OPENAPI_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_ENTRY_GUID)
-    public ResponseEntity<List<NotesData>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
+    public ResponseEntity<List<ESNotesEntry>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
@@ -85,7 +85,7 @@ public class AdminController {
 
     @Operation(summary = "Delete all notes by threadGuid", description = "Delete all notes by threadGuid", tags = { NotesConstants.OPENAPI_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_THREAD_GUID)
-    public ResponseEntity<List<NotesData>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
+    public ResponseEntity<List<ESNotesEntry>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
                 .searchField(Field.THREAD)
@@ -97,7 +97,7 @@ public class AdminController {
 
     @Operation(summary = "Delete note by guid", description = "Delete note by guid", tags = { NotesConstants.OPENAPI_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
-    public ResponseEntity<NotesData> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+    public ResponseEntity<ESNotesEntry> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(guid));
     }
