@@ -13,6 +13,7 @@
 
 ## Current phase
 - [ ] Merge current branch into master
+- [ ] Make ApiController (PostgreSQL) be at `/api/v1/notes...` and ESController (Elasticsearch) be at `/api/v1/notes/es...`.
 - [ ] Use `NoteEntry` as model from clients to controllers instead of `ESNoteEntity` and `PGNoteEntity`.
 - [ ] Set `createdInitially` correct. Should be the same across all versions of same note entry.
 - [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
