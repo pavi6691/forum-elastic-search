@@ -14,11 +14,11 @@
 ## Current phase
 - [ ] Merge current branch into master
 - [ ] Use `NoteEntry` as model from clients to controllers instead of `NotesData`/`ESNoteEntity` and `PGNoteEntity`.
+- [ ] Set `createdInitially` correct. Should be the same across all versions of same note entry.
+- [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
 - [ ] Create `ApiController` with all CRUD endpoints; some for PostgreSQL/Elasticsearch and some only for Elasticsearch.
 - [ ] Make Query requests generic for all databases. compose in search method
-- [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
 - [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
-- [ ] Set `createdInitially` correct. Should be the same across all versions of same note entry.
 - [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
       `ApiController`that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
       (not for querying/searching). Whenever this has saved to PostgreSQL (also setting an `isDirty` field
