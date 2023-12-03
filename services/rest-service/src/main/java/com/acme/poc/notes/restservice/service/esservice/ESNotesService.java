@@ -21,6 +21,9 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,8 +38,8 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Primary
 public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
     
-    @Value("${default.number.of.entries.to.return}")
-    private int default_size_configured;
+    @Value("${default.db.response.size}")
+    private int default_response_size;
 
     ElasticsearchOperations elasticsearchOperations;
 
@@ -54,61 +57,55 @@ public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
      */
     @Override
     protected List<ESNoteEntity> search(IQueryRequest query) {
-        return elasticsearchOperations.search(getEsQuery(query), ESNoteEntity.class).stream()
+        List<ESNoteEntity> searchHits = elasticsearchOperations.search(getEsQuery(query), ESNoteEntity.class).stream()
                 .map(sh -> sh.getContent()).collect(Collectors.toList());
+        if(query.isAllEntries()) {
+            List<ESNoteEntity> searchHitList = new ArrayList<>();
+            searchHitList.addAll(searchHits);
+            long startTime = System.currentTimeMillis();
+            boolean timeout = false;
+            while (searchHits != null && !searchHits.isEmpty() && !timeout && searchHits.size() == default_response_size) {
+                List<Date> sortValues = List.of(searchHits.get(searchHits.size() - 1).getCreated()); // TODO make sort value created dynamic
+                query.setSearchAfter(sortValues.size() > 0 ? sortValues.get(0) : null);
+                searchHits = elasticsearchOperations.search(getEsQuery(query), ESNoteEntity.class).stream()
+                        .map(sh -> sh.getContent()).collect(Collectors.toList());
+                timeout = (System.currentTimeMillis() - startTime) >= NotesConstants.TIMEOUT_DELETE;
+                searchHitList.addAll(searchHits);
+            }
+            if (timeout) {
+                long timeTaken = (System.currentTimeMillis() - startTime);
+                log.error("getting all entries operation timed out, time taken: {} ms", timeTaken);
+                throwRestError(NotesAPIError.ERROR_GET_ALL_ENTRIES_TIMEOUT_DELETE, timeTaken);
+            }
+            return searchHitList;
+        }
+        return searchHits;
     }
     
     public NativeSearchQuery getEsQuery(IQueryRequest query) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.wrapperQuery(com.acme.poc.notes.restservice.service.esservice.ESQueryBuilder.build(query)))
+                .withQuery(QueryBuilders.wrapperQuery(ESQueryBuilder.build(query)))
                 .withSort(Sort.by(Sort.Order.asc(Field.CREATED.getMatch())));
-        if (query.searchAfter() != null && !(query.getSearchField().equals(Field.ENTRY))) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
-            String searchAfter = query.searchAfter().toString();
-            try {
-                if (getTimeUnit(Long.valueOf(searchAfter))) {
-                    searchQueryBuilder.withSearchAfter(List.of(searchAfter));
-                } else {
-                    searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(searchAfter).toInstant().toEpochMilli()));
+        if (query.getSearchAfter() != null && !(query.getSearchField().equals(Field.ENTRY))) {
+            Object searchAfter = query.getSearchAfter();
+            if(searchAfter instanceof Date) {
+                searchQueryBuilder.withSearchAfter(Collections.singletonList(((Date) searchAfter).getTime()));
+            } else {
+                try {
+                    if (getTimeUnit(Long.valueOf(searchAfter.toString()))) {
+                        searchQueryBuilder.withSearchAfter(List.of(searchAfter));
+                    } else {
+                        SimpleDateFormat dateFormat = new SimpleDateFormat(NotesConstants.TIMESTAMP_ISO8601);
+                        searchQueryBuilder.withSearchAfter(List.of(dateFormat.parse(searchAfter.toString()).toInstant().toEpochMilli()));
+                    }
+                } catch (ParseException e) {
+                    throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, 
+                            String.format(searchAfter.toString(),NotesConstants.TIMESTAMP_ISO8601,searchAfter));
                 }
-            } catch (ParseException e) {
-                throwRestError(NotesAPIError.ERROR_INCORRECT_SEARCH_AFTER, String.format(searchAfter,NotesConstants.TIMESTAMP_ISO8601,searchAfter));
             }
         }
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
-        searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_size_configured);
+        searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_response_size);
         return searchQuery;
     }
-
-    /**
-     * Create new index if not exists
-     *
-     * @param indexName - index name to create
-     * @return indexName when successfully created, else message that says index already exists
-     */
-    public Object createDataStore(String indexName) {
-        log.debug("{} index: {}", LogUtil.method(), indexName);
-        try {
-// TODO
-//            IndexMetadataConfiguration indexMetadataConfiguration =
-//            resourceFileReaderService.getDocsPropertyFile(Constants.APPLICATION_YAML,this.getClass());
-//            Template template = resourceFileReaderService.getTemplateFile(Constants.NOTE_V1_INDEX_TEMPLATE,this.getClass());
-//            mapping = String.format(mapping, NotesConstants.TIMESTAMP_ISO8601,NotesConstants.TIMESTAMP_ISO8601);
-//            String mapping  = resourceFileReaderService.getMappingFromFile(Constants.NOTE_V1_INDEX_MAPPINGS,this.getClass());
-//            PolicyInfo policyInfo  = resourceFileReaderService.getPolicyFile(Constants.NOTE_V1_INDEX_POLICY,this.getClass());
-            IndexOperations indexOperations = elasticsearchOperations.indexOps(IndexCoordinates.of(indexName));
-            if (!indexOperations.exists()) {
-                indexOperations.create();
-//                return new ObjectMapper().writeValueAsString(indexOperations.getInformation());
-                return indexOperations.getInformation().get(0).getName();
-            } else {
-                log.info("Index already exists: {} ", indexName);
-                return String.format("Index already exists: %s", indexName);
-            }
-        } catch (Exception e) {
-            log.error("Exception while creating index: " + indexName, e);
-            throw new RuntimeException(e);
-        }
-    }
-
 }

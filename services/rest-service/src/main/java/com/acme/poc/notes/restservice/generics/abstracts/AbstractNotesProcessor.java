@@ -143,7 +143,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                     if (!threadMapping.containsKey(entry.getEntryGuidParent())) {
                         // New thread, for SearchByEntryGuid, SearchArchivedByEntryGuid only first entry
                         if ((!(query.getSearchField().equals(Field.ENTRY)) || threadMapping.isEmpty()) ||
-                                query.searchAfter() != null) {
+                                query.getSearchAfter() != null) {
                             threadMapping.put(entry.getEntryGuid(), entry);
                             if (!(query.getSearchField().equals(Field.ENTRY) && query.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) || 
                                     (entry.getArchived() != null &&

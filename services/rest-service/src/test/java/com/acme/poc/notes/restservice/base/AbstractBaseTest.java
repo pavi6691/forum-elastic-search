@@ -8,31 +8,11 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 import java.util.*;
 import java.util.stream.IntStream;
-
 import static org.junit.jupiter.api.Assertions.*;
-public abstract class AbstractBaseTest<E extends INoteEntity<E>> {
-
-    private static final String POSTGRESQL_IMAGE = "postgres:15.5-alpine";
-    @Container
-    public static final PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer(POSTGRESQL_IMAGE)
-            .withDatabaseName("acme")
-            .withUsername("postgresql-username")
-            .withPassword("postgresql-password");
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        postgresqlContainer
-                .withNetworkAliases("postgresql");
-        postgresqlContainer.start();
-        registry.add("spring.datasource.url", postgresqlContainer::getJdbcUrl);
-    }
+public abstract class AbstractBaseTest<E extends INoteEntity<E>> extends TestContainers {
     
     protected INotesOperations<E> notesService;
     protected AbstractBaseTest(INotesOperations<E> notesService) {

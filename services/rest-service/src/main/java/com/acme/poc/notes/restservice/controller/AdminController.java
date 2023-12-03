@@ -11,6 +11,7 @@ import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -25,7 +26,7 @@ public class AdminController {
 
     ESNotesService esNotesService;
 
-
+    @Autowired
     public AdminController(ESNotesService esNotesService) {
         this.esNotesService = esNotesService;
     }
@@ -64,6 +65,7 @@ public class AdminController {
     public ResponseEntity<List<ESNoteEntity>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
+                .allEntries(true)
                 .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
@@ -76,6 +78,7 @@ public class AdminController {
     public ResponseEntity<List<ESNoteEntity>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
+                .allEntries(true)
                 .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
@@ -88,6 +91,7 @@ public class AdminController {
     public ResponseEntity<List<ESNoteEntity>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
+                .allEntries(true)
                 .searchField(Field.THREAD)
                 .searchData(threadGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))

@@ -4,7 +4,7 @@ elasticsearch:
   clustername:
 
 index.name: note-v1
-default.number.of.entries.to.return: 1000
+default.db.response.size: 1000
 service.thread.pool.size: 8
 
 springdoc.show-actuator: true

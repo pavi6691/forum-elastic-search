@@ -18,6 +18,7 @@ public interface DTOMapper {
 
     // Elasticsearch
     ESNoteEntity toESEntity(NoteEntry noteEntry);
+    ESNoteEntity toESEntity(PGNoteEntity pgNoteEntity);
     ESNoteEntity from(ESNoteEntity eSNoteEntity);
     NoteEntry toDTO(ESNoteEntity eSNoteEntity);
 

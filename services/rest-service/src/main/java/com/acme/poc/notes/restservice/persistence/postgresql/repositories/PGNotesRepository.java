@@ -17,5 +17,6 @@ public interface PGNotesRepository extends JpaRepository<PGNoteEntity, UUID> {
     Optional<List<PGNoteEntity>> findByExternalGuid(UUID externalGuid);
     Optional<PGNoteEntity> findByThreadGuid(UUID externalGuid/*, Pageable pageable*/);
     Optional<PGNoteEntity> findByGuid(UUID guid);
+    List<PGNoteEntity> findByIsDirty(boolean isDirty);
 
 }

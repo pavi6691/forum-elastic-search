@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Service("pgSQLNotesService")
 public class PGSQLNotesService extends AbstractNotesOperations<PGNoteEntity> {
 
-    @Value("${default.number.of.entries.to.return}")
+    @Value("${default.db.response.size}")
     private int default_size_configured;
 
     ElasticsearchOperations elasticsearchOperations;

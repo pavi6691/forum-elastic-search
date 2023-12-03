@@ -27,30 +27,16 @@ public class QueryRequest implements IQueryRequest {
     private long createdDateTime;
     @Getter @Singular
     private Set<Filter> filters = new HashSet<>();
-    @Getter
-    private Object searchAfter;
-    @Getter
+    @Getter @Setter
+    private Object searchAfter; // used for elasticsearch pagination
+    @Getter @Setter
+    private boolean allEntries = false; // default response size will be @Value("${default.db.response.size}")
+    @Getter @Setter
     private int size;
     @Getter @Builder.Default
     private NoteSortOrder sortOrder = NoteSortOrder.ASCENDING;
     @Getter @Setter @Builder.Default
     private ResultFormat resultFormat = ResultFormat.TREE;
-    @Override
-    public NoteSortOrder getSortOrder() {
-        return sortOrder;
-    }
-    @Override
-    public int getSize() {
-        return size;
-    }
-    @Override
-    public Object searchAfter() {
-        return searchAfter;
-    }
-    @Override
-    public void searchAfter(Object sortValues) {
-        this.searchAfter = sortValues;
-    }
     public Set<Filter> getFilters() {
         filters = new HashSet<>(filters);
         return filters;

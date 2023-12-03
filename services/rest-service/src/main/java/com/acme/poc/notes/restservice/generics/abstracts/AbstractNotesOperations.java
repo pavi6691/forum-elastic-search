@@ -1,6 +1,4 @@
 package com.acme.poc.notes.restservice.generics.abstracts;
-
-import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
@@ -13,10 +11,8 @@ import com.acme.poc.notes.restservice.util.ESUtil;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
@@ -25,9 +21,6 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
 @Slf4j
 @Service
 public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends AbstractNotesProcessor<E> implements INotesOperations<E> {
-
-    @Value("${default.number.of.entries.to.return}")
-    private int default_number_of_entries;
     
     protected CrudRepository crudRepository;
 
@@ -112,7 +105,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
     @Override
     public List<E> delete(IQueryRequest query) {
         log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "delete by query", query.getSearchField(), query.getSearchData());
-        List<E> searchHitList = getAll(query);
+        List<E> searchHitList = getUnprocessed(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
         try {
@@ -139,34 +132,6 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         log.error("Cannot delete. No entry found for given guid: {}", keyGuid);
         throwRestError(NotesAPIError.ERROR_NOT_FOUND);
         return null;
-    }
-
-    @Override
-    public List<E> getAll(IQueryRequest query) {
-        log.debug("{} request: {}, search field: {}, uuid: {}", LogUtil.method(), "get all entries", query.getSearchField(), query.getSearchData());
-        long startTime = System.currentTimeMillis();
-        boolean timeout = false;
-        List<E> searchHitList = new ArrayList<>();
-        List<E> searchHits = getUnprocessed(query);
-        searchHitList.addAll(searchHits);
-        while (searchHits != null && !searchHits.isEmpty() && !timeout && searchHits.size() == default_number_of_entries) {
-            searchHitList.addAll(searchHits);
-            List<Object> sortValues = List.of(searchHits.get(searchHits.size() - 1).getCreated()); // TODO make sort value created dynamic
-            query.searchAfter(sortValues.size() > 0 ? sortValues.get(0) : null);
-            searchHits = getUnprocessed(query);
-            timeout = (System.currentTimeMillis() - startTime) >= NotesConstants.TIMEOUT_DELETE;
-        }
-        if (timeout) {
-            long timeTaken = (System.currentTimeMillis() - startTime);
-            log.error("Delete entries operation timed out, time taken: {} ms", timeTaken);
-            throwRestError(NotesAPIError.ERROR_TIMEOUT_DELETE, timeTaken);
-        }
-        if (searchHitList == null || searchHitList.isEmpty()) {
-            log.error("No entries found for request: {}", query.getClass().getSimpleName());
-            throwRestError(NotesAPIError.ERROR_NOT_FOUND);
-        }
-        log.debug("Number of entries found: {}", searchHitList.size());
-        return searchHitList;
     }
 
     /**
@@ -215,7 +180,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
     @Override
     public List<E> archive(IQueryRequest query) {
         log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "archive", query.getSearchField(), query.getSearchData());
-        List<E> searchHitList = getAll(query);
+        List<E> searchHitList = getUnprocessed(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
         try {
@@ -226,7 +191,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         }
         query.getFilters().remove(Filter.EXCLUDE_ARCHIVED);
         query.getFilters().add(Filter.INCLUDE_ARCHIVED);
-        return process(query, getAll(query).stream().iterator());
+        return process(query, getUnprocessed(query).stream().iterator());
     }
 
     /**
@@ -288,6 +253,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
 
         ESUtil.clearHistoryAndThreads(existingEntity);
         E updating = existingEntity.copyThis();
+        updating.setIsDirty(payloadEntry.getIsDirty());
         updating.setContent(payloadEntry.getContent());
         updating.setGuid(UUID.randomUUID());
         updating.setCreated(ESUtil.getCurrentDate());

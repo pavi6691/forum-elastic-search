@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
@@ -28,7 +29,7 @@ public class ESController {
 
     ESNotesService notesService;
 
-
+    @Autowired
     public ESController(ESNotesService notesService) {
         this.notesService = notesService;
     }
@@ -115,6 +116,7 @@ public class ESController {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
+                .allEntries(true)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build()));
@@ -126,6 +128,7 @@ public class ESController {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build()));
@@ -175,6 +178,7 @@ public class ESController {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.delete((QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
+                .allEntries(true)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build())));
@@ -186,6 +190,7 @@ public class ESController {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.delete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build()));

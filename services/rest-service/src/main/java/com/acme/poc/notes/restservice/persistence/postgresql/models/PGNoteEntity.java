@@ -3,11 +3,9 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 import com.acme.poc.notes.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.util.DTOMapper;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import org.hibernate.annotations.Type;
-import org.springframework.data.annotation.Transient;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -24,7 +22,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
-
     @Id
     @Column(name = "guid", nullable = false)
     private UUID guid;
@@ -44,12 +41,11 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     private Date createdInitially;
     private Date created;
     private Date archived;
+    @Setter
     private Boolean isDirty;
     @Transient
-    @OneToMany
     private List<PGNoteEntity> threads = null; // Answers/responses to this note
     @Transient
-    @OneToMany
     private List<PGNoteEntity> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
     public PGNoteEntity copyThis() {

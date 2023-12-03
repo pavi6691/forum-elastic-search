@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NotesConstants {
 
-
+    public static final int DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE = 30/*seconds*/ * 1000/*millis*/; // Run every 30 seconds
     // Timestamps
     public static final String TIMESTAMP_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX";
 

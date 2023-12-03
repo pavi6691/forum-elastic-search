@@ -60,6 +60,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         INoteEntity thread5 = createThread(thread4, "New External Entry-Thread-5");
         INoteEntity thread6 = createThread(thread5, "New External Entry-Thread-6");
         notesService.archive(QueryRequest.builder()
+                .allEntries(true)
                 .searchField(Field.ENTRY)
                 .searchData(thread5.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
@@ -107,6 +108,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
 
         searchBy_Thread_1_Entry = QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(thread1_2.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build();
@@ -160,6 +162,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         // Archive another entry (total two different threads archived), expected multiple results
         IQueryRequest archive_1_1 = QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(thread1_1.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build();
@@ -194,6 +197,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
 
         List<E> resultDelete = notesService.delete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(thread1_1.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build());
@@ -205,6 +209,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         IQueryRequest query_thread1 = QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .searchData(thread1.getEntryGuid().toString())
+                .allEntries(true)
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .build();
         searchResult = notesService.get(query_thread1);
@@ -214,6 +219,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         // Select one archived entry of many threads on the same layer. and some other is also archived
         IQueryRequest archive_thread3 = QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(thread3.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build();
@@ -244,6 +250,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
 
         IQueryRequest queryArchivedRootEntry = QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(newEntryCreated.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
                 .build();
@@ -256,12 +263,14 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         INoteEntity thread_4_1 = createThread(thread4, "New External Entry-Thread-4-1");
         searchResult = notesService.archive(QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(thread_4_1.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(searchResult, 1, 1, 0, 0);
         searchResult = notesService.archive(QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(thread2.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
@@ -273,6 +282,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         // So when searched results should contain one entry with all threads
         searchResult = notesService.archive(QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(newEntryCreated.getEntryGuid().toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
@@ -285,6 +295,7 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         // Delete
         resultDelete = notesService.delete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
+                .allEntries(true)
                 .searchData(querySearchByExternalGuid.getSearchData())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
@@ -320,11 +331,13 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
                     assertEquals(pgNoteEntity.getThreads(), e.getThreads());
                     assertEquals(pgNoteEntity.getHistory(), e.getHistory());
                 });
-                notesService.archive(QueryRequest.builder()
-                        .searchField(Field.ENTRY)
-                        .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
-                        .build());
             }
+            notesService.archive(QueryRequest.builder()
+                    .allEntries(true)
+                    .searchField(Field.ENTRY)
+                    .filters(Set.of(Filter.INCLUDE_VERSIONS,Filter.EXCLUDE_ARCHIVED))
+                    .searchData("7f20d0eb-3907-4647-9584-3d7814cd3a55")
+                    .build());
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

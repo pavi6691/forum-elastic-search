@@ -36,8 +36,8 @@ public class NotesAPIErrorTest {
                      ERROR_NEW_RESPONSE_NO_THREAD_GUID,
                      ERROR_ENTRY_ARCHIVED_NO_UPDATE,
                      ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD,
-                     ERROR_ENTRY_HAS_BEEN_MODIFIED,
-                     ERROR_TIMEOUT_DELETE,
+                     ERROR_ENTRY_HAS_BEEN_MODIFIED, 
+                     ERROR_GET_ALL_ENTRIES_TIMEOUT_DELETE,
                      ERROR_NOT_FOUND,
                      ERROR_SERVER,
                      ERROR_ON_DB_OPERATION -> {

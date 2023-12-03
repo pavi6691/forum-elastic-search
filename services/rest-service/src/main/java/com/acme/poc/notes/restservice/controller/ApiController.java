@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
@@ -28,6 +29,7 @@ public class ApiController {
 
     PGSQLNotesService pgsqlNotesService;
 
+    @Autowired
     public ApiController(PGSQLNotesService PGSQLNotesService) {
         this.pgsqlNotesService = PGSQLNotesService;
     }
@@ -107,6 +109,7 @@ public class ApiController {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
+                .allEntries(true)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
@@ -119,6 +122,7 @@ public class ApiController {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
+                .allEntries(true)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
@@ -131,6 +135,7 @@ public class ApiController {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
                 .searchField(Field.THREAD)
+                .allEntries(true)
                 .searchData(threadGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)

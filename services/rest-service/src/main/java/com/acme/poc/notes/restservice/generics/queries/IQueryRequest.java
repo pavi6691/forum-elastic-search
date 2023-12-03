@@ -9,14 +9,16 @@ import java.util.Set;
 
 public interface IQueryRequest {
     Set<Filter> getFilters();
-    void searchAfter(Object sortValues);
-    Object searchAfter();
+    void setSearchAfter(Object sortValues);
+    Object getSearchAfter();
     int getSize();
+    void setSize(int size);
     NoteSortOrder getSortOrder();
     ResultFormat getResultFormat();
     void setResultFormat(ResultFormat resultFormat);
     Field getSearchField();
     String getSearchData();
+    boolean isAllEntries();
     long getCreatedDateTime();
     
 }
