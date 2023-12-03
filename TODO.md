@@ -44,10 +44,10 @@
 
 - [ ] Open search API support, flag based to switch between rest high level client and open search?
 - [ ] Do need an entry that represent an item? Ex: if YouTube represents externalGuid, each video on it is an
-  item. for every video,we may find list of entries with threads.
+      item. for every video,we may find list of entries with threads.
 - Below two uses cases are covered with same fix
-    - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads.
-    - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
+  - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads.
+  - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
 - [ ] Handling more than 1k thread entries? Wasn't this solved by V3?
 
 ## Later phase(s)
@@ -128,24 +128,24 @@ whereas it should simply be:
 - [x] Refactor package for REST service from `com.acme.poc.note.*` to `com.acme.poc.note.restservice.*`
 - [x] [Proposal for changing guid names](documentation/NotesGuidOverview.drawio.png) (PNG with embedded Draw.io diagram)
 - [x] In general use timestamps as `uuuu-MM-dd'T'HH:mm:ss.SSSSSSXXX`. Currently `"created"` value is stored
-  with only 3 digits for milliseconds.
+      with only 3 digits for milliseconds.
 - [x] When saving data to Elasticsearch:
-    - [x] Do not store `"_class" : "com.acme.poc.notes.elasticsearch.pojo.NotesData"`.
-    - [x] Do not store `"threads" : [ ]` when it has no content.
-    - [x] Do not store `"history" : [ ]` when it has no content.
-    - [x] Do not store null values. I haven't seen any yet, but just to make sure.
+  - [x] Do not store `"_class" : "com.acme.poc.notes.elasticsearch.pojo.NotesData"`.
+  - [x] Do not store `"threads" : [ ]` when it has no content.
+  - [x] Do not store `"history" : [ ]` when it has no content.
+  - [x] Do not store null values. I haven't seen any yet, but just to make sure.
 - [x] GET `/api/v1/notes/externalguid/{externalGuid}`
-    - When searching for an `externalGuid` it only returns the first document found. It should return all
-      documents that has that `externalGuid`.
+  - When searching for an `externalGuid` it only returns the first document found. It should return all
+    documents that has that `externalGuid`.
 - [X] Addressed corner cases for search archived entries by entryGuid
 - [X] Validation for update API to make sure latest version of entry is being modified. if entry is updated by other user, an error is shown
 - [X] Replace getters/setters with Lombok's @Data or @Setter/@Getter and builders with Lombok's @Builder
 - [X] First and foremost, refactor, simplify and optimize code and give design perspective to it. Use different
-  strategy to consume data from elasticsearch and process it as:
-    - [X] Current implementation has incremental calls to elasticsearch for every thread. there are going to be
-      many call in single searchRequest.
-    - [X] Provide different strategy, where there will be 1 or 2 calls/search searchRequest to elastic search and
-      get the response in one go and process them internally. Both implementation can be kept with flag
+      strategy to consume data from elasticsearch and process it as:
+  - [X] Current implementation has incremental calls to elasticsearch for every thread. there are going to be
+        many call in single searchRequest.
+  - [X] Provide different strategy, where there will be 1 or 2 calls/search searchRequest to elastic search and
+        get the response in one go and process them internally. Both implementation can be kept with flag
 - [X] When searched archived entries by entry, there are multiple corner cases to handle
 - [X] Pagination - make this searchAfter internal to backend with session timeout?
 - [X] Sorting provision by DESC/ASC
@@ -154,12 +154,12 @@ whereas it should simply be:
 - [X] provision for size in queryParam, if not provided, default 1K records are returned
 - [X] validation on update multiple user modifying same entry at the same time
 - [X] For request by entryGuid, query gets all entries that are created after the requested one. so result set from elasticsearch may contain
-  other entries that not belongs to requested entry thread. as they may have been created/updated for others but after this entry is created.
-  So further filter is done as below -
-    - [X] For entry request, exclude all other entries that doesn't belongs to the request one. only one record stored in results list
-      and threadMapping is done only for this record
-    - [X] For selection of multi entries within requested entry due to some criteria(Ex - only archived entries),
-      then map(archived - for archived filter) that will have only archived entries. these entries are presented within the requested entry thread.
+      other entries that not belongs to requested entry thread. as they may have been created/updated for others but after this entry is created.
+      So further filter is done as below -
+  - [X] For entry request, exclude all other entries that doesn't belongs to the request one. only one record stored in results list
+        and threadMapping is done only for this record
+  - [X] For selection of multi entries within requested entry due to some criteria(Ex - only archived entries),
+        then map(archived - for archived filter) that will have only archived entries. these entries are presented within the requested entry thread.
 - [X] JUnit, Integration and PSR Test Cases
 - [X] Change query string parameter `getUpdateHistory` to `includeVersions`
 - [X] Change query string parameter `getArchivedResponse` to `includeArchived` ehh... how is this different from `getUpdateHistory`? - it is to include entries archived. if false archived entries are discarded. archived entries are those with archived timestamp set.
