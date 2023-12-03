@@ -13,7 +13,7 @@
 
 ## Current phase
 - [ ] Merge current branch into master
-- [ ] Use `NoteEntry` as model from clients to controllers instead of `NotesData`/`ESNoteEntity` and `PGNoteEntity`.
+- [ ] Use `NoteEntry` as model from clients to controllers instead of `ESNoteEntity` and `PGNoteEntity`.
 - [ ] Set `createdInitially` correct. Should be the same across all versions of same note entry.
 - [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
 - [ ] Create `ApiController` with all CRUD endpoints; some for PostgreSQL/Elasticsearch and some only for Elasticsearch.
