@@ -54,7 +54,8 @@ public class DirtyNotesProcessorJob {
             // store them in elasticsearch and make a list of guid(primary key) of stored entries in elasticsearch 
             List<UUID> idsToUpdate = new ArrayList<>();
             try {
-//                Iterable<ESNoteEntity> savedInEs = esNotesRepository.saveAll(esNoteEntities); // TODO when upgraded to 7.x and above
+                // TODO to To_Upgrade_7.x when upgraded to 7.x and above, uncomment below line, and no need to esNotesRepository.save(e); just iterate savedInEs instead of esNoteEntities
+//                Iterable<ESNoteEntity> savedInEs = esNotesRepository.saveAll(esNoteEntities); 
                 if (esNoteEntities != null) {
                     esNoteEntities.forEach(e -> {
                         esNotesRepository.save(e);
