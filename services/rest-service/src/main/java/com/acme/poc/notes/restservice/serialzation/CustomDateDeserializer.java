@@ -31,7 +31,7 @@ public class CustomDateDeserializer extends JsonDeserializer<Date> {
         } catch (ParseException e) {
             throwRestError(NotesAPIError.ERROR_PARSING_TIMESTAMP, dateStr);
         }
-        throwRestError(NotesAPIError.ERROR_SERVER);
+        throwRestError(NotesAPIError.ERROR_SERVER, "could not deserialize date: " + dateStr);
         return null;
     }
 

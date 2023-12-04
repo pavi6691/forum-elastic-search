@@ -19,13 +19,12 @@ import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Document(indexName = "#{@indexName}", createIndex = false, writeTypeHint = WriteTypeHint.FALSE)
+@Document(indexName = "#{@indexName}", writeTypeHint = WriteTypeHint.FALSE)
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Mapping(mappingPath = "mappings/note-v1_mapping.json")
 public class ESNoteEntity implements INoteEntity<ESNoteEntity> {
     
     @Id
@@ -67,17 +66,17 @@ public class ESNoteEntity implements INoteEntity<ESNoteEntity> {
     @Field(type = FieldType.Object, name = "customJson")
     private Object customJson;
 
-    @Field(type = FieldType.Date, name = "createdInitially", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
+    @Field(type = FieldType.Date, name = "createdInitially", pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date createdInitially;
 
-    @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
+    @Field(type = FieldType.Date, name = "created", pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date created;
 
-    @Field(type = FieldType.Date, name = "archived", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
+    @Field(type = FieldType.Date, name = "archived", pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date archived;

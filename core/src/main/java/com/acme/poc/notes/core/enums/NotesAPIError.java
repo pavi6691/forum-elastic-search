@@ -19,7 +19,7 @@ public enum NotesAPIError {
     ERROR_GET_ALL_ENTRIES_TIMEOUT_DELETE   (408, 4014, "Getting all entries timed out, time taken: %s ms"),
     ERROR_NOT_FOUND                        (404, 4015, "No entries found"),
 
-    ERROR_SERVER                           (500, 5000, "Internal server error"),
+    ERROR_SERVER                           (500, 5000, "error message: %s"),
     ERROR_ON_DB_OPERATION                  (500, 5002, "Error while performing database operation. Operation: %s, error: %s");
 
     private final int httpStatusCode;

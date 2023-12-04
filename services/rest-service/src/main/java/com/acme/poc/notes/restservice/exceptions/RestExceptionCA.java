@@ -3,7 +3,6 @@ package com.acme.poc.notes.restservice.exceptions;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.elasticsearch.RestStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;

@@ -112,7 +112,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
             crudRepository.deleteAll(processed);
         } catch (Exception e) {
             log.error("Error while deleting entries for request: {} -- " + query.getClass().getSimpleName(), e.getMessage());
-            throwRestError(NotesAPIError.ERROR_SERVER);
+            throwRestError(NotesAPIError.ERROR_SERVER, e.getCause() != null ? e.getCause().getLocalizedMessage() : e.getMessage());
         }
         log.debug("Successfully deleted all {} entries", processed.size());
         return processed;

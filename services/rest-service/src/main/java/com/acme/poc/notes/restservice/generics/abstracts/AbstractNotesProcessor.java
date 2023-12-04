@@ -85,7 +85,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
             }
         } catch (Exception e) {
             log.info("Error: {}", e);
-            throwRestError(NotesAPIError.ERROR_SERVER);
+            throwRestError(NotesAPIError.ERROR_SERVER, e.getCause() != null ? e.getCause().getLocalizedMessage() : e.getMessage());
         }
         return searchHits;
     }

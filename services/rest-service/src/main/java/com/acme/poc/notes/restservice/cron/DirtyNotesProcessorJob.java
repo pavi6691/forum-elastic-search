@@ -7,6 +7,7 @@ import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNote
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,10 +55,9 @@ public class DirtyNotesProcessorJob {
             // store them in elasticsearch and make a list of guid(primary key) of stored entries in elasticsearch 
             List<UUID> idsToUpdate = new ArrayList<>();
             try {
-//                Iterable<ESNoteEntity> savedInEs = esNotesRepository.saveAll(esNoteEntities); // TODO bulk operation, an issue with this operation currently
-                if (esNoteEntities != null) {
-                    esNoteEntities.forEach(e -> {
-                        esNotesRepository.save(e);
+                Iterable<ESNoteEntity> savedInEs = esNotesRepository.saveAll(esNoteEntities);
+                if (savedInEs != null) {
+                    savedInEs.forEach(e -> {
                         idsToUpdate.add(e.getGuid());
                     });
                 }
