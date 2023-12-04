@@ -38,7 +38,7 @@ public class NotesConstants {
     public static final String API_ENDPOINT_DELETE = "/DELETE";
     public static final String API_ENDPOINT_DEVOPS = "/devops";
     public static final String API_ENDPOINT_ADMIN = "/admin";
-    public static final String API_ENDPOINT_POSTGRESQL = "/pgsql";
+    public static final String API_ENDPOINT_POSTGRESQL = "/notes";
 
     //
     // /api/v1/devops/...
@@ -64,7 +64,7 @@ public class NotesConstants {
     //
     // /api/v1/notes/...
     //
-    public static final String API_ENDPOINT_NOTES = "/notes";
+    public static final String API_ENDPOINT_NOTES = "/notes/es";
     // POST
     public static final String API_ENDPOINT_NOTES_CREATE = "";
     // GET

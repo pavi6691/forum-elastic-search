@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
@@ -8,6 +9,7 @@ import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
+import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,16 +43,16 @@ public class ESController {
             @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
     })
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
-    public ResponseEntity<ESNoteEntity> create(@Valid @RequestBody ESNoteEntity eSNoteEntity) {
+    public ResponseEntity<ESNoteEntity> create(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.create(eSNoteEntity));
+        return ResponseEntity.ok(notesService.create(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }
 
-    @Operation(summary = "Update an existing entry by guid/entryGuid", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @Operation(summary = "Update an existing entry provided guid/entryGuid in the payload", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
-    public ResponseEntity<ESNoteEntity> updateByGuid(@RequestBody ESNoteEntity eSNoteEntity) {
+    public ResponseEntity<ESNoteEntity> update(@RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.update(eSNoteEntity));
+        return ResponseEntity.ok(notesService.update(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }
 
     @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })

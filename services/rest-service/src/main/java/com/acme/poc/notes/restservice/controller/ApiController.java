@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.controller;
 
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
@@ -8,6 +9,7 @@ import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
+import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,16 +42,18 @@ public class ApiController {
             @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
     })
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
-    public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody PGNoteEntity pgNoteEntity) {
+    public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
+        PGNoteEntity pgNoteEntity = DTOMapper.INSTANCE.toEntity(payloadEntry);
         pgNoteEntity.setIsDirty(true);
         return ResponseEntity.ok(pgsqlNotesService.create(pgNoteEntity));
     }
 
-    @Operation(summary = "Update an existing entry by guid/entryGuid", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @Operation(summary = "Update an existing entry provided guid/entryGuid in the payload", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
-    public ResponseEntity<PGNoteEntity> updateByGuid(@RequestBody PGNoteEntity pgNoteEntity) {
+    public ResponseEntity<PGNoteEntity> update(@RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
+        PGNoteEntity pgNoteEntity = DTOMapper.INSTANCE.toEntity(payloadEntry);
         pgNoteEntity.setIsDirty(true);
         return ResponseEntity.ok(pgsqlNotesService.update(pgNoteEntity));
     }
