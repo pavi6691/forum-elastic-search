@@ -29,7 +29,9 @@ public interface INoteEntity<E> {
     void setArchived(Date archived);
     default List<E> getHistory() {return Collections.emptyList();}
     default List<E> getThreads() {return Collections.emptyList();}
+    @JsonIgnore
     default void setIsDirty(Boolean isDirty) {}
+    @JsonIgnore
     default Boolean getIsDirty() {return false;}
     default void setThreads(List<E> threads){}
     default void setHistory(List<E> history) {}
