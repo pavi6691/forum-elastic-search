@@ -48,10 +48,13 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         if (ObjectUtils.isEmpty(entity.getThreadGuid())) {
             entity.setThreadGuid(UUID.randomUUID());
         }
+        Date created = ESUtil.getCurrentDate();
         if (ObjectUtils.isEmpty(entity.getCreated())) {
-            entity.setCreated(ESUtil.getCurrentDate());
+            entity.setCreated(created);
         }
-        
+        if (ObjectUtils.isEmpty(entity.getCreatedInitially())) {
+            entity.setCreatedInitially(created);
+        }
         if (entity.getEntryGuidParent() != null) {  // It's a thread that needs to be created
             List<E> existingEntry = getProcessed(QueryRequest.builder()
                     .searchField(Field.ENTRY)

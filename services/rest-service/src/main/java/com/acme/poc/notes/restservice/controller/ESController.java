@@ -50,7 +50,7 @@ public class ESController {
 
     @Operation(summary = "Update an existing entry provided guid/entryGuid in the payload", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
-    public ResponseEntity<ESNoteEntity> update(@RequestBody NoteEntry payloadEntry) {
+    public ResponseEntity<ESNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.update(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }

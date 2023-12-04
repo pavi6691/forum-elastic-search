@@ -25,6 +25,8 @@ public interface INoteEntity<E> {
     void setCustomJson(Object customJson);
     Date getCreated();
     void setCreated(Date created);
+    void setCreatedInitially(Date createdInitially);
+    Date getCreatedInitially();
     Date getArchived();
     void setArchived(Date archived);
     default List<E> getHistory() {return Collections.emptyList();}

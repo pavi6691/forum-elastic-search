@@ -51,7 +51,7 @@ public class ApiController {
 
     @Operation(summary = "Update an existing entry provided guid/entryGuid in the payload", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
-    public ResponseEntity<PGNoteEntity> update(@RequestBody NoteEntry payloadEntry) {
+    public ResponseEntity<PGNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
         PGNoteEntity pgNoteEntity = DTOMapper.INSTANCE.toEntity(payloadEntry);
         pgNoteEntity.setIsDirty(true);

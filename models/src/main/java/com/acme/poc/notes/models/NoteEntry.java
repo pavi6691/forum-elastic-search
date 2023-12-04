@@ -20,7 +20,6 @@ public record NoteEntry(
     UUID externalGuid,
     @NotNull
     UUID externalItemGuid,             // We need to talk about this compared to externalGuid in a meeting
-    @NotNull
     String externalItemId,             // Not used in this phase, but should be persisted as null
     UUID threadGuid,
     UUID entryGuid,
