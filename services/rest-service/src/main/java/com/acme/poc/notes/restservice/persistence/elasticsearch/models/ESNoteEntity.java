@@ -19,7 +19,7 @@ import java.util.*;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Document(indexName = "#{@indexName}", writeTypeHint = WriteTypeHint.FALSE)
+@Document(indexName = "#{@indexName}", createIndex = false, writeTypeHint = WriteTypeHint.FALSE)
 @Getter
 @Setter
 @Builder

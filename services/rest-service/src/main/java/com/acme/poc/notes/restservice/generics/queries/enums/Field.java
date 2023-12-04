@@ -16,9 +16,9 @@ public enum Field {
     ALL ("all");
 
 
-    private String match ="";
+    private String fieldName ="";
 
-    Field(String match) {
-        this.match = match;
+    Field(String fieldName) {
+        this.fieldName = fieldName;
     }
 }

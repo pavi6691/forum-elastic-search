@@ -56,7 +56,7 @@ public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
      * @return search result from elastics search response
      */
     @Override
-    protected List<ESNoteEntity> search(IQueryRequest query) {
+    protected List<ESNoteEntity> searchDb(IQueryRequest query) {
         List<ESNoteEntity> searchHits = elasticsearchOperations.search(getEsQuery(query), ESNoteEntity.class).stream()
                 .map(sh -> sh.getContent()).collect(Collectors.toList());
         if(query.isAllEntries()) {
@@ -85,7 +85,7 @@ public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
     public NativeSearchQuery getEsQuery(IQueryRequest query) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
                 .withQuery(QueryBuilders.wrapperQuery(ESQueryBuilder.build(query)))
-                .withSort(Sort.by(Sort.Order.asc(Field.CREATED.getMatch())));
+                .withSort(Sort.by(Sort.Order.asc(Field.CREATED.getFieldName())));
         if (query.getSearchAfter() != null && !(query.getSearchField().equals(Field.ENTRY))) {
             Object searchAfter = query.getSearchAfter();
             if(searchAfter instanceof Date) {

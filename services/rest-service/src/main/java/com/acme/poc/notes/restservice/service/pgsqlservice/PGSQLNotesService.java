@@ -33,7 +33,7 @@ public class PGSQLNotesService extends AbstractNotesOperations<PGNoteEntity> {
 
 
     @Override
-    protected List<PGNoteEntity> search(IQueryRequest query) {
+    protected List<PGNoteEntity> searchDb(IQueryRequest query) {
         return elasticsearchOperations.search(esNotesService.getEsQuery(query), ESNoteEntity.class).stream()
                 .map(sh -> sh.getContent())
                 .map(e -> DTOMapper.INSTANCE.toPG(e))

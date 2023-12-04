@@ -95,7 +95,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
 
     @Override
     public List<E> get(IQueryRequest query) {
-        log.debug("{} request: {}, field: {}, data: {}", LogUtil.method(), "get by query", query.getSearchField(), query.getSearchData());
+        log.debug("{} request: {}, field: {}, data: {}", LogUtil.method(), "get by query", query.getSearchField().getFieldName(), query.getSearchData());
         return getProcessed(query);
     }
 
@@ -107,14 +107,14 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
      */
     @Override
     public List<E> delete(IQueryRequest query) {
-        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "delete by query", query.getSearchField(), query.getSearchData());
-        List<E> searchHitList = getUnprocessed(query);
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "delete by query", query.getSearchField().getFieldName(), query.getSearchData());
+        List<E> searchHitList = search(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
         try {
             crudRepository.deleteAll(processed);
         } catch (Exception e) {
-            log.error("Error while deleting entries for request: {} -- " + query.getClass().getSimpleName(), e.getMessage());
+            log.error("Error while deleting entries with field: {} and UUID: {}" + query.getSearchField().getFieldName(),query.getSearchData());
             throwRestError(NotesAPIError.ERROR_SERVER, e.getCause() != null ? e.getCause().getLocalizedMessage() : e.getMessage());
         }
         log.debug("Successfully deleted all {} entries", processed.size());
@@ -182,8 +182,8 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
      */
     @Override
     public List<E> archive(IQueryRequest query) {
-        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "archive", query.getSearchField(), query.getSearchData());
-        List<E> searchHitList = getUnprocessed(query);
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "archive", query.getSearchField().getFieldName(), query.getSearchData());
+        List<E> searchHitList = search(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
         try {
@@ -194,7 +194,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         }
         query.getFilters().remove(Filter.EXCLUDE_ARCHIVED);
         query.getFilters().add(Filter.INCLUDE_ARCHIVED);
-        return process(query, getUnprocessed(query).stream().iterator());
+        return process(query, search(query).stream().iterator());
     }
 
     /**

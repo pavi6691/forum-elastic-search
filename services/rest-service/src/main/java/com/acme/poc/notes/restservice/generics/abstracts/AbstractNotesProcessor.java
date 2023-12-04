@@ -36,13 +36,13 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * - filter both archived and histories
      */
     protected List<E> getProcessed(IQueryRequest query) {
-        log.debug("Fetching entries for request = {}", query.getClass().getSimpleName());
-        List<E> searchHits = getUnprocessed(query);
+        log.debug("Fetching entries for field: {} and UUID: {}", query.getSearchField().getFieldName(),query.getSearchData());
+        List<E> searchHits = search(query);
         if (searchHits != null && searchHits.size() > 0) {
-            log.debug("Number of results from db search = {}", searchHits.size());
+            log.debug("Number of results from db search: {}", searchHits.size());
             return process(query, searchHits.iterator());
         } else {
-            log.error("no results found for request = {}", query.getClass().getSimpleName());
+            log.error("no results found for field: {} and UUID: {}", query.getSearchField().getFieldName(),query.getSearchData());
         }
         return new ArrayList<>();
     }
@@ -57,10 +57,10 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param query
      * @return
      */
-    protected List<E> getUnprocessed(IQueryRequest query) {
+    protected List<E> search(IQueryRequest query) {
         List<E> searchHits = null;
         try {
-            searchHits = search(query);
+            searchHits = searchDb(query);
             if (query.getSearchField().equals(Field.ENTRY)) {
                 // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
                 if (searchHits != null) {
@@ -95,7 +95,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @param query 
      * @return search result from database
      */
-    protected abstract List<E> search(IQueryRequest query);
+    protected abstract List<E> searchDb(IQueryRequest query);
 
     /**
      * Out of all multiple entries and their threads and histories, figures out and process -
@@ -117,7 +117,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
      * @return process results in tree format if {@link ResultFormat#TREE} else FLATTEN if {@link ResultFormat#FLATTEN}
      */
     protected List<E> process(IQueryRequest query, Iterator<E> esResults) {
-        log.debug("Processing request = {}", query.getClass().getSimpleName());
+        log.debug("Processing response for field: {} and UUID: {}", query.getSearchField().getFieldName(),query.getSearchData());
         Map<UUID, E> threadMapping = new HashMap<>();
         List<E> results = new LinkedList<>();
         Set<UUID> entriesAddedToResults = new HashSet<>();

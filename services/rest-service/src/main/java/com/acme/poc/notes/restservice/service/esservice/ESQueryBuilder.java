@@ -30,7 +30,7 @@ public class ESQueryBuilder {
                   }
             }
             """
-            .replace("{FIELDNAME}", Field.CREATED.getMatch());
+            .replace("{FIELDNAME}", Field.CREATED.getFieldName());
 
     private static final String GET_ARCHIVED_BY_ENTRY_GUID = """
             {
@@ -45,7 +45,7 @@ public class ESQueryBuilder {
                 }
             }
             """
-            .replace("{FIELDNAME}", Field.ENTRY.getMatch());
+            .replace("{FIELDNAME}", Field.ENTRY.getFieldName());
 
     private static final String GET_ARCHIVED_BY_EXTERNAL_GUID = """
             {
@@ -67,7 +67,7 @@ public class ESQueryBuilder {
                 }
             }
             """
-            .replace("{FIELDNAME}", Field.EXTERNAL.getMatch());
+            .replace("{FIELDNAME}", Field.EXTERNAL.getFieldName());
 
     private static final String SEARCH_CONTENT = """
             {
@@ -80,7 +80,7 @@ public class ESQueryBuilder {
                 }
             }
             """
-            .replace("{FIELDNAME}", Field.CONTENT.getMatch());
+            .replace("{FIELDNAME}", Field.CONTENT.getFieldName());
     
     public static String build(IQueryRequest queryRequest) {
         switch (queryRequest.getSearchField()) {
@@ -90,20 +90,20 @@ public class ESQueryBuilder {
                 if(queryRequest.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) {
                     return String.format(GET_ARCHIVED_BY_ENTRY_GUID, queryRequest.getSearchData());
                 } else {
-                    return String.format(GET_BY_OTHER, queryRequest.getSearchField().getMatch(), queryRequest.getSearchData(), 
+                    return String.format(GET_BY_OTHER, queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData(), 
                             queryRequest.getCreatedDateTime());
                 }
             case EXTERNAL:
                 if(queryRequest.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) {
                     return String.format(GET_ARCHIVED_BY_EXTERNAL_GUID, queryRequest.getSearchData());
                 } else {
-                    return String.format(GET_BY_OTHER, queryRequest.getSearchField().getMatch(), queryRequest.getSearchData(), 
+                    return String.format(GET_BY_OTHER, queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData(), 
                             queryRequest.getCreatedDateTime());
                 }
             case CONTENT:
                 return String.format(SEARCH_CONTENT, queryRequest.getSearchData());
             default:
-                return String.format(GET_BY_OTHER, queryRequest.getSearchField().getMatch(), queryRequest.getSearchData(), 
+                return String.format(GET_BY_OTHER, queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData(), 
                         queryRequest.getCreatedDateTime());
         }
     }
