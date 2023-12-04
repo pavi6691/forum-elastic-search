@@ -1,9 +1,9 @@
 package com.acme.poc.notes.restservice.cron;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
-import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Process dirty entries stored in postgresql. these entries are stored when there are any errors in elasticsearch.
@@ -24,30 +27,48 @@ import java.util.List;
 @Component
 public class DirtyNotesProcessorJob {
     PGNotesRepository pgNotesRepository;
-    ESNotesService esNotesService;
+    
+    ESNotesRepository esNotesRepository;
     @PersistenceContext
     private EntityManager entityManager;
     
+    private static final String UPDATE_DIRTY_TO_FALSE = "UPDATE note e SET e.isDirty = :newValue WHERE e.guid IN :ids";
+    
     @Autowired
-    public DirtyNotesProcessorJob(PGNotesRepository pgNotesRepository, ESNotesService esNotesService) {
+    public DirtyNotesProcessorJob(PGNotesRepository pgNotesRepository, ESNotesRepository esNotesRepository) {
         this.pgNotesRepository = pgNotesRepository;
-        this.esNotesService = esNotesService;
+        this.esNotesRepository = esNotesRepository;
     }
     @Scheduled(fixedRate = NotesConstants.DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE)
     @Transactional
     public void run() {
-        List<PGNoteEntity> results = pgNotesRepository.findByIsDirty(true);
-        results.stream().forEach(pgNoteEntity -> {
-            ESNoteEntity esNoteEntity  = DTOMapper.INSTANCE.toESEntity(pgNoteEntity);
-            ESNoteEntity esNoteEntityCreated = esNotesService.create(esNoteEntity);
-            if(esNoteEntityCreated != null) {
-                try {
-                    pgNoteEntity.setIsDirty(false);
-                    entityManager.merge(pgNoteEntity);
-                } catch (Exception e) {
-                    log.error("Error processing dirty entries from postgresql, guid = {}", pgNoteEntity.getGuid());
+        // Get dirty entries from postgresql
+        List<PGNoteEntity> resultsFromPg = pgNotesRepository.findByIsDirty(true);
+        
+        if(!resultsFromPg.isEmpty()) {
+            // convert them to es note entities
+            List<ESNoteEntity> esNoteEntities = resultsFromPg.stream()
+                    .map(pgNoteEntity -> DTOMapper.INSTANCE.toESEntity(pgNoteEntity))
+                    .collect(Collectors.toList());
+
+            // store them in elasticsearch and make a list of guid(primary key) of stored entries in elasticsearch 
+            List<UUID> idsToUpdate = new ArrayList<>();
+            try {
+//                Iterable<ESNoteEntity> savedInEs = esNotesRepository.saveAll(esNoteEntities); // TODO bulk operation, an issue with this operation currently
+                if (esNoteEntities != null) {
+                    esNoteEntities.forEach(e -> {
+                        esNotesRepository.save(e);
+                        idsToUpdate.add(e.getGuid());
+                    });
                 }
+                // update entries in postgresql with dirty flag to false
+                entityManager.createQuery(UPDATE_DIRTY_TO_FALSE)
+                        .setParameter("newValue", false)
+                        .setParameter("ids", idsToUpdate)
+                        .executeUpdate();
+            } catch (Exception e) {
+                log.error("Exception in processing dirty entries", e);
             }
-        });
+        }
     }
 }

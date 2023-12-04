@@ -6,7 +6,6 @@ import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.serialzation.CustomDateDeserializer;
 import com.acme.poc.notes.restservice.serialzation.CustomDateSerializer;
 import com.acme.poc.notes.restservice.util.DTOMapper;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -14,7 +13,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
-
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
@@ -27,6 +25,7 @@ import java.util.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Mapping(mappingPath = "mappings/note-v1_mapping.json")
 public class ESNoteEntity implements INoteEntity<ESNoteEntity> {
     
     @Id
@@ -76,7 +75,6 @@ public class ESNoteEntity implements INoteEntity<ESNoteEntity> {
     @Field(type = FieldType.Date, name = "created", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
-    @Mapping(dateDetection = Mapping.Detection.TRUE)
     private Date created;
 
     @Field(type = FieldType.Date, name = "archived", format = DateFormat.custom, pattern = NotesConstants.TIMESTAMP_ISO8601)

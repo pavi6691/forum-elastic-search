@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.net.SocketTimeoutException;
 
@@ -22,10 +23,10 @@ public class RestExceptionCA {
 
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ExceptionHandler(RestStatusException.class)
-    public BaseRestException handleRestException(RestStatusException exception) {
+    @ExceptionHandler(ResponseStatusException.class)
+    public BaseRestException handleRestException(ResponseStatusException exception) {
         log.error("{} {}", LogUtil.method(), exception.getMessage());
-        return new BaseRestException(HttpStatus.resolve(exception.getStatus()).name(),exception.getMessage());
+        return new BaseRestException(HttpStatus.resolve(exception.getRawStatusCode()).getReasonPhrase(),exception.getMessage());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

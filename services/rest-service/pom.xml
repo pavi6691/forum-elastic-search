@@ -153,6 +153,7 @@
 				<includes>
 					<include>application.yml</include>
 					<include>banner.txt</include>
+					<include>mappings/**</include>
 				</includes>
 			</resource>
 		</resources>
