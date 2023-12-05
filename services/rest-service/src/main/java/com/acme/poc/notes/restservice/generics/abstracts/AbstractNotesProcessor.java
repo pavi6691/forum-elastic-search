@@ -78,7 +78,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                                     .searchData(rootEntry.getThreadGuid().toString())
                                     .createdDateTime(rootEntry.getCreated().getTime())
                                     .build();
-                            searchHits = search(entryQuery);
+                            searchHits = searchDb(entryQuery);
                         }
                     }
                 }

@@ -35,7 +35,7 @@ import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
  * Service to perform elastic search operations
  */
 @Slf4j
-@Service("esNotesService")
+@Service("ESNotesService")
 @Primary
 public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
     

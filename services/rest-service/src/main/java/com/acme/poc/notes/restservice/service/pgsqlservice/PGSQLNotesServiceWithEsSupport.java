@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * Perform crud operations on POSTGRESQL and search is done on elasticsearch
  */
-@Service("pgSQLNotesService")
+@Service("PGSQLNotesServiceWithEsSupport")
 public class PGSQLNotesServiceWithEsSupport extends AbstractNotesOperations<PGNoteEntity> {
 
     @Value("${default.db.response.size}")
