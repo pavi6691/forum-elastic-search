@@ -12,7 +12,8 @@
 
 
 ## Current phase
-- [ ] Add more integration test cases, getByThreadGuid, validateCreatedForUpdate
+- [ ] Add more integration test cases, getByThreadGuid, validateCreatedForUpdate. 
+- [ ] Split `crud` test case in `AbstractIntegrationTest` using order by. This is to identify each test cases
 - [ ] All Search capability in Postgresql itself. So it's not dependent on elasticsearch. 
       As createThread and update operation requires search for existing entry and sync to elasticsearch is delayed.
       Also, it can cover all search operations that elasticsearch does.
