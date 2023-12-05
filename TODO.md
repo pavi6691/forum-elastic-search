@@ -18,6 +18,7 @@
       As createThread and update operation requires search for existing entry and sync to elasticsearch is delayed.
       Also, it can cover all search operations that elasticsearch does.
 - [ ] Currently get by entryGuid will fetch all its children. do we need an API that will just give that individual entry and its versions?
+- [ ] Move generics to different module?
 
 - [ ] Merge current branch into master
 - [X] Make ApiController (PostgreSQL) be at `/api/v1/notes...` and ESController (Elasticsearch) be at `/api/v1/notes/es...`.
