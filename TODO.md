@@ -39,8 +39,10 @@
       searching but will not search in PostgreSQL but use the existing service for Elasticseach for that.
 - [ ] Add JavaDoc description to methods where missing.
 - [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
-- [X] Seems that note-v1_mapping.json is not used when creating the index? At least in Kibana index shows mapping as being different. `note-v1_mapping.json` is not required, now its done by spring data
-- [X] An endpoint (API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID) for returning everything related to an externalGuid is missing -> Its being done by API_ENDPOINT_ADMIN_GET_ALL_BY_EXTERNAL_GUID
+- [X] Seems that note-v1_mapping.json is not used when creating the index? At least in Kibana index shows mapping as being different. 
+      -> `note-v1_mapping.json` is not required, now its done by spring data
+- [X] An endpoint (API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID) for returning everything related to an externalGuid is missing 
+      -> Its being done by API_ENDPOINT_ADMIN_GET_ALL_BY_EXTERNAL_GUID
 - [X] Use TestContainers for ElasticSearch in tests instead of relying on an existing Elasticsearch being available
 - [ ] NotesData uses Date's. Shouldn't it use ZonedDateTime or similar?
 - [X] Add logs, handle exceptions and other validations if any
