@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.persistence.postgresql.models;
 
-import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.fasterxml.jackson.annotation.JsonInclude;

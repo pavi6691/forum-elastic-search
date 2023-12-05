@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.util;
 
-import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 
 import java.util.Date;
 

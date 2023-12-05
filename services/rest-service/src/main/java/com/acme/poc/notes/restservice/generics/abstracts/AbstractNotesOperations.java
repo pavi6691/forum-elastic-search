@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.generics.abstracts;
 import com.acme.poc.notes.core.enums.NotesAPIError;
-import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;

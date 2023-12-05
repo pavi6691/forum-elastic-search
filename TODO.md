@@ -12,13 +12,19 @@
 
 
 ## Current phase
+- [ ] Add more integration test cases, getByThreadGuid, validateCreatedForUpdate
+- [ ] All Search capability in Postgresql itself. So it's not dependent on elasticsearch. 
+      As createThread and update operation requires search for existing entry and sync to elasticsearch is delayed.
+      Also, it can cover all search operations that elasticsearch does.
+- [ ] Currently get by entryGuid will fetch all its children. do we need an API that will just give that individual entry and its versions?
+
 - [ ] Merge current branch into master
 - [X] Make ApiController (PostgreSQL) be at `/api/v1/notes...` and ESController (Elasticsearch) be at `/api/v1/notes/es...`.
 - [X] Use `NoteEntry` as model from clients to controllers instead of `ESNoteEntity` and `PGNoteEntity`.
 - [X] Set `createdInitially` correct. Should be the same across all versions of same note entry.
-- [ ] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
-- [ ] Create `ApiController` with all CRUD endpoints; some for PostgreSQL/Elasticsearch and some only for Elasticsearch.
-- [ ] Make Query requests generic for all databases. compose in search method
+- [X] If `INoteEntity` is used for persistence only (I assume because it is named 'Entity') then it should not be in models, but in rest-service.
+- [X] Create `ApiController` with all CRUD endpoints; some for PostgreSQL/Elasticsearch and some only for Elasticsearch.
+- [X] Make Query requests generic for all databases. compose in search method
 - [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
 - [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
       `ApiController`that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion

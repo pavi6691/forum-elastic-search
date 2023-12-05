@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.base;
 
-import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.data.ElasticSearchData;
 import com.acme.poc.notes.restservice.generics.interfaces.INotesOperations;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;

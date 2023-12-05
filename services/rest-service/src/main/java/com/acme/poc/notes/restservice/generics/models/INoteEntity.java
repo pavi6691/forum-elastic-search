@@ -1,4 +1,5 @@
-package com.acme.poc.notes.models;
+package com.acme.poc.notes.restservice.generics.models;
+import com.acme.poc.notes.models.NoteType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

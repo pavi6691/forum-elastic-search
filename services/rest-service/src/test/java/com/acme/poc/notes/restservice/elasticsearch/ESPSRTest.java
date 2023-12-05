@@ -1,6 +1,6 @@
 package com.acme.poc.notes.restservice.elasticsearch;
 
-import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.AbstractBaseTest;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.junit.jupiter.Testcontainers;
+
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.persistence.elasticsearch.models;
 
 import com.acme.poc.notes.core.NotesConstants;
-import com.acme.poc.notes.models.INoteEntity;
+import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.serialzation.CustomDateDeserializer;
 import com.acme.poc.notes.restservice.serialzation.CustomDateSerializer;
