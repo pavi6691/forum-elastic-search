@@ -3,7 +3,7 @@ package com.acme.poc.notes.restservice.pgsql;
 import com.acme.poc.notes.restservice.base.AbstractBaseTest;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
-import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesServiceWithEsSupport;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -26,8 +26,8 @@ public class PostgreSQLIntegrationTest extends AbstractBaseTest<PGNoteEntity> {
     private PGNotesRepository pgNotesRepository;
 
     @Autowired
-    public PostgreSQLIntegrationTest(PGSQLNotesService pgsqlNotesService) {
-        super(pgsqlNotesService);
+    public PostgreSQLIntegrationTest(PGSQLNotesServiceWithEsSupport pgsqlNotesServiceWithEsSupport) {
+        super(pgsqlNotesServiceWithEsSupport);
     }
 
 

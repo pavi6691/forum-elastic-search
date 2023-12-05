@@ -73,7 +73,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
                                     .searchField(Field.THREAD)
                                     .size(query.getSize())
                                     .sortOrder(query.getSortOrder())
-                                    .searchAfter(((QueryRequest) query).getSearchAfter())
+                                    .searchAfter(query.getSearchAfter())
                                     .filters(query.getFilters())
                                     .searchData(rootEntry.getThreadGuid().toString())
                                     .createdDateTime(rootEntry.getCreated().getTime())

@@ -8,7 +8,7 @@ import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
-import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesServiceWithEsSupport;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.acme.poc.notes.restservice.util.LogUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,11 +29,11 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_POSTGRESQL)
 public class ApiController {
 
-    PGSQLNotesService pgsqlNotesService;
+    PGSQLNotesServiceWithEsSupport pgsqlNotesServiceWithEsSupport;
 
     @Autowired
-    public ApiController(PGSQLNotesService PGSQLNotesService) {
-        this.pgsqlNotesService = PGSQLNotesService;
+    public ApiController(PGSQLNotesServiceWithEsSupport pgsqlNotesServiceWithEsSupport) {
+        this.pgsqlNotesServiceWithEsSupport = pgsqlNotesServiceWithEsSupport;
     }
 
     @Operation(summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
@@ -46,7 +46,7 @@ public class ApiController {
         log.debug("{}", LogUtil.method());
         PGNoteEntity pgNoteEntity = DTOMapper.INSTANCE.toEntity(payloadEntry);
         pgNoteEntity.setIsDirty(true);
-        return ResponseEntity.ok(pgsqlNotesService.create(pgNoteEntity));
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.create(pgNoteEntity));
     }
 
     @Operation(summary = "Update an existing entry provided guid/entryGuid in the payload", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_TAG })
@@ -55,14 +55,14 @@ public class ApiController {
         log.debug("{}", LogUtil.method());
         PGNoteEntity pgNoteEntity = DTOMapper.INSTANCE.toEntity(payloadEntry);
         pgNoteEntity.setIsDirty(true);
-        return ResponseEntity.ok(pgsqlNotesService.update(pgNoteEntity));
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.update(pgNoteEntity));
     }
 
     @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
     public ResponseEntity<PGNoteEntity> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.get(guid));
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.get(guid));
     }
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
@@ -75,7 +75,7 @@ public class ApiController {
             @RequestParam(required = false, defaultValue = "0") int size,
             @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
@@ -96,7 +96,7 @@ public class ApiController {
             @RequestParam(required = false, defaultValue = "0") int size,
             @RequestParam(required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.get(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
@@ -111,7 +111,7 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.delete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .allEntries(true)
                 .searchData(externalGuid.toString())
@@ -124,7 +124,7 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.delete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .allEntries(true)
                 .searchData(entryGuid.toString())
@@ -137,7 +137,7 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_ADMIN_DELETE_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.delete(QueryRequest.builder()
                 .searchField(Field.THREAD)
                 .allEntries(true)
                 .searchData(threadGuid.toString())
@@ -150,7 +150,7 @@ public class ApiController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
     public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(guid));
+        return ResponseEntity.ok(pgsqlNotesServiceWithEsSupport.delete(guid));
     }
     
 }

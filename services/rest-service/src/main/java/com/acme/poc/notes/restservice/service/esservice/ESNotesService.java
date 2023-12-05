@@ -3,19 +3,20 @@ package com.acme.poc.notes.restservice.service.esservice;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.core.enums.NotesAPIError;
 import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesOperations;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
-import com.acme.poc.notes.restservice.util.LogUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.IndexOperations;
-import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
@@ -84,7 +85,7 @@ public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
     
     public NativeSearchQuery getEsQuery(IQueryRequest query) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder()
-                .withQuery(QueryBuilders.wrapperQuery(ESQueryBuilder.build(query)))
+                .withQuery(queryBuilder(query))
                 .withSort(Sort.by(Sort.Order.asc(Field.CREATED.getFieldName())));
         if (query.getSearchAfter() != null && !(query.getSearchField().equals(Field.ENTRY))) {
             Object searchAfter = query.getSearchAfter();
@@ -107,5 +108,53 @@ public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
         NativeSearchQuery searchQuery  = searchQueryBuilder.build();
         searchQuery.setMaxResults(query.getSize() > 0 ? query.getSize() : default_response_size);
         return searchQuery;
+    }
+
+    public static QueryBuilder queryBuilder(IQueryRequest queryRequest) {
+        switch (queryRequest.getSearchField()) {
+            case ALL:
+                return QueryBuilders.matchAllQuery();
+            case ENTRY:
+                if (queryRequest.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) {
+                    return QueryBuilders.matchPhraseQuery(Field.ENTRY.getFieldName(), queryRequest.getSearchData());
+                } else {
+                    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                            .must(QueryBuilders.matchPhraseQuery(queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData()));
+
+                    RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(Field.CREATED.getFieldName())
+                            .gte(queryRequest.getCreatedDateTime());
+
+                    boolQuery.must(rangeQuery);
+                    return boolQuery;
+                }
+            case EXTERNAL:
+                if (queryRequest.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) {
+                    return QueryBuilders.boolQuery()
+                            .must(QueryBuilders.matchPhraseQuery(Field.EXTERNAL.getFieldName(), queryRequest.getSearchData()))
+                            .filter(QueryBuilders.existsQuery("archived"));
+                } else {
+                    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                            .must(QueryBuilders.matchPhraseQuery(queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData()));
+
+                    RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(Field.CREATED.getFieldName())
+                            .gte(queryRequest.getCreatedDateTime());
+
+                    boolQuery.must(rangeQuery);
+                    return boolQuery;
+                }
+            case CONTENT:
+                return QueryBuilders.wildcardQuery(Field.CONTENT.getFieldName(), "*" + queryRequest.getSearchData() + "*")
+                        .boost(1.0f)
+                        .rewrite("constant_score");
+            default:
+                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                        .must(QueryBuilders.matchPhraseQuery(queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData()));
+
+                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(Field.CREATED.getFieldName())
+                        .gte(queryRequest.getCreatedDateTime());
+
+                boolQuery.must(rangeQuery);
+                return boolQuery;
+        }
     }
 }
