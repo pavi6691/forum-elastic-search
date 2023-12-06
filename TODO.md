@@ -16,7 +16,7 @@
 - [ ] Split `crud` test case in `AbstractIntegrationTest` using order by. This is to identify each test cases
 - [ ] Currently get by entryGuid will fetch all its children. do we need an API that will just give that individual entry and its versions?
 - [ ] Move generics to different module?
-- [ ] Merge current branch into master
+- [ ] Merge current branch into master (overriden whatever is there already)
 - [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
 - [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
       `ApiController`that will have PostgreSQL as primary storage (for ACID compliance) just for saving/updating/deletion
