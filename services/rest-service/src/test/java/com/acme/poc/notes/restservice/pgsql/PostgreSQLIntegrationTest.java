@@ -1,10 +1,6 @@
 package com.acme.poc.notes.restservice.pgsql;
 
 import com.acme.poc.notes.restservice.base.AbstractIntegrationTest;
-import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
-import com.acme.poc.notes.restservice.generics.queries.enums.Field;
-import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
-import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
 import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;

@@ -39,6 +39,9 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
     @Override
     public E create(E entity) {
         log.debug("{}", LogUtil.method());
+        if (ObjectUtils.isEmpty(entity.getGuid())) {
+            entity.setGuid(UUID.randomUUID());
+        }
         if (ObjectUtils.isEmpty(entity.getEntryGuid())) {
             entity.setEntryGuid(UUID.randomUUID());
         }
