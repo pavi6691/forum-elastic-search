@@ -13,6 +13,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
+
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
@@ -81,7 +83,9 @@ public class ESNoteEntity implements INoteEntity<ESNoteEntity> {
     @JsonSerialize(using = CustomDateSerializer.class)
     @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date archived;
+    @Transient
     private List<ESNoteEntity> threads = null; // Answers/responses to this note
+    @Transient
     private List<ESNoteEntity> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
     public ESNoteEntity copyThis() {

@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NotesConstants {
 
-    public static final int DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE = 30/*seconds*/ * 1000/*millis*/; // Run every 30 seconds
+    public static final int DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE = 5/*seconds*/ * 1000/*millis*/; // Run every 30 seconds
     // Timestamps
     public static final String TIMESTAMP_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX";
 
@@ -13,11 +13,12 @@ public class NotesConstants {
     public static final long TIMEOUT_DELETE = TimeUnit.SECONDS.toMillis(10);
     
     //PostgreSQL 
-    public static final String POSTGRESQL_NOTES_TAG = "PostgreSQL API";
+    public static final String POSTGRESQL_NOTES_TAG = "Notes API";
+    public static final String POSTGRESQL_NOTES_ADMIN_TAG = "Notes ADMIN API";
 
     // OpenAPI
-    public static final String OPENAPI_NOTES_TAG = "Notes API";
-    public static final String OPENAPI_ADMIN_TAG = "Notes Admin API";
+    public static final String OPENAPI_NOTES_TAG = "ES Notes API";
+    public static final String OPENAPI_ADMIN_TAG = "ES Notes Admin API";
     public static final String OPENAPI_DEVOPS_TAG = "Notes DevOps API";
     public static final String OPENAPI_ELASTICSEARCH_ADMIN_TAG = "Notes Elasticsearch Admin API";
 
@@ -37,8 +38,10 @@ public class NotesConstants {
     public static final String API_ENDPOINT_PREFIX = "/api/v1";
     public static final String API_ENDPOINT_DELETE = "/DELETE";
     public static final String API_ENDPOINT_DEVOPS = "/devops";
-    public static final String API_ENDPOINT_ADMIN = "/admin";
-    public static final String API_ENDPOINT_POSTGRESQL = "/notes";
+    public static final String API_ENDPOINT_NOTES_ES_ADMIN = "/admin/notes/es";
+    public static final String API_ENDPOINT_NOTES_ES_USER = "/notes/es";
+    public static final String API_ENDPOINT_NOTES_PG_ADMIN = "/admin/notes/pg";
+    public static final String API_ENDPOINT_NOTES_PG_USER = "/notes/pg";
 
     //
     // /api/v1/devops/...
@@ -63,8 +66,6 @@ public class NotesConstants {
 
     //
     // /api/v1/notes/...
-    //
-    public static final String API_ENDPOINT_NOTES = "/notes/es";
     // POST
     public static final String API_ENDPOINT_NOTES_CREATE = "";
     // GET

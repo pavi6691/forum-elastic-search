@@ -1,4 +1,4 @@
-package com.acme.poc.notes.restservice.controller;
+package com.acme.poc.notes.restservice.controller.elasticsearch;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteEntry;
@@ -26,13 +26,13 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES)
-public class ESController {
+@RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES_ES_USER)
+public class ESUserController {
 
     ESNotesService notesService;
 
     @Autowired
-    public ESController(ESNotesService notesService) {
+    public ESUserController(ESNotesService notesService) {
         this.notesService = notesService;
     }
 
@@ -64,7 +64,7 @@ public class ESController {
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
-    public ResponseEntity<List<ESNoteEntity>> searchByEntryGuid(
+    public ResponseEntity<List<ESNoteEntity>> getByEntryGuid(
                                                         @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
@@ -138,7 +138,7 @@ public class ESController {
 
     @Operation(summary = "Search archived entries by externalGuid", description = "Search all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID)
-    public ResponseEntity<List<ESNoteEntity>> searchArchivedEntriesByExternalGuid(
+    public ResponseEntity<List<ESNoteEntity>> getArchivedByExternalGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                         @RequestParam(required = false) String searchAfter,
@@ -157,7 +157,7 @@ public class ESController {
 
     @Operation(summary = "Search archived entries by entryGuid", description = "Search all entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID)
-    public ResponseEntity<List<ESNoteEntity>> searchArchivedEntriesByEntryGuid(
+    public ResponseEntity<List<ESNoteEntity>> getArchivedByEntryGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
                                                         @RequestParam(required = false) String searchAfter,

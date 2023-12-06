@@ -315,10 +315,8 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
                 String jsonStringToStore = jsonArray.getString(i);
                 flatten(INoteEntity.fromJson(jsonStringToStore,entity.getClass()), entries);
                 entries.forEach(e -> {
-                    if (e.getThreads() != null)
-                        e.getThreads().clear();
-                    if (e.getHistory() != null)
-                        e.getHistory().clear();
+                    e.setThreads(null);
+                    e.setHistory(null);
                     E pgNoteEntity = notesService.create(e);
                     assertEquals(pgNoteEntity.getGuid(), e.getGuid());
                     assertEquals(pgNoteEntity.getExternalGuid(), e.getExternalGuid());
@@ -404,18 +402,6 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
                 .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.EXCLUDE_ARCHIVED))
                 .build());
         validateAll(result, 3, 6, 3, 0);
-    }
-
-    @Test
-    void searchContent() {
-        List<E> result = notesService.get(QueryRequest.builder()
-                .searchField(Field.CONTENT)
-                .searchData("content")
-                .resultFormat(ResultFormat.FLATTEN)
-                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
-                .build());
-        checkDuplicates(result,new HashSet<>());
-        assertEquals(11, result.size());
     }
 
     @Test

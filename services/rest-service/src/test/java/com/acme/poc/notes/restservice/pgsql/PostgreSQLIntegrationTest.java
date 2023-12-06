@@ -1,9 +1,13 @@
 package com.acme.poc.notes.restservice.pgsql;
 
-import com.acme.poc.notes.restservice.base.AbstractBaseTest;
+import com.acme.poc.notes.restservice.base.AbstractIntegrationTest;
+import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
+import com.acme.poc.notes.restservice.generics.queries.enums.Field;
+import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
-import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesServiceWithEsSupport;
+import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import static com.acme.poc.notes.restservice.base.data.PostgreSQLData.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,14 +25,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class PostgreSQLIntegrationTest extends AbstractBaseTest<PGNoteEntity> {
+public class PostgreSQLIntegrationTest extends AbstractIntegrationTest<PGNoteEntity> {
 
     @Autowired
     private PGNotesRepository pgNotesRepository;
 
     @Autowired
-    public PostgreSQLIntegrationTest(PGSQLNotesServiceWithEsSupport pgsqlNotesServiceWithEsSupport) {
-        super(pgsqlNotesServiceWithEsSupport);
+    public PostgreSQLIntegrationTest(PGSQLNotesService pgsqlNotesService, PGNoteEntity pgNoteEntity) {
+        super(pgsqlNotesService, pgNoteEntity);
     }
 
 
