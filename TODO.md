@@ -27,7 +27,7 @@
       after that set the `isDirty:false` in PostgreSQL. The controller should also have endpoints for
       searching but will not search in PostgreSQL but use the existing service for Elasticseach for that.
 - [ ] Add JavaDoc description to methods where missing.
-- [ ] NotesData uses Date's. Shouldn't it use ZonedDateTime or similar?
+- [ ] `NoteEntry`, `PGNoteEntity`, `ESNoteEntity` all uses Date's. Shouldn't it use ZonedDateTime or similar?
 
 
 ## Later phase(s)
