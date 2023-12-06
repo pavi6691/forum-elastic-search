@@ -14,8 +14,6 @@
 ## Current phase
 - [ ] Add more integration test cases, getByThreadGuid, validateCreatedForUpdate. 
 - [ ] Split `crud` test case in `AbstractIntegrationTest` using order by. This is to identify each test cases
-- [ ] Currently get by entryGuid will fetch all its children. do we need an API that will just give that individual entry and its versions?
-- [ ] Move generics to different module?
 - [ ] Merge current branch into master (overriden whatever is there already)
 - [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
 - [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
@@ -34,6 +32,8 @@
 
 ## Later phase(s)
 
+- [ ] Currently get by entryGuid will fetch all its children. do we need an API that will just give that individual entry and its versions?
+- [ ] Move generics to different module?
 - [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
 - [ ] Open search API support, flag based to switch between rest high level client and open search?
 - [ ] Do need an entry that represent an item? Ex: if YouTube represents externalGuid, each video on it is an
