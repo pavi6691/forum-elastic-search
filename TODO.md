@@ -51,6 +51,8 @@
 - [ ] Delete only histories?
 - [ ] POC on Logging and tracing
 - [ ] Authentication and authorization
+- [ ] Use Apache API Six in front of REST endpoints
+- [ ] Authorization using Keycloak JWT tokens (relies on other project before can be realized)
 - [ ] Scalability - Istio API gateway?
 
 
