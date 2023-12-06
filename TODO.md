@@ -14,12 +14,8 @@
 ## Current phase
 - [ ] Add more integration test cases, getByThreadGuid, validateCreatedForUpdate. 
 - [ ] Split `crud` test case in `AbstractIntegrationTest` using order by. This is to identify each test cases
-- [ ] All Search capability in Postgresql itself. So it's not dependent on elasticsearch. 
-      As createThread and update operation requires search for existing entry and sync to elasticsearch is delayed.
-      Also, it can cover all search operations that elasticsearch does.
 - [ ] Currently get by entryGuid will fetch all its children. do we need an API that will just give that individual entry and its versions?
 - [ ] Move generics to different module?
-
 - [ ] Merge current branch into master
 - [ ] Split tests into test for a) PostgreSQL, b) Elasticsearch, c) both PostgreSQL and Elasticsearch.
 - [ ] Keep existing controller `ESController`for adding/searching/... directly to Elasticsearch, but add new controller
@@ -33,22 +29,22 @@
       after that set the `isDirty:false` in PostgreSQL. The controller should also have endpoints for
       searching but will not search in PostgreSQL but use the existing service for Elasticseach for that.
 - [ ] Add JavaDoc description to methods where missing.
-- [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
 - [ ] NotesData uses Date's. Shouldn't it use ZonedDateTime or similar?
 
 
-## Under consideration
-
-- [ ] Open search API support, flag based to switch between rest high level client and open search?
-- [ ] Do need an entry that represent an item? Ex: if YouTube represents externalGuid, each video on it is an
-      item. for every video,we may find list of entries with threads.
-- Below two uses cases are covered with same fix
-  - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads.
-  - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
-- [ ] Handling more than 1k thread entries? Wasn't this solved by V3?
-
 ## Later phase(s)
 
+- [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
+- [ ] Open search API support, flag based to switch between rest high level client and open search?
+- [ ] Do need an entry that represent an item? Ex: if YouTube represents externalGuid, each video on it is an
+  item. for every video,we may find list of entries with threads.
+- Below two uses cases are covered with same fix
+    - [ ] Currently search by entry guid performs query for all entries that are created after the requested one. It gets different entries that doesn't belongs to this. So index by maintaining same guid for all individual entry and threads.
+    - [ ] Address content search corner cases. content search result set may have random entries with no links to its parents. so apply an algorithm to find out nearest parent entry, if not actual
+- [ ] Handling more than 1k thread entries? Wasn't this solved by V3?
+- [ ] All Search capability in Postgresql itself. So it's not dependent on elasticsearch.
+      As createThread and update operation requires search for existing entry and sync to elasticsearch is delayed.
+      Also, it can cover all search operations that elasticsearch does.
 - [ ] Restrict size of content?
 - [ ] Actuator health and info endpoints
 - [ ] SpringDoc open search
