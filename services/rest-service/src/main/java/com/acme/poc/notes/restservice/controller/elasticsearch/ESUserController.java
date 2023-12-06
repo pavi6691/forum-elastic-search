@@ -63,7 +63,7 @@ public class ESUserController {
     }
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByEntryGuid(
                                                         @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
@@ -75,6 +75,27 @@ public class ESUserController {
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
+                        includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
+                .searchAfter(searchAfter)
+                .size(size)
+                .sortOrder(sortOrder)
+                .build()));
+    }
+
+    @Operation(summary = "Retrieve entry by threadGuid", description = "Retrieve entries by threadGuid.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
+    public ResponseEntity<List<ESNoteEntity>> getByThreadGuid(
+            @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid,
+            @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(required = false) String searchAfter,
+            @RequestParam(required = false, defaultValue = "0") int size,
+            @RequestParam(required = false) NoteSortOrder sortOrder) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
+                .searchField(Field.THREAD)
+                .searchData(threadGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
                         includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
                 .searchAfter(searchAfter)
