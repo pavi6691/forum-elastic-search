@@ -5,6 +5,41 @@
 ## REST API details
 
 
+
+#### Endpoints in each controller
+
+| Controller<br/>-------------<br/>method | PGUserController | PGAdminController | ESUserController | ESAdminController |
+|-----------------------------------------|:----------------:|:-----------------:|:----------------:|:-----------------:|
+| create                                  |       Yes        |         -         |       Yes        |         -         |
+| update                                  |       Yes        |         -         |       Yes        |         -         |
+| getAll                                  |        -         |        Yes        |        -         |        Yes        |
+| getByGuid                               |       Yes        |         -         |       Yes        |         -         |
+| getByEntryGuid                          |       Yes        |         -         |       Yes        |         -         |
+| getByExternalGuid                       |    <mark>Yes     |        Yes        |    <mark>Yes     |        Yes        |
+| getByThreadGuid                         |       Yes        |         -         |       Yes        |         -         |
+| searchContent                           |       Yes        |         -         |       Yes        |         -         |
+| archiveByGuid                           |       Yes        |         -         |       Yes        |         -         |
+| archiveExternalGuid                     |       Yes        |         -         |       Yes        |         -         |
+| archiveEntryGuid                        |       Yes        |         -         |       Yes        |         -         |
+| getArchivedByExternalGuid               |       Yes        |         -         |       Yes        |         -         |
+| getArchivedByEntryGuid                  |       Yes        |         -         |       Yes        |         -         |
+| deleteByGuid                            |        -         |        Yes        |        -         |        Yes        |
+| deleteByExternalGuid                    |        -         |        Yes        |        -         |        Yes        |
+| deleteByEntryGuid                       | <mark>Yes <sup>1 |        Yes        | <mark>Yes <sup>1 |        Yes        |
+| deleteByThreadGuid                      |        -         |        Yes        |        -         |        Yes        |
+| deleteArchivedByExternalGuid            |       Yes        |         -         |       Yes        |         -         |
+| deleteArchivedByEntryGuid               |       Yes        |         -         |       Yes        |         -         |
+
+Notes:
+- Methods marked with <mark>Yes</mark> are currenlty missing.
+- <sup>1</sup> In user controllers this should be a soft-deletion, whereas in admin it should hard-delete.
+
+
+
+<mark>!!! THE REST OF THIS MARKDOWN CONTENT IS CURRENTLY NOT ALIGNED WITH IMPLEMENTATION !!!</mark>
+
+
+
 #### Payload for create and update requests
 
   ```json
