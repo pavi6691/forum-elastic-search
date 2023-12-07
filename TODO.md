@@ -12,6 +12,17 @@
 
 
 ## Current phase
+- [ ] Add endpoints (see also REST service [README.md](services/rest-service/README.md)):
+  - [ ] GET `getByExternalGuid` to user controllers in order to (as a user) be able to retrieve all entries belonging to this `externalGuid`.
+  - [ ] DELETE `deleteByEntryGuid` to user controllers in order to (as a user) be able to (soft-)delete all entries belonging to this `entryGuid` and all of its children.
+- [ ] Endpoint problems:
+  - [ ] PUT `update`:
+    - [ ] Requires all of these: `externalDataSource`, `externalGuid`, `externalItemGuid`, `type` although all of them
+          should be the same as previous `entryGuid` and should not be changeable.
+    - [ ] If updating a `guid` that is a previous version (not the latest) and with the correct `created` timestamp as
+          that 'old' entry, a new entry will be created. It should result in an error because client is referencing an
+          old entry. Client should reload and update latest `guid`. 
+
 - [ ] Add more integration test cases, getByThreadGuid, validateCreatedForUpdate. 
 - [ ] Split `crud` test case in `AbstractIntegrationTest` using order by. This is to identify each test cases
 - [ ] Merge current branch into master (overriden whatever is there already)
