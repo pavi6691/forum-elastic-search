@@ -104,7 +104,7 @@ public class ESUserController {
                 .build()));
     }
 
-    @Operation(summary = "Search entries", description = "Return entries that matches the search.", tags = { NotesConstants.OPENAPI_NOTES_TAG })
+    @Operation(summary = "Search content", description = "Return entries from content matching", tags = { NotesConstants.OPENAPI_NOTES_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_CONTENT)
     public ResponseEntity<List<ESNoteEntity>> searchContent(
                                                         @RequestParam String searchData,
