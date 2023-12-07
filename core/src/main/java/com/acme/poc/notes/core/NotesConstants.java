@@ -32,6 +32,9 @@ public class NotesConstants {
     public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS = "includeVersions";
     public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED = "includeArchived";
     public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_DELETED = "includeDeleted";
+    public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER = "searchAfter";
+    public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE = "size";
+    public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER = "sortOrder";
 
     // REST API endpoints
     public static final String API_ENDPOINT_PREFIX = "/api/v1";

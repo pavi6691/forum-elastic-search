@@ -70,12 +70,12 @@ public class ESUserController {
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByEntryGuid(
-                                                        @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+            @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)
@@ -93,11 +93,11 @@ public class ESUserController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByThreadGuid(
             @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid,
-            @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-            @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-            @RequestParam(required = false) String searchAfter,
-            @RequestParam(required = false, defaultValue = "0") int size,
-            @RequestParam(required = false) NoteSortOrder sortOrder) {
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Field.THREAD)
@@ -113,12 +113,12 @@ public class ESUserController {
     @Operation(summary = "Search content", description = "Return entries from content matching", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_CONTENT)
     public ResponseEntity<List<ESNoteEntity>> searchContent(
-                                                        @RequestParam String searchData,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+            @RequestParam String searchData,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Field.CONTENT)
@@ -170,11 +170,11 @@ public class ESUserController {
     @Operation(summary = "Search archived entries by externalGuid", description = "Search all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> getArchivedByExternalGuid(
-                                                        @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+            @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
@@ -190,11 +190,11 @@ public class ESUserController {
     @Operation(summary = "Search archived entries by entryGuid", description = "Search all entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> getArchivedByEntryGuid(
-                                                        @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+            @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(notesService.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)

@@ -71,11 +71,11 @@ public class PGUserController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByEntryGuid(
                                                         @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)
@@ -92,11 +92,11 @@ public class PGUserController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByThreadGuid(
             @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid,
-            @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-            @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-            @RequestParam(required = false) String searchAfter,
-            @RequestParam(required = false, defaultValue = "0") int size,
-            @RequestParam(required = false) NoteSortOrder sortOrder) {
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
                 .searchField(Field.THREAD)
@@ -113,11 +113,11 @@ public class PGUserController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_CONTENT)
     public ResponseEntity<List<PGNoteEntity>> searchContent(
                                                         @RequestParam String searchData,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
                 .searchField(Field.CONTENT)
@@ -166,10 +166,10 @@ public class PGUserController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> getArchivedByExternalGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
@@ -185,10 +185,10 @@ public class PGUserController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> getArchivedByEntryGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
-                                                        @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                        @RequestParam(required = false) String searchAfter,
-                                                        @RequestParam(required = false, defaultValue = "0") int size,
-                                                        @RequestParam(required = false) NoteSortOrder sortOrder) {
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+                                                        @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)

@@ -43,11 +43,11 @@ public class ESAdminController {
     @GetMapping(NotesConstants.API_ENDPOINT_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByExternalGuid(
                                                     @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
-                                                    @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
-                                                    @RequestParam(required = false, defaultValue = "false") boolean includeArchived,
-                                                    @RequestParam(required = false) String searchAfter,
-                                                    @RequestParam(required = false, defaultValue = "0") int size,
-                                                    @RequestParam(required = false) NoteSortOrder sortOrder) {
+                                                    @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+                                                    @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+                                                    @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+                                                    @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+                                                    @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.get(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
