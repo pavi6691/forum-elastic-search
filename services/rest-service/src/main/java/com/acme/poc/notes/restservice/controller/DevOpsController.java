@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class DevOpsController {
 
 
-    @Operation(summary = "Get errors", description = "Retrieve all possible errors for client requests", tags = { NotesConstants.OPENAPI_DEVOPS_TAG })
+    @Operation(summary = "Get errors", description = "Retrieve all possible errors for client requests", tags = { NotesConstants.OPENAPI_NOTES_DEVOPS_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_DEVOPS_ERRORS)
     public ResponseEntity<Object> getErrorDefinitions() {
         log.debug("{}", LogUtil.method());

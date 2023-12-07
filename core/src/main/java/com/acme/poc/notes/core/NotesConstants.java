@@ -12,15 +12,14 @@ public class NotesConstants {
     public static final long TIMEOUT_ARCHIVE = TimeUnit.SECONDS.toMillis(10);
     public static final long TIMEOUT_DELETE = TimeUnit.SECONDS.toMillis(10);
     
-    //PostgreSQL 
-    public static final String POSTGRESQL_NOTES_TAG = "Notes API";
-    public static final String POSTGRESQL_NOTES_ADMIN_TAG = "Notes Admin API";
-
-    // OpenAPI
-    public static final String OPENAPI_NOTES_TAG = "ES Notes API";
-    public static final String OPENAPI_ADMIN_TAG = "ES Notes Admin API";
-    public static final String OPENAPI_DEVOPS_TAG = "Notes DevOps API";
-    public static final String OPENAPI_ELASTICSEARCH_ADMIN_TAG = "Notes Elasticsearch Admin API";
+    // OpenAPI - DevOps REST APIs
+    public static final String OPENAPI_NOTES_DEVOPS_TAG = "Notes DevOps API";
+    // OpenAPI - PostgreSQL REST APIs
+    public static final String OPENAPI_NOTES_POSTGRESQL_TAG = "Notes CRUD API";
+    public static final String OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG = "Notes CRUD Admin API";
+    // OpenAPI - Elasticsearch REST APIs
+    public static final String OPENAPI_NOTES_ELASTICSEARCH_TAG = "Notes Elasticsearch API";
+    public static final String OPENAPI_NOTES_ELASTICSEARCH_ADMIN_TAG = "Notes Elasticsearch Admin API";
 
     // REST path parameters
     public static final String API_ENDPOINT_PATH_PARAMETER_GUID = "guid";
@@ -38,10 +37,10 @@ public class NotesConstants {
     public static final String API_ENDPOINT_PREFIX = "/api/v1";
     public static final String API_ENDPOINT_DELETE = "/DELETE";
     public static final String API_ENDPOINT_DEVOPS = "/devops";
-    public static final String API_ENDPOINT_NOTES_ES_ADMIN = "/admin/notes/es";
-    public static final String API_ENDPOINT_NOTES_ES_USER = "/notes/es";
-    public static final String API_ENDPOINT_NOTES_PG_ADMIN = "/admin/notes/pg";
-    public static final String API_ENDPOINT_NOTES_PG_USER = "/notes/pg";
+    public static final String API_ENDPOINT_NOTES_POSTGRESQL_ADMIN = "/notes/admin";
+    public static final String API_ENDPOINT_NOTES_POSTGRESQL_USER = "/notes";
+    public static final String API_ENDPOINT_NOTES_ELASTICSEARCH_ADMIN = "/notes/es/admin";
+    public static final String API_ENDPOINT_NOTES_ELASTICSEARCH_USER = "/notes/es";
 
     //
     // /api/v1/devops/...

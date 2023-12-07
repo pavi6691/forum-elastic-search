@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES_PG_ADMIN)
+@RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES_POSTGRESQL_ADMIN)
 public class PGAdminController {
 
     PGSQLNotesService pgsqlNotesService;
@@ -33,14 +33,14 @@ public class PGAdminController {
     }
 
 
-    @Operation(summary = "Get all notes", description = "Retrieve all notes", tags = { NotesConstants.POSTGRESQL_NOTES_ADMIN_TAG })
+    @Operation(summary = "Get all notes", description = "Retrieve all notes", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_GET_ALL)
     public ResponseEntity<List<PGNoteEntity>> getAll(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(indexName));
     }
 
-    @Operation(summary = "Get all notes by externalGuid", description = "Retrieve all notes by externalGuid", tags = { NotesConstants.POSTGRESQL_NOTES_ADMIN_TAG })
+    @Operation(summary = "Get all notes by externalGuid", description = "Retrieve all notes by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByExternalGuid(
                                                     @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
@@ -61,7 +61,7 @@ public class PGAdminController {
                 .build()));
     }
 
-    @Operation(summary = "Delete all notes by externalGuid", description = "Delete all notes by externalGuid", tags = { NotesConstants.POSTGRESQL_NOTES_ADMIN_TAG })
+    @Operation(summary = "Delete all notes by externalGuid", description = "Delete all notes by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
@@ -74,7 +74,7 @@ public class PGAdminController {
                 .build()));
     }
 
-    @Operation(summary = "Delete all notes by entryGuid", description = "Delete all notes by entryGuid", tags = { NotesConstants.POSTGRESQL_NOTES_ADMIN_TAG })
+    @Operation(summary = "Delete all notes by entryGuid", description = "Delete all notes by entryGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
@@ -87,7 +87,7 @@ public class PGAdminController {
                 .build()));
     }
 
-    @Operation(summary = "Delete all notes by threadGuid", description = "Delete all notes by threadGuid", tags = { NotesConstants.POSTGRESQL_NOTES_ADMIN_TAG })
+    @Operation(summary = "Delete all notes by threadGuid", description = "Delete all notes by threadGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
         log.debug("{}", LogUtil.method());
@@ -100,7 +100,7 @@ public class PGAdminController {
                 .build()));
     }
 
-    @Operation(summary = "Delete note by guid", description = "Delete note by guid", tags = { NotesConstants.POSTGRESQL_NOTES_ADMIN_TAG })
+    @Operation(summary = "Delete note by guid", description = "Delete note by guid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
     public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
         log.debug("{}", LogUtil.method());
