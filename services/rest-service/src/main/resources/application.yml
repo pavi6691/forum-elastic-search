@@ -8,7 +8,8 @@ default.db.response.size: 1000
 service.thread.pool.size: 8
 
 springdoc.show-actuator: true
-
+springdoc.swagger-ui.operationsSorter: method
+springdoc.swagger-ui.tagsSorter: alpha
 
 spring:
   datasource:
