@@ -8,6 +8,7 @@ import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
+import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterAll;
@@ -303,6 +304,18 @@ public abstract class AbstractIntegrationTest<E extends INoteEntity<E>> extends 
         validateAll(resultDelete, 1, 1, 0, 0);
         searchResult = notesService.get(querySearchByExternalGuid);
         validateAll(searchResult, 0, 0, 0, 0);
+    }
+
+    @Test
+    void searchContent() {
+        List<E> result = notesService.get(QueryRequest.builder()
+                .searchField(Field.CONTENT)
+                .searchData("content")
+                .resultFormat(ResultFormat.FLATTEN)
+                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
+                .build());
+        checkDuplicates(result,new HashSet<>());
+        assertEquals(11, result.size());
     }
     
     @BeforeAll

@@ -56,7 +56,7 @@ public class PGSQLNotesService extends AbstractNotesOperations<PGNoteEntity> {
                 }
             case CONTENT:
                 // Execute query for the "CONTENT" case
-                return searchByContent(queryRequest.getSearchData());
+                return pgNotesRepository.findByContentContainingIgnoreCaseOrderByCreatedAsc(queryRequest.getSearchData());
             // Add other cases as needed
             default:
                 // Handle the default case
@@ -73,13 +73,6 @@ public class PGSQLNotesService extends AbstractNotesOperations<PGNoteEntity> {
                 .setParameter("fieldValue", fieldValue)
                 .setParameter("createdDateTime", createdDateTime);
 
-        return query.getResultList();
-    }
-
-    private List<PGNoteEntity> searchByContent(String searchData) {
-        String jpqlQuery = "SELECT e FROM note e WHERE e.content LIKE :searchData";
-        Query query = entityManager.createQuery(jpqlQuery, PGNoteEntity.class);
-        query.setParameter("searchData", "%" + searchData + "%");
         return query.getResultList();
     }
 

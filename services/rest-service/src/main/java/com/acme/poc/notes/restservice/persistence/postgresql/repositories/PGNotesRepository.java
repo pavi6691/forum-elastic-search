@@ -19,6 +19,6 @@ public interface PGNotesRepository extends JpaRepository<PGNoteEntity, UUID> {
     List<PGNoteEntity> findByEntryGuidAndCreatedGreaterThanEqualOrderByCreatedAsc(UUID entryGuid, Date created);
     List<PGNoteEntity> findByExternalGuidAndArchivedIsNotNullOrderByCreatedAsc(UUID externalGuid);
     List<PGNoteEntity> findByExternalGuidAndCreatedGreaterThanEqualOrderByCreatedAsc(UUID externalGuid, Date created);
-    List<PGNoteEntity> findByContentContainingOrderByCreatedAsc(String content);
+    List<PGNoteEntity> findByContentContainingIgnoreCaseOrderByCreatedAsc(String content);
 
 }

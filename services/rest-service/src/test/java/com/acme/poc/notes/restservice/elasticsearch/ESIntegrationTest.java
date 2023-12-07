@@ -32,16 +32,4 @@ public class ESIntegrationTest extends AbstractIntegrationTest<ESNoteEntity> {
     public ESIntegrationTest(ESNotesService esNotesService, ESNoteEntity eSNoteEntity) {
         super(esNotesService, eSNoteEntity);
     }
-
-    @Test
-    void searchContent() {
-        List<ESNoteEntity> result = notesService.get(QueryRequest.builder()
-                .searchField(Field.CONTENT)
-                .searchData("content")
-                .resultFormat(ResultFormat.FLATTEN)
-                .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
-                .build());
-        checkDuplicates(result,new HashSet<>());
-        assertEquals(11, result.size());
-    }
 }
