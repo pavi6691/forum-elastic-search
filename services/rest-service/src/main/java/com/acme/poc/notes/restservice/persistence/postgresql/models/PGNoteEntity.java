@@ -4,8 +4,11 @@ import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import lombok.*;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -21,6 +24,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@TypeDefs({
+        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+})
 public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     @Id
     @Column(name = "guid", nullable = false)
