@@ -39,7 +39,7 @@ public class PGUserController {
     }
 
 
-    @Operation( summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "DESCRIPTION", content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE) }),
             @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
@@ -52,7 +52,7 @@ public class PGUserController {
         return ResponseEntity.ok(pgsqlNotesService.create(pgNoteEntity));
     }
 
-    @Operation(summary = "Update an existing entry provided guid/entryGuid in the payload", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Update existing entry by guid/entryGuid in the payload", description = "Update existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
     public ResponseEntity<PGNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
@@ -68,7 +68,7 @@ public class PGUserController {
         return ResponseEntity.ok(pgsqlNotesService.get(guid));
     }
 
-    @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Retrieve entries by entryGuid", description = "Retrieve entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByEntryGuid(
                                                         @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
@@ -89,7 +89,7 @@ public class PGUserController {
                 .build()));
     }
 
-    @Operation(summary = "Retrieve entry by threadGuid", description = "Retrieve entries by threadGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Retrieve entries by threadGuid", description = "Retrieve entries by threadGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByThreadGuid(
             @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid,
@@ -110,7 +110,7 @@ public class PGUserController {
                 .build()));
     }
 
-    @Operation(summary = "Search entries", description = "Return entries that matches the search.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Search entries", description = "Retrieve entries that matches the search.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_CONTENT)
     public ResponseEntity<List<PGNoteEntity>> searchContent(
                                                         @RequestParam String searchData,
@@ -139,7 +139,7 @@ public class PGUserController {
         return ResponseEntity.ok(pgsqlNotesService.archive(guid));
     }
 
-    @Operation(summary = "Archive all entries by externalGuid", description = "Archive all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Archive entries by externalGuid", description = "Archive entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
@@ -151,7 +151,7 @@ public class PGUserController {
                 .build()));
     }
 
-    @Operation(summary = "Archive all entries by entryGuid", description = "Archive all entries by entryGuid. Will also archive all responses to this entry.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Archive entries by entryGuid", description = "Archive entries by entryGuid. Will also archive all responses to this entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
@@ -163,7 +163,7 @@ public class PGUserController {
                 .build()));
     }
 
-    @Operation(summary = "Search archived entries by externalGuid", description = "Search all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Retrieve archived entries by externalGuid", description = "Retrieve archived entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> getArchivedByExternalGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
@@ -182,7 +182,7 @@ public class PGUserController {
                 .build()));
     }
 
-    @Operation(summary = "Search archived entries by entryGuid", description = "Search all entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Retrieve archived entries by entryGuid", description = "Retrieve archived entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> getArchivedByEntryGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
@@ -201,7 +201,7 @@ public class PGUserController {
                 .build()));
     }
 
-    @Operation(summary = "Delete all archived entries by externalGuid", description = "Delete all archived entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Delete archived entries by externalGuid", description = "Delete archived entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
@@ -213,7 +213,7 @@ public class PGUserController {
                 .build())));
     }
 
-    @Operation(summary = "Delete archived entry by entryGuid", description = "Delete archived entry by entryGuid. Will also delete all responses to this entry.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation(summary = "Delete archived entries by entryGuid", description = "Delete archived entries by entryGuid. Will also delete all responses to this entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
