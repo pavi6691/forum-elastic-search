@@ -163,7 +163,7 @@ public class PGUserController {
     }
 
     @Operation(summary = "Search archived entries by externalGuid", description = "Search all entries by externalGuid.", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> getArchivedByExternalGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,
@@ -182,7 +182,7 @@ public class PGUserController {
     }
 
     @Operation(summary = "Search archived entries by entryGuid", description = "Search all entries by entryGuid.", tags = { NotesConstants.POSTGRESQL_NOTES_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> getArchivedByEntryGuid(
                                                         @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
                                                         @RequestParam(required = false, defaultValue = "false") boolean includeVersions,

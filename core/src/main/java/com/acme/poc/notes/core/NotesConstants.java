@@ -14,7 +14,7 @@ public class NotesConstants {
     
     //PostgreSQL 
     public static final String POSTGRESQL_NOTES_TAG = "Notes API";
-    public static final String POSTGRESQL_NOTES_ADMIN_TAG = "Notes ADMIN API";
+    public static final String POSTGRESQL_NOTES_ADMIN_TAG = "Notes Admin API";
 
     // OpenAPI
     public static final String OPENAPI_NOTES_TAG = "ES Notes API";
@@ -71,8 +71,6 @@ public class NotesConstants {
     public static final String API_ENDPOINT_NOTES_GET_BY_GUID = "/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
     public static final String API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     public static final String API_ENDPOINT_NOTES_SEARCH_CONTENT = "/search";
-    public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_ENTRY_GUID = "/search/archived/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
-    public static final String API_ENDPOINT_NOTES_SEARCH_ARCHIVED_BY_EXTERNAL_GUID = "/search/archived/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     // PUT
     public static final String API_ENDPOINT_NOTES_UPDATE = "/update";
     public static final String API_ENDPOINT_NOTES_ARCHIVE_BY_GUID = "/archive/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
