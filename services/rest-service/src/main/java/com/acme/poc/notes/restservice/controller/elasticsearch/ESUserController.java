@@ -11,6 +11,7 @@ import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.acme.poc.notes.restservice.util.LogUtil;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,6 +38,7 @@ public class ESUserController {
     }
 
 
+    @Hidden
     @Operation(summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "DESCRIPTION", content = { @Content(mediaType = "application/json") }),
@@ -48,6 +50,7 @@ public class ESUserController {
         return ResponseEntity.ok(notesService.create(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }
 
+    @Hidden
     @Operation(summary = "Update an existing entry provided guid/entryGuid in the payload", description = "Update an existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
     public ResponseEntity<ESNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
@@ -55,6 +58,7 @@ public class ESUserController {
         return ResponseEntity.ok(notesService.update(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }
 
+    @Hidden
     @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
     public ResponseEntity<ESNoteEntity> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
@@ -62,6 +66,7 @@ public class ESUserController {
         return ResponseEntity.ok(notesService.get(guid));
     }
 
+    @Hidden
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByEntryGuid(
@@ -83,6 +88,7 @@ public class ESUserController {
                 .build()));
     }
 
+    @Hidden
     @Operation(summary = "Retrieve entry by threadGuid", description = "Retrieve entries by threadGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByThreadGuid(
@@ -126,6 +132,7 @@ public class ESUserController {
                 .build()));
     }
 
+    @Hidden
     @Operation(summary = "Archive entry by guid", description = "Archive entry by guid. Will also archive all response to this entry.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_GUID)
     public ResponseEntity<List<ESNoteEntity>> archiveByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
@@ -133,6 +140,7 @@ public class ESUserController {
         return ResponseEntity.ok(notesService.archive(guid));
     }
 
+    @Hidden
     @Operation(summary = "Archive all entries by externalGuid", description = "Archive all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
@@ -145,6 +153,7 @@ public class ESUserController {
                 .build()));
     }
 
+    @Hidden
     @Operation(summary = "Archive all entries by entryGuid", description = "Archive all entries by entryGuid. Will also archive all responses to this entry.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
@@ -157,6 +166,7 @@ public class ESUserController {
                 .build()));
     }
 
+    @Hidden
     @Operation(summary = "Search archived entries by externalGuid", description = "Search all entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> getArchivedByExternalGuid(
@@ -176,6 +186,7 @@ public class ESUserController {
                 .build()));
     }
 
+    @Hidden
     @Operation(summary = "Search archived entries by entryGuid", description = "Search all entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> getArchivedByEntryGuid(
@@ -195,6 +206,7 @@ public class ESUserController {
                 .build()));
     }
 
+    @Hidden
     @Operation(summary = "Delete all archived entries by externalGuid", description = "Delete all archived entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
@@ -207,6 +219,7 @@ public class ESUserController {
                 .build())));
     }
 
+    @Hidden
     @Operation(summary = "Delete archived entry by entryGuid", description = "Delete archived entry by entryGuid. Will also delete all responses to this entry.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
