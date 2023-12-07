@@ -31,11 +31,11 @@ import java.util.UUID;
 @RequestMapping(NotesConstants.API_ENDPOINT_PREFIX + NotesConstants.API_ENDPOINT_NOTES_ELASTICSEARCH_USER)
 public class ESUserController {
 
-    ESNotesService notesService;
+    ESNotesService esNotesService;
 
     @Autowired
-    public ESUserController(ESNotesService notesService) {
-        this.notesService = notesService;
+    public ESUserController(ESNotesService esNotesService) {
+        this.esNotesService = esNotesService;
     }
 
 
@@ -48,7 +48,7 @@ public class ESUserController {
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
     public ResponseEntity<ESNoteEntity> create(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.create(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
+        return ResponseEntity.ok(esNotesService.create(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }
 
     @Hidden
@@ -56,7 +56,7 @@ public class ESUserController {
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
     public ResponseEntity<ESNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.update(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
+        return ResponseEntity.ok(esNotesService.update(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }
 
     @Hidden
@@ -64,7 +64,7 @@ public class ESUserController {
     @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_GUID)
     public ResponseEntity<ESNoteEntity> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.get(guid));
+        return ResponseEntity.ok(esNotesService.get(guid));
     }
 
     @Hidden
@@ -78,7 +78,7 @@ public class ESUserController {
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
@@ -100,7 +100,7 @@ public class ESUserController {
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.get(QueryRequest.builder()
                 .searchField(Field.THREAD)
                 .searchData(threadGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
@@ -121,7 +121,7 @@ public class ESUserController {
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.get(QueryRequest.builder()
                 .searchField(Field.CONTENT)
                 .searchData(searchData)
                 .resultFormat(ResultFormat.FLATTEN)
@@ -138,7 +138,7 @@ public class ESUserController {
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_GUID)
     public ResponseEntity<List<ESNoteEntity>> archiveByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.archive(guid));
+        return ResponseEntity.ok(esNotesService.archive(guid));
     }
 
     @Hidden
@@ -146,7 +146,7 @@ public class ESUserController {
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.archive(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .allEntries(true)
                 .searchData(externalGuid.toString())
@@ -159,7 +159,7 @@ public class ESUserController {
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.archive(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.archive(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .allEntries(true)
                 .searchData(entryGuid.toString())
@@ -177,7 +177,7 @@ public class ESUserController {
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.get(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
@@ -197,7 +197,7 @@ public class ESUserController {
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.get(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.get(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
@@ -212,7 +212,7 @@ public class ESUserController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.delete((QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.delete((QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .allEntries(true)
                 .searchData(externalGuid.toString())
@@ -225,7 +225,7 @@ public class ESUserController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(notesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .allEntries(true)
                 .searchData(entryGuid.toString())
