@@ -141,7 +141,7 @@ public class PGUserController {
 
     @Operation(summary = "Archive entries by externalGuid", description = "Archive entries by externalGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID)
-    public ResponseEntity<List<PGNoteEntity>> archiveExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
+    public ResponseEntity<List<PGNoteEntity>> archiveByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.archive(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
@@ -153,7 +153,7 @@ public class PGUserController {
 
     @Operation(summary = "Archive entries by entryGuid", description = "Archive entries by entryGuid. Will also archive all responses to this entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID)
-    public ResponseEntity<List<PGNoteEntity>> archiveEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
+    public ResponseEntity<List<PGNoteEntity>> archiveByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.archive(QueryRequest.builder()
                 .searchField(Field.ENTRY)
