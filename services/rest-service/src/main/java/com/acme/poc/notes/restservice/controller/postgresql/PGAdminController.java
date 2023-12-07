@@ -61,6 +61,13 @@ public class PGAdminController {
                 .build()));
     }
 
+    @Operation(summary = "Delete entry by guid", description = "Delete entry by guid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
+    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
+    public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(pgsqlNotesService.delete(guid));
+    }
+
     @Operation(summary = "Delete entries by externalGuid", description = "Delete entries by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
@@ -98,13 +105,6 @@ public class PGAdminController {
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
                 .build()));
-    }
-
-    @Operation(summary = "Delete entry by guid", description = "Delete entry by guid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
-    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
-    public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
-        log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(guid));
     }
 
 }
