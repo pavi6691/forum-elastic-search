@@ -32,6 +32,13 @@
 
 ## Later phase(s)
 
+- [ ] OpenAPI (SpringDoc / Swagger)
+  - [ ] Hide models:
+    - [ ] `BaseRestException`? Replace with syntax of error messages
+    - [ ] `PGNoteEntry` - this is an internal model for PostgreSQL and should not be exposed through API
+    - [ ] `ESNoteEntry` - this is an internal model for Elasticsearch and should not be exposed through API
+    - [ ] `Link`? Where is this coming from? Maybe from Actuator?
+  - [ ] Reorder endpoints in each group to comply with 'CRUD'.
 - [ ] Currently get by entryGuid will fetch all its children. do we need an API that will just give that individual entry and its versions?
 - [ ] Move generics to different module?
 - [ ] Make sure all `if (...) {}` statements (that does not throw an exception as only content) have an `else {...}` part where we do `log.trace("....");` or do a comment `/* Do nothing */` to show that we did consider the else part.
