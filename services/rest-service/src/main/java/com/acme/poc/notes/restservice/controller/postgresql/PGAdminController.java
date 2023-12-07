@@ -34,14 +34,14 @@ public class PGAdminController {
 
 
     @Operation(summary = "Get all notes", description = "Retrieve all notes", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_GET_ALL)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_ALL)
     public ResponseEntity<List<PGNoteEntity>> getAll(@RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME) String indexName) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(indexName));
     }
 
     @Operation(summary = "Get all notes by externalGuid", description = "Retrieve all notes by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_BY_EXTERNAL_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByExternalGuid(
                                                     @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
                                                     @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
@@ -62,7 +62,7 @@ public class PGAdminController {
     }
 
     @Operation(summary = "Delete all notes by externalGuid", description = "Delete all notes by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
-    @DeleteMapping(NotesConstants.API_ENDPOINT_BY_EXTERNAL_GUID)
+    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
@@ -75,7 +75,7 @@ public class PGAdminController {
     }
 
     @Operation(summary = "Delete all notes by entryGuid", description = "Delete all notes by entryGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
-    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
+    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
@@ -88,7 +88,7 @@ public class PGAdminController {
     }
 
     @Operation(summary = "Delete all notes by threadGuid", description = "Delete all notes by threadGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
-    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
+    @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()

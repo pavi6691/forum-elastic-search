@@ -69,7 +69,7 @@ public class ESUserController {
 
     @Hidden
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByEntryGuid(
             @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
@@ -91,7 +91,7 @@ public class ESUserController {
 
     @Hidden
     @Operation(summary = "Retrieve entry by threadGuid", description = "Retrieve entries by threadGuid.", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_THREAD_GUID)
     public ResponseEntity<List<ESNoteEntity>> getByThreadGuid(
             @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,

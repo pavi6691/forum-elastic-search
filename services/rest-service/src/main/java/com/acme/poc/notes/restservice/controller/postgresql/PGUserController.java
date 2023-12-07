@@ -39,7 +39,7 @@ public class PGUserController {
     }
 
 
-    @Operation(summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
+    @Operation( summary = "Create a new entry", description = "Create a new entry (note, remark etc) either as the root entry or as a response to another entry", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "DESCRIPTION", content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE) }),
             @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
@@ -69,7 +69,7 @@ public class PGUserController {
     }
 
     @Operation(summary = "Retrieve entry by entryGuid", description = "Retrieve entry by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_ENTRY_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByEntryGuid(
                                                         @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid,
                                                         @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
@@ -90,7 +90,7 @@ public class PGUserController {
     }
 
     @Operation(summary = "Retrieve entry by threadGuid", description = "Retrieve entries by threadGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
-    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_BY_THREAD_GUID)
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> getByThreadGuid(
             @PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid,
             @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,

@@ -4,30 +4,45 @@ import java.util.concurrent.TimeUnit;
 
 public class NotesConstants {
 
-    public static final int DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE = 5/*seconds*/ * 1000/*millis*/; // Run every 30 seconds
+    // Scheduled jobs
+    public static final int DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE = 5/*seconds*/ * 1000/*millis*/;  // Run every 5th second
+
     // Timestamps
     public static final String TIMESTAMP_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX";
 
     // Timeouts
     public static final long TIMEOUT_ARCHIVE = TimeUnit.SECONDS.toMillis(10);
     public static final long TIMEOUT_DELETE = TimeUnit.SECONDS.toMillis(10);
-    
-    // OpenAPI - DevOps REST APIs
+
+
+    /*
+     * OpenAPI
+     */
+
+    // DevOps REST APIs
     public static final String OPENAPI_NOTES_DEVOPS_TAG = "Notes DevOps API";
-    // OpenAPI - PostgreSQL REST APIs
+    // PostgreSQL REST APIs
     public static final String OPENAPI_NOTES_POSTGRESQL_TAG = "Notes CRUD API";
     public static final String OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG = "Notes CRUD Admin API";
-    // OpenAPI - Elasticsearch REST APIs
+    // Elasticsearch REST APIs
     public static final String OPENAPI_NOTES_ELASTICSEARCH_TAG = "Notes Elasticsearch API";
     public static final String OPENAPI_NOTES_ELASTICSEARCH_ADMIN_TAG = "Notes Elasticsearch Admin API";
 
-    // REST path parameters
+
+    /*
+     * REST endpoints - path parameters
+     */
+
     public static final String API_ENDPOINT_PATH_PARAMETER_GUID = "guid";
     public static final String API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID= "externalGuid";
     public static final String API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID = "entryGuid";
     public static final String API_ENDPOINT_PATH_PARAMETER_THREAD_GUID = "threadGuid";
 
-    // REST query string parameters
+
+    /*
+     * REST endpoints - query parameters
+     */
+
     public static final String API_ENDPOINT_QUERY_PARAMETER_INDEX_NAME = "indexName";
     public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS = "includeVersions";
     public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED = "includeArchived";
@@ -36,52 +51,47 @@ public class NotesConstants {
     public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE = "size";
     public static final String API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER = "sortOrder";
 
-    // REST API endpoints
-    public static final String API_ENDPOINT_PREFIX = "/api/v1";
-    public static final String API_ENDPOINT_DELETE = "/DELETE";
-    public static final String API_ENDPOINT_DEVOPS = "/devops";
-    public static final String API_ENDPOINT_NOTES_POSTGRESQL_ADMIN = "/notes/admin";
-    public static final String API_ENDPOINT_NOTES_POSTGRESQL_USER = "/notes";
-    public static final String API_ENDPOINT_NOTES_ELASTICSEARCH_ADMIN = "/notes/es/admin";
-    public static final String API_ENDPOINT_NOTES_ELASTICSEARCH_USER = "/notes/es";
 
-    //
+    /*
+     * REST endpoints - paths
+     */
+
+    public static final String API_ENDPOINT_DELETE = "/DELETE";
+
+    public static final String API_ENDPOINT_DEVOPS = "/devops";
+
+    public static final String API_ENDPOINT_PREFIX = "/api/v1";
+    public static final String API_ENDPOINT_NOTES_POSTGRESQL_USER = "/notes";
+    public static final String API_ENDPOINT_NOTES_POSTGRESQL_ADMIN = "/notes/admin";
+    public static final String API_ENDPOINT_NOTES_ELASTICSEARCH_USER = "/notes/es";
+    public static final String API_ENDPOINT_NOTES_ELASTICSEARCH_ADMIN = "/notes/es/admin";
+
     // /api/v1/devops/...
-    //
     public static final String API_ENDPOINT_DEVOPS_ERRORS = "/errors";
 
-    //
-    // /api/v1/admin/...
-    //
-    public static final String API_ENDPOINT_GET_ALL = "";
-    public static final String API_ENDPOINT_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
-    public static final String API_ENDPOINT_NOTES_BY_ENTRY_GUID = "/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
-    public static final String API_ENDPOINT_NOTES_BY_THREAD_GUID = "/threadguid/{" + API_ENDPOINT_PATH_PARAMETER_THREAD_GUID + "}";
-
-    //
-    // /api/v1/admin/elasticsearch/...
-    //
-    public static final String API_ENDPOINT_ADMIN_ES = "/elasticsearch";
-    // GET
-    public static final String API_ENDPOINT_ADMIN_ES_INDEX_CREATE = "/index/create";
-
-    //
-    // /api/v1/notes/...
+    // /api/v1/notes...
+    // /api/v1/notes/admin...
+    // /api/v1/notes/es...
+    // /api/v1/notes/es/admin...
     // POST
     public static final String API_ENDPOINT_NOTES_CREATE = "";
     // GET
+    public static final String API_ENDPOINT_NOTES_GET_ALL = "";
     public static final String API_ENDPOINT_NOTES_GET_BY_GUID = "/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
     public static final String API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID = "/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_GET_BY_THREAD_GUID = "/threadguid/{" + API_ENDPOINT_PATH_PARAMETER_THREAD_GUID + "}";
     public static final String API_ENDPOINT_NOTES_SEARCH_CONTENT = "/search";
     // PUT
-    public static final String API_ENDPOINT_NOTES_UPDATE = "/update";
+    public static final String API_ENDPOINT_NOTES_UPDATE = "";
     public static final String API_ENDPOINT_NOTES_ARCHIVE_BY_GUID = "/archive/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
     public static final String API_ENDPOINT_NOTES_ARCHIVE_BY_EXTERNAL_GUID = "/archive/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     public static final String API_ENDPOINT_NOTES_ARCHIVE_BY_ENTRY_GUID = "/archive/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
     // DELETE
-    public static final String API_ENDPOINT_NOTES_DELETE_BY_GUID = "/delete/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
-    public static final String API_ENDPOINT_NOTES_DELETE_BY_EXTERNAL_GUID = "/delete/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
-    public static final String API_ENDPOINT_NOTES_DELETE_BY_ENTRY_GUID = "/delete/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_DELETE_BY_GUID = "/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_DELETE_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_DELETE_BY_ENTRY_GUID = "/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_DELETE_BY_THREAD_GUID = "/threadguid/{" + API_ENDPOINT_PATH_PARAMETER_THREAD_GUID + "}";
     public static final String API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID = "/archived/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
     public static final String API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID = "/archived/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
 
