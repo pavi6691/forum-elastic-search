@@ -102,7 +102,7 @@ public class PGAdminController {
 
     @Operation(summary = "Delete entry by guid", description = "Delete entry by guid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
-    public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+    public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.delete(guid));
     }

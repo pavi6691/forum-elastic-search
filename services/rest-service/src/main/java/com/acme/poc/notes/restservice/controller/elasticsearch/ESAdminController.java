@@ -101,7 +101,7 @@ public class ESAdminController {
 
     @Operation(summary = "Delete entry by guid", description = "Delete entry by guid", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
-    public ResponseEntity<ESNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) /*@JsonDeserialize(using = UUIDDeserializer.class)*/ UUID guid) {
+    public ResponseEntity<ESNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.delete(guid));
     }
