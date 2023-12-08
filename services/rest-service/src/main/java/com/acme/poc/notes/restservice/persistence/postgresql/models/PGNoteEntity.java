@@ -2,6 +2,7 @@ package com.acme.poc.notes.restservice.persistence.postgresql.models;
 
 import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.models.NoteType;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
@@ -47,8 +48,8 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     private Date createdInitially;
     private Date created;
     private Date archived;
-    @Setter
-    private Boolean isDirty;
+    @Enumerated(EnumType.STRING) @Builder.Default
+    private OperationStatus operationStatus = OperationStatus.NONE;
     @Transient
     private List<PGNoteEntity> threads = null; // Answers/responses to this note
     @Transient

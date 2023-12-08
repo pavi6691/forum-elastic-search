@@ -13,6 +13,8 @@ public interface INotesOperations<E> {
     List<E> get(IQueryRequest iQueryRequest);
     List<E> delete(IQueryRequest iQueryRequest);
     E delete(UUID keyGuid);
+    List<E> markDelete(IQueryRequest iQueryRequest);
+    E markDelete(UUID keyGuid);
     E update(E entry);
     List<E> archive(IQueryRequest iQueryRequest);
     List<E> archive(UUID guid);

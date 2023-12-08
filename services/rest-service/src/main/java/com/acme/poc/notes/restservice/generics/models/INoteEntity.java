@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice.generics.models;
 import com.acme.poc.notes.models.NoteType;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,9 +34,9 @@ public interface INoteEntity<E> {
     default List<E> getHistory() {return Collections.emptyList();}
     default List<E> getThreads() {return Collections.emptyList();}
     @JsonIgnore
-    default void setIsDirty(Boolean isDirty) {}
+    default void setOperationStatus(OperationStatus operationStatus) {}
     @JsonIgnore
-    default Boolean getIsDirty() {return false;}
+    default OperationStatus getOperationStatus() {return OperationStatus.NONE;}
     default void setThreads(List<E> threads){}
     default void setHistory(List<E> history) {}
     @JsonIgnore

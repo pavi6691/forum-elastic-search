@@ -65,14 +65,14 @@ public class PGAdminController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
     public ResponseEntity<PGNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(guid));
+        return ResponseEntity.ok(pgsqlNotesService.markDelete(guid));
     }
 
     @Operation(summary = "Delete entries by externalGuid", description = "Delete entries by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByExternalGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesService.markDelete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .allEntries(true)
                 .searchData(externalGuid.toString())
@@ -85,7 +85,7 @@ public class PGAdminController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByEntryGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesService.markDelete(QueryRequest.builder()
                 .allEntries(true)
                 .searchField(Field.ENTRY)
                 .searchData(entryGuid.toString())
@@ -98,7 +98,7 @@ public class PGAdminController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_THREAD_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteByThreadGuid(@PathVariable(name = NotesConstants.API_ENDPOINT_PATH_PARAMETER_THREAD_GUID) UUID threadGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesService.markDelete(QueryRequest.builder()
                 .allEntries(true)
                 .searchField(Field.THREAD)
                 .searchData(threadGuid.toString())

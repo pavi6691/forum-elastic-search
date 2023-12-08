@@ -32,7 +32,6 @@ public class PostgreSQLData {
             .entryGuid(TEST_ENTRY_GUID)
             .type(TEST_TYPE)
             .content(TEST_CONTENT)
-            .isDirty(true)
             .created(Date.from(TEST_ZDT_CREATED.toInstant()))
             .build();
 

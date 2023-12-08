@@ -64,6 +64,9 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
             if (query.getSearchField().equals(Field.ENTRY)) {
                 // Search by entryGuid doesn't fetch all entries, so fetch by externalEntry and created after this entry
                 if (searchHits != null) {
+                    if(query.getFilters().contains(Filter.GET_ONLY_RECENT)) {
+                        return List.of(searchHits.get(searchHits.size()-1)); 
+                    }
                     Iterator<E> rootEntries = searchHits.stream().iterator();
                     if (rootEntries != null && rootEntries.hasNext()) {
                         E rootEntry = rootEntries.next();

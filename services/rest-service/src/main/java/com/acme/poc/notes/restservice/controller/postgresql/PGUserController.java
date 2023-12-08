@@ -47,18 +47,14 @@ public class PGUserController {
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
     public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
-        PGNoteEntity pgNoteEntity = DTOMapper.INSTANCE.toEntity(payloadEntry);
-        pgNoteEntity.setIsDirty(true);
-        return ResponseEntity.ok(pgsqlNotesService.create(pgNoteEntity));
+        return ResponseEntity.ok(pgsqlNotesService.create(DTOMapper.INSTANCE.toEntity(payloadEntry)));
     }
 
     @Operation(summary = "Update existing entry by guid/entryGuid in the payload", description = "Update existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
     public ResponseEntity<PGNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
-        PGNoteEntity pgNoteEntity = DTOMapper.INSTANCE.toEntity(payloadEntry);
-        pgNoteEntity.setIsDirty(true);
-        return ResponseEntity.ok(pgsqlNotesService.update(pgNoteEntity));
+        return ResponseEntity.ok(pgsqlNotesService.update(DTOMapper.INSTANCE.toEntity(payloadEntry)));
     }
 
     @Operation(summary = "Retrieve entry by guid", description = "Retrieve entry by guid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
@@ -205,7 +201,7 @@ public class PGUserController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete((QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesService.markDelete((QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .allEntries(true)
                 .searchData(externalGuid.toString())
@@ -217,7 +213,7 @@ public class PGUserController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesService.markDelete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .allEntries(true)
                 .searchData(entryGuid.toString())

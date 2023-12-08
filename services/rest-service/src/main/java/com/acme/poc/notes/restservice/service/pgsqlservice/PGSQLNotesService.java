@@ -25,6 +25,8 @@ public class PGSQLNotesService extends AbstractNotesOperations<PGNoteEntity> {
     @Value("${default.db.response.size}")
     private int default_size_configured;
     PGNotesRepository pgNotesRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     public PGSQLNotesService(PGNotesRepository pgNotesRepository) {
@@ -60,20 +62,19 @@ public class PGSQLNotesService extends AbstractNotesOperations<PGNoteEntity> {
             // Add other cases as needed
             default:
                 // Handle the default case
-                return findByFieldAndCreatedGreaterThanEqual(queryRequest.getSearchField().getFieldName(), UUID.fromString(queryRequest.getSearchData()),
+                return findByFieldAndCreatedGreaterThanEqualOrderByCreatedAsc(queryRequest.getSearchField().getFieldName(), UUID.fromString(queryRequest.getSearchData()),
                         Date.from(Instant.ofEpochMilli(queryRequest.getCreatedDateTime())));
         }
     }
-    @PersistenceContext
-    private EntityManager entityManager;
-    private List<PGNoteEntity> findByFieldAndCreatedGreaterThanEqual(String fieldName, UUID fieldValue, Date createdDateTime) {
+    
+    private List<PGNoteEntity> findByFieldAndCreatedGreaterThanEqualOrderByCreatedAsc(String fieldName, UUID fieldValue, Date createdDateTime) {
         String jpql = "SELECT e FROM note e WHERE e." + fieldName + " = :fieldValue AND e.created >= :createdDateTime ORDER BY e.created ASC";
-
         Query query = entityManager.createQuery(jpql, PGNoteEntity.class)
                 .setParameter("fieldValue", fieldValue)
                 .setParameter("createdDateTime", createdDateTime);
-
-        return query.getResultList();
+        List<PGNoteEntity> results = query.getResultList();
+        entityManager.clear();
+        return results;
     }
 
 }

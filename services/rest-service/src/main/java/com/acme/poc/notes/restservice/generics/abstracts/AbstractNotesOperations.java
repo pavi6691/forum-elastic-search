@@ -5,6 +5,7 @@ import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.generics.interfaces.INotesOperations;
 import com.acme.poc.notes.restservice.util.ESUtil;
@@ -13,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 
 import static com.acme.poc.notes.restservice.util.ExceptionUtil.throwRestError;
@@ -59,19 +62,19 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
             List<E> existingEntry = getProcessed(QueryRequest.builder()
                     .searchField(Field.ENTRY)
                     .searchData(entity.getEntryGuidParent().toString())
-                    .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
+                    .filters(Set.of(Filter.GET_ONLY_RECENT, Filter.INCLUDE_ARCHIVED))
                     .build());
             if (existingEntry == null || existingEntry.isEmpty()) {
                 throwRestError(NotesAPIError.ERROR_NEW_RESPONSE_NO_THREAD_GUID, entity.getEntryGuidParent());
                 return null;
             }
-            E existingEntryFirst = existingEntry.get(0);
-            if (existingEntryFirst.getArchived() != null) {
-                throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD, existingEntryFirst.getExternalGuid(), existingEntryFirst.getEntryGuid());
+            E creatingThread = existingEntry.get(0);
+            if (creatingThread.getArchived() != null) {
+                throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_CANNOT_ADD_THREAD, creatingThread.getExternalGuid(), creatingThread.getEntryGuid());
                 return null;
             }
-            entity.setThreadGuid(existingEntryFirst.getThreadGuid());
-            entity.setExternalGuid(existingEntryFirst.getExternalGuid());
+            entity.setThreadGuid(creatingThread.getThreadGuid());
+            entity.setExternalGuid(creatingThread.getExternalGuid());
             log.debug("Creating a thread for externalGuid: {}, entryGuid: {}", entity.getExternalGuid().toString(), entity.getEntryGuid().toString());
         } else {
             log.debug("Creating a new entry for externalGuid: {}", entity.getExternalGuid());
@@ -138,6 +141,54 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
     }
 
     /**
+     * Mark for delete entries by given query. entry is just marked for delete and backend job should pick it up perform operation
+     * @param query
+     * @return items that will be deleted
+     */
+    @Override
+    public List<E> markDelete(IQueryRequest query) {
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "mark to delete by query", query.getSearchField().getFieldName(), 
+                query.getSearchData());
+        List<E> searchHitList = search(query);
+        query.setResultFormat(ResultFormat.FLATTEN);
+        List<E> processed = process(query, searchHitList.stream().iterator());
+        try {
+            processed.stream().forEach(entity -> {
+                entity.setOperationStatus(OperationStatus.DELETE);
+                crudRepository.save(entity);
+            });
+        } catch (Exception e) {
+            log.error("Error while marking entries for delete. field: {} and UUID: {}" + query.getSearchField().getFieldName(),
+                    query.getSearchData());
+            throwRestError(NotesAPIError.ERROR_SERVER, e.getCause() != null ? e.getCause().getLocalizedMessage() : e.getMessage());
+        }
+        log.debug("Successfully marked to delete {} entries", processed.size());
+        return processed;
+    }
+
+    /**
+     * Mark for delete entries for given keyGuid. entry is just marked for delete and backend job should pick it up perform operation
+     * @param keyGuid
+     * @return
+     */
+    @Override
+    public E markDelete(UUID keyGuid) {
+        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "mark to delete by guid", "guid", keyGuid);
+        E entity = (E) crudRepository.findById(keyGuid).orElse(null);
+        if (entity != null) {
+            entity.setOperationStatus(OperationStatus.DELETE);
+            crudRepository.save(entity);
+            if (!crudRepository.findById(keyGuid).isPresent()) {
+                log.debug("Successfully marked to delete an entry with guid: {}", entity.getGuid());
+                return entity;
+            }
+        }
+        log.error("Cannot mark to delete. No entry found for given guid: {}", keyGuid);
+        throwRestError(NotesAPIError.ERROR_NOT_FOUND);
+        return null;
+    }
+
+    /**
      * Update entry by guid/entryGuid. if guid is not provided
      * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
      * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
@@ -164,7 +215,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
             List<E> searchResult = getProcessed(QueryRequest.builder()
                     .searchField(Field.ENTRY)
                     .searchData(entity.getEntryGuid().toString())
-                    .filters(Set.of(Filter.EXCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
+                    .filters(Set.of(Filter.GET_ONLY_RECENT, Filter.INCLUDE_ARCHIVED))
                     .build());
             if (searchResult == null || searchResult.isEmpty()) {
                 throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, entity.getEntryGuid());
@@ -256,7 +307,6 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
 
         ESUtil.clearHistoryAndThreads(existingEntity);
         E updating = existingEntity.copyThis();
-        updating.setIsDirty(payloadEntry.getIsDirty());
         updating.setContent(payloadEntry.getContent());
         updating.setGuid(UUID.randomUUID());
         updating.setCreated(ESUtil.getCurrentDate());
@@ -266,9 +316,11 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         return newEntryUpdated;
     }
     
+    @Transactional
     private E save(E existingEntity) {
         E newEntryUpdated = null;
         try {
+            existingEntity.setOperationStatus(OperationStatus.UPSERT);
             newEntryUpdated = (E) crudRepository.save(existingEntity);
             if (newEntryUpdated == null) {
                 log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"DataBase returned null value"));

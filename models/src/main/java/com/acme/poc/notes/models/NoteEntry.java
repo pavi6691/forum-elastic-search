@@ -36,7 +36,6 @@ public record NoteEntry(
     Date created,
     @JsonFormat(pattern = NotesConstants.TIMESTAMP_ISO8601)
     Date archived,
-    Boolean isDirty,                   // Initial true. Should be false when data is ACID persisted to PostgreSQL AND Elasticsearch. Only used in PostgreSQL entity, not Elasticsearch and should also be removed from this class. Only here to not break code in entities.
     List<NoteEntry> threads,
     List<NoteEntry> history
 

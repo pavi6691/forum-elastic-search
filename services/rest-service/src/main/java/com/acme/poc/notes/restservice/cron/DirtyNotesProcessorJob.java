@@ -1,5 +1,6 @@
 package com.acme.poc.notes.restservice.cron;
 import com.acme.poc.notes.core.NotesConstants;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.repositories.ESNotesRepository;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
@@ -32,7 +33,7 @@ public class DirtyNotesProcessorJob {
     @PersistenceContext
     private EntityManager entityManager;
     
-    private static final String UPDATE_DIRTY_TO_FALSE = "UPDATE note e SET e.isDirty = :newValue WHERE e.guid IN :ids";
+    private static final String UPDATE_DIRTY_TO_FALSE = "UPDATE note e SET e.operationStatus = :newValue WHERE e.guid IN :ids";
     
     @Autowired
     public DirtyNotesProcessorJob(PGNotesRepository pgNotesRepository, ESNotesRepository esNotesRepository) {
@@ -42,31 +43,43 @@ public class DirtyNotesProcessorJob {
     @Scheduled(fixedRate = NotesConstants.DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE)
     @Transactional
     public void run() {
+        processDirtyEntries(OperationStatus.UPSERT);
+        processDirtyEntries(OperationStatus.DELETE);
+    }
+    private void processDirtyEntries(OperationStatus operation) {
         // Get dirty entries from postgresql
-        List<PGNoteEntity> resultsFromPg = pgNotesRepository.findByIsDirty(true);
-        
-        if(!resultsFromPg.isEmpty()) {
-            // convert them to es note entities
-            List<ESNoteEntity> esNoteEntities = resultsFromPg.stream()
-                    .map(pgNoteEntity -> DTOMapper.INSTANCE.toESEntity(pgNoteEntity))
-                    .collect(Collectors.toList());
-
-            // store them in elasticsearch and make a list of guid(primary key) of stored entries in elasticsearch 
+        List<PGNoteEntity> resultsFromPg = pgNotesRepository.findByOperationStatus(operation);
+        if (!resultsFromPg.isEmpty()) {
+            if (OperationStatus.DELETE == operation) {
+                pgNotesRepository.deleteByOperationStatus(operation);
+            }
             List<UUID> idsToUpdate = new ArrayList<>();
             try {
+                // convert them to es note entities
+                List<ESNoteEntity> esNoteEntities = resultsFromPg.stream()
+                        .map(pgNoteEntity -> DTOMapper.INSTANCE.toESEntity(pgNoteEntity))
+                        .collect(Collectors.toList());
+
                 // TODO to To_Upgrade_7.x when upgraded to 7.x and above, uncomment below line, and no need to esNotesRepository.save(e); just iterate savedInEs instead of esNoteEntities
-//                Iterable<ESNoteEntity> savedInEs = esNotesRepository.saveAll(esNoteEntities); 
+//                Iterable<ESNoteEntity> savedInEs = esNotesRepository.saveAll(esNoteEntities);
                 if (esNoteEntities != null) {
                     esNoteEntities.forEach(e -> {
-                        esNotesRepository.save(e);
+                        if(OperationStatus.UPSERT == operation) {
+                            esNotesRepository.save(e);
+                        } else if(OperationStatus.DELETE == operation) {
+                            esNotesRepository.delete(e);
+                        }
                         idsToUpdate.add(e.getGuid());
                     });
                 }
-                // update entries in postgresql with dirty flag to false
-                entityManager.createQuery(UPDATE_DIRTY_TO_FALSE)
-                        .setParameter("newValue", false)
-                        .setParameter("ids", idsToUpdate)
-                        .executeUpdate();
+                // update postgresql
+                if (OperationStatus.UPSERT == operation) {
+                    // Update entries in PostgreSQL with dirty flag to false
+                    entityManager.createQuery(UPDATE_DIRTY_TO_FALSE)
+                            .setParameter("newValue", OperationStatus.NONE)
+                            .setParameter("ids", idsToUpdate)
+                            .executeUpdate();
+                }
             } catch (Exception e) {
                 log.error("Exception in processing dirty entries", e);
             }
