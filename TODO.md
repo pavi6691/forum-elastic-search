@@ -12,7 +12,7 @@
 
 
 ## Current phase
-- [ ] Add endpoints (see also REST service [README.md](services/rest-service/README.md)):
+- [ ] Add endpoints (see also REST service [README.md](services/rest-service/README.md)); I think these could be just copied (not removed) from admin controllers as-is(?):
   - [ ] GET `getByExternalGuid` to user controllers in order to (as a user) be able to retrieve all entries belonging to this `externalGuid`.
   - [ ] DELETE `deleteByEntryGuid` to user controllers in order to (as a user) be able to (soft-)delete all entries belonging to this `entryGuid` and all of its children.
 - [X] Endpoint problems:
