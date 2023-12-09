@@ -193,33 +193,31 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
      * fetches recent entry for given entryGuid and updates it and create a new entry with updated content.
      * if entry is recently updated while this update is being made then throw an error asking for reload an entry and update again
      *
-     * @param entity
+     * @param payloadEntity
      * @return updated entry
      */
     
     @Override
-    public E update(E entity) {
+    public E update(E payloadEntity) {
         log.debug("{} request: {}, field: {}, uuid: {}, content: {}", LogUtil.method(), "update",
-                entity.getGuid() != null ? "guid" : "entryGuid",
-                entity.getGuid() != null ? entity.getGuid() : entity.getEntryGuid(), entity.getContent());
-       if (entity.getGuid() != null) {
-            E existingEntry = get(entity.getGuid());
-            if (existingEntry == null) {
-                throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, entity.getGuid());
+                payloadEntity.getGuid() != null ? "guid" : "entryGuid",
+                payloadEntity.getGuid() != null ? payloadEntity.getGuid() : payloadEntity.getEntryGuid(), payloadEntity.getContent());
+        E entry = null;
+       if (payloadEntity.getGuid() != null) {
+           entry = get(payloadEntity.getGuid());
+            if (entry == null) {
+                throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, payloadEntity.getGuid());
             }
-            return update(existingEntry, entity);
-        } else {
-            List<E> searchResult = getProcessed(QueryRequest.builder()
-                    .searchField(Field.ENTRY)
-                    .searchData(entity.getEntryGuid().toString())
-                    .filters(Set.of(Filter.GET_ONLY_RECENT, Filter.INCLUDE_ARCHIVED))
-                    .build());
-            if (searchResult == null || searchResult.isEmpty()) {
-                throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, entity.getEntryGuid());
-            }
-            E existingEntry = searchResult.get(0);
-            return update(existingEntry, entity);
         }
+        List<E> searchResult = getProcessed(QueryRequest.builder()
+                .searchField(Field.ENTRY)
+                .searchData(entry.getEntryGuid().toString())
+                .filters(Set.of(Filter.GET_ONLY_RECENT, Filter.INCLUDE_ARCHIVED))
+                .build());
+        if (searchResult == null || searchResult.isEmpty()) {
+            throwRestError(NotesAPIError.ERROR_NOT_EXISTS_ENTRY_GUID, payloadEntity.getEntryGuid());
+        }
+        return validateAndUpdate(searchResult.get(0), payloadEntity);
     }
 
     /**
@@ -290,23 +288,23 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         log.debug("Number of entries archived: {}", entriesToArchive.size());
     }
 
-    private E update(E existingEntity, E payloadEntry) {
+    private E validateAndUpdate(E recentEntry, E payloadEntity) {
         log.debug("{}", LogUtil.method());
-        if (!payloadEntry.getCreated().equals(existingEntity.getCreated())) {
-            throwRestError(NotesAPIError.ERROR_ENTRY_HAS_BEEN_MODIFIED, existingEntity.getCreated());  // TODO Make sure we format all timestamps in {@link NotesConstants.TIMESTAMP_ISO8601} format (not here, but in throwRestError method)
+        if (!payloadEntity.getCreated().equals(recentEntry.getCreated())) {
+            throwRestError(NotesAPIError.ERROR_ENTRY_HAS_BEEN_MODIFIED, recentEntry.getCreated());  // TODO Make sure we format all timestamps in {@link NotesConstants.TIMESTAMP_ISO8601} format (not here, but in throwRestError method)
         }
-        if (existingEntity.getArchived() != null) {
+        if (payloadEntity.getArchived() != null) {
             throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_NO_UPDATE);
         }
 
-        ESUtil.clearHistoryAndThreads(existingEntity);
-        E updating = existingEntity.copyThis();
-        updating.setContent(payloadEntry.getContent());
+        ESUtil.clearHistoryAndThreads(recentEntry);
+        E updating = recentEntry.copyThis();
+        updating.setContent(payloadEntity.getContent());
         updating.setGuid(UUID.randomUUID());
         updating.setCreated(ESUtil.getCurrentDate());
         E newEntryUpdated = save(updating);
-        log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", payloadEntry.getExternalGuid(), 
-                payloadEntry.getEntryGuid(), existingEntity.getContent(), payloadEntry.getContent());
+        log.debug("Updated externalGuid: {}, entryGuid: {}, changed content from: {} to: {}", recentEntry.getExternalGuid(),
+                recentEntry.getEntryGuid(), recentEntry.getContent(), payloadEntity.getContent());
         return newEntryUpdated;
     }
     
