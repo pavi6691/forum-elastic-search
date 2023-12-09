@@ -3,6 +3,8 @@ package com.acme.poc.notes.restservice.controller.postgresql;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.models.NoteSortOrder;
+import com.acme.poc.notes.models.validation.CreateValidationGroup;
+import com.acme.poc.notes.models.validation.UpdateValidationGroup;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
@@ -19,9 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -45,14 +46,14 @@ public class PGUserController {
             @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
     })
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
-    public ResponseEntity<PGNoteEntity> create(@Valid @RequestBody NoteEntry payloadEntry) {
+    public ResponseEntity<PGNoteEntity> create(@Validated(CreateValidationGroup.class) @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.create(DTOMapper.INSTANCE.toEntity(payloadEntry)));
     }
 
     @Operation(summary = "Update existing entry by guid/entryGuid in the payload", description = "Update existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
-    public ResponseEntity<PGNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
+    public ResponseEntity<PGNoteEntity> update(@Validated(UpdateValidationGroup.class) @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.update(DTOMapper.INSTANCE.toEntity(payloadEntry)));
     }

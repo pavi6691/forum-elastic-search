@@ -3,6 +3,8 @@ package com.acme.poc.notes.restservice.controller.elasticsearch;
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.models.NoteSortOrder;
+import com.acme.poc.notes.models.validation.CreateValidationGroup;
+import com.acme.poc.notes.models.validation.UpdateValidationGroup;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
@@ -20,8 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -46,7 +48,7 @@ public class ESUserController {
             @ApiResponse(responseCode = "400", description = "DESCRIPTION", content = @Content)
     })
     @PostMapping(NotesConstants.API_ENDPOINT_NOTES_CREATE)
-    public ResponseEntity<ESNoteEntity> create(@Valid @RequestBody NoteEntry payloadEntry) {
+    public ResponseEntity<ESNoteEntity> create(@Validated(CreateValidationGroup.class) @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.create(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }
@@ -54,7 +56,7 @@ public class ESUserController {
     @Hidden
     @Operation(summary = "Update existing entry by guid/entryGuid in the payload", description = "Update existing entry by guid/entryGuid. Current data will be archived as a previous version", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_TAG })
     @PutMapping(NotesConstants.API_ENDPOINT_NOTES_UPDATE)
-    public ResponseEntity<ESNoteEntity> update(@Valid @RequestBody NoteEntry payloadEntry) {
+    public ResponseEntity<ESNoteEntity> update(@Validated(UpdateValidationGroup.class) @RequestBody NoteEntry payloadEntry) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(esNotesService.update(DTOMapper.INSTANCE.toESEntity(payloadEntry)));
     }

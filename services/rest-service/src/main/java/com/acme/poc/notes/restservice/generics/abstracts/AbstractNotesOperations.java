@@ -202,10 +202,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         log.debug("{} request: {}, field: {}, uuid: {}, content: {}", LogUtil.method(), "update",
                 entity.getGuid() != null ? "guid" : "entryGuid",
                 entity.getGuid() != null ? entity.getGuid() : entity.getEntryGuid(), entity.getContent());
-        if (entity.getGuid() == null && entity.getEntryGuid() == null) {
-            throwRestError(NotesAPIError.ERROR_MISSING_PROPERTIES_FOR_UPDATE);
-            return null;
-        } else if (entity.getGuid() != null) {
+       if (entity.getGuid() != null) {
             E existingEntry = get(entity.getGuid());
             if (existingEntry == null) {
                 throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, entity.getGuid());
@@ -295,9 +292,6 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
 
     private E update(E existingEntity, E payloadEntry) {
         log.debug("{}", LogUtil.method());
-        if (payloadEntry.getCreated() == null) {
-            throwRestError(NotesAPIError.ERROR_MISSING_CREATED);
-        }
         if (!payloadEntry.getCreated().equals(existingEntity.getCreated())) {
             throwRestError(NotesAPIError.ERROR_ENTRY_HAS_BEEN_MODIFIED, existingEntity.getCreated());  // TODO Make sure we format all timestamps in {@link NotesConstants.TIMESTAMP_ISO8601} format (not here, but in throwRestError method)
         }
