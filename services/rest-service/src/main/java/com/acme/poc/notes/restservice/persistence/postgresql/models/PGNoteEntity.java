@@ -49,13 +49,13 @@ public class PGNoteEntity implements INoteEntity<PGNoteEntity> {
     private Date created;
     private Date archived;
     @Enumerated(EnumType.STRING) @Builder.Default
-    private OperationStatus operationStatus = OperationStatus.NONE;
+    private OperationStatus operationStatus = OperationStatus.ACTIVE;
     @Transient
     private List<PGNoteEntity> threads = null; // Answers/responses to this note
     @Transient
     private List<PGNoteEntity> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
-    public PGNoteEntity copyThis() {
+    public PGNoteEntity clone() {
         return DTOMapper.INSTANCE.from(this);
     }
     @Override

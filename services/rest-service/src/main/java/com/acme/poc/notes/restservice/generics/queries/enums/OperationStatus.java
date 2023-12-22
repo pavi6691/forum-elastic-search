@@ -1,7 +1,10 @@
 package com.acme.poc.notes.restservice.generics.queries.enums;
 
 public enum OperationStatus {
-    NONE,
+    ACTIVE,
     UPSERT,
-    DELETE
+    DELETE,
+    SOFT_DELETED,
+    MARK_FOR_DELETE,
+    MARK_FOR_SOFT_DELETE
 }

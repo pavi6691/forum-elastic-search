@@ -8,6 +8,7 @@ import com.acme.poc.notes.models.validation.UpdateValidationGroup;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
@@ -63,6 +64,27 @@ public class PGUserController {
     public ResponseEntity<PGNoteEntity> getByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
         return ResponseEntity.ok(pgsqlNotesService.get(guid));
+    }
+
+    @Operation(summary = "Retrieve entries by externalGuid", description = "Retrieve entries by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_ADMIN_TAG })
+    @GetMapping(NotesConstants.API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID)
+    public ResponseEntity<List<PGNoteEntity>> getByExternalGuid(
+            @PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_VERSIONS, required = false, defaultValue = "false") boolean includeVersions,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_ARCHIVED, required = false, defaultValue = "false") boolean includeArchived,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SEARCHAFTER, required = false) String searchAfter,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SIZE, required = false, defaultValue = "0") int size,
+            @RequestParam(name = NotesConstants.API_ENDPOINT_QUERY_PARAMETER_INCLUDE_SORTORDER, required = false) NoteSortOrder sortOrder) {
+        log.debug("{}", LogUtil.method());
+        return ResponseEntity.ok(pgsqlNotesService.get(QueryRequest.builder()
+                .searchField(Field.EXTERNAL)
+                .searchData(externalGuid.toString())
+                .filters(Set.of(includeVersions ? Filter.INCLUDE_VERSIONS : Filter.EXCLUDE_VERSIONS,
+                        includeArchived ? Filter.INCLUDE_ARCHIVED : Filter.EXCLUDE_ARCHIVED))
+                .size(size)
+                .searchAfter(searchAfter)
+                .sortOrder(sortOrder)
+                .build()));
     }
 
     @Operation(summary = "Retrieve entries by entryGuid", description = "Retrieve entries by entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
@@ -202,24 +224,24 @@ public class PGUserController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.markDelete((QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .allEntries(true)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
-                .build())));
+                .build(),OperationStatus.MARK_FOR_SOFT_DELETE));
     }
 
     @Operation(summary = "Delete archived entries by entryGuid", description = "Delete archived entries by entryGuid. Will also delete all responses to this entryGuid.", tags = { NotesConstants.OPENAPI_NOTES_POSTGRESQL_TAG })
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID)
     public ResponseEntity<List<PGNoteEntity>> deleteArchivedByEntryGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID) UUID entryGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(pgsqlNotesService.markDelete(QueryRequest.builder()
+        return ResponseEntity.ok(pgsqlNotesService.delete(QueryRequest.builder()
                 .searchField(Field.ENTRY)
                 .allEntries(true)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
-                .build()));
+                .build(),OperationStatus.MARK_FOR_SOFT_DELETE));
     }
 
 }

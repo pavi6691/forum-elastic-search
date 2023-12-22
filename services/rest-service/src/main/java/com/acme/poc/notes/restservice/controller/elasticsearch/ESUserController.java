@@ -5,6 +5,7 @@ import com.acme.poc.notes.models.NoteEntry;
 import com.acme.poc.notes.models.NoteSortOrder;
 import com.acme.poc.notes.models.validation.CreateValidationGroup;
 import com.acme.poc.notes.models.validation.UpdateValidationGroup;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.service.esservice.ESNotesService;
@@ -214,12 +215,12 @@ public class ESUserController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID)
     public ResponseEntity<List<ESNoteEntity>> deleteArchivedByExternalGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID) UUID externalGuid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(esNotesService.delete((QueryRequest.builder()
+        return ResponseEntity.ok(esNotesService.delete(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .allEntries(true)
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
-                .build())));
+                .build(),OperationStatus.MARK_FOR_SOFT_DELETE));
     }
 
     @Hidden
@@ -232,7 +233,7 @@ public class ESUserController {
                 .allEntries(true)
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ONLY_ARCHIVED))
-                .build()));
+                .build(),OperationStatus.MARK_FOR_SOFT_DELETE));
     }
 
 }

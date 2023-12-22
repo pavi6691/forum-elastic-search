@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 public class NotesConstants {
 
     // Scheduled jobs
-    public static final int DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE = 5/*seconds*/ * 1000/*millis*/;  // Run every 5th second
+    public static final int NOTES_PROCESSOR_JOB_SCHEDULE = 5/*seconds*/ * 1000/*millis*/;  // Run every 5th second
 
     // Timestamps
     public static final String TIMESTAMP_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX";
@@ -77,6 +77,8 @@ public class NotesConstants {
     public static final String API_ENDPOINT_NOTES_CREATE = "";
     // GET
     public static final String API_ENDPOINT_NOTES_GET_ALL = "";
+
+    public static final String API_ENDPOINT_NOTES_GET_ALL_SOFT_DELETED = "softdeleted";
     public static final String API_ENDPOINT_NOTES_GET_BY_GUID = "/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
     public static final String API_ENDPOINT_NOTES_GET_BY_EXTERNAL_GUID = "/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
     public static final String API_ENDPOINT_NOTES_GET_BY_ENTRY_GUID = "/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
@@ -95,4 +97,15 @@ public class NotesConstants {
     public static final String API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_ENTRY_GUID = "/archived/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
     public static final String API_ENDPOINT_NOTES_DELETE_ARCHIVED_BY_EXTERNAL_GUID = "/archived/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
 
+    // RESTORE SOFT DELETED
+    public static final String API_ENDPOINT_NOTES_RESTORE_BY_GUID = "/restore/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_RESTORE_BY_EXTERNAL_GUID = "/restore/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_RESTORE_BY_ENTRY_GUID = "/restore/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_RESTORE_BY_THREAD_GUID = "/restore/threadguid/{" + API_ENDPOINT_PATH_PARAMETER_THREAD_GUID + "}";
+
+    // GET SOFT DELETED
+    public static final String API_ENDPOINT_NOTES_GET_SOFT_DELETED_BY_GUID = "/softdeleted/guid/{" + API_ENDPOINT_PATH_PARAMETER_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_GET_SOFT_DELETED_BY_EXTERNAL_GUID = "/softdeleted/externalguid/{" + API_ENDPOINT_PATH_PARAMETER_EXTERNAL_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_GET_SOFT_DELETED_BY_ENTRY_GUID = "/softdeleted/entryguid/{" + API_ENDPOINT_PATH_PARAMETER_ENTRY_GUID + "}";
+    public static final String API_ENDPOINT_NOTES_GET_SOFT_DELETED_BY_THREAD_GUID = "/softdeleted/threadguid/{" + API_ENDPOINT_PATH_PARAMETER_THREAD_GUID + "}";
 }

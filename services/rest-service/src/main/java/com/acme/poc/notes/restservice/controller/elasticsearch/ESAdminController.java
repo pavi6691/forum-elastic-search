@@ -2,6 +2,7 @@ package com.acme.poc.notes.restservice.controller.elasticsearch;
 
 import com.acme.poc.notes.core.NotesConstants;
 import com.acme.poc.notes.models.NoteSortOrder;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
@@ -64,7 +65,7 @@ public class ESAdminController {
     @DeleteMapping(NotesConstants.API_ENDPOINT_NOTES_DELETE_BY_GUID)
     public ResponseEntity<ESNoteEntity> deleteByGuid(@PathVariable(NotesConstants.API_ENDPOINT_PATH_PARAMETER_GUID) UUID guid) {
         log.debug("{}", LogUtil.method());
-        return ResponseEntity.ok(esNotesService.delete(guid));
+        return ResponseEntity.ok(esNotesService.delete(guid, OperationStatus.MARK_FOR_DELETE));
     }
 
     @Operation(summary = "Delete entries by externalGuid", description = "Delete entries by externalGuid", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_ADMIN_TAG })
@@ -77,7 +78,7 @@ public class ESAdminController {
                 .searchData(externalGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
-                .build()));
+                .build(),OperationStatus.MARK_FOR_DELETE));
     }
 
     @Operation(summary = "Delete entries by entryGuid", description = "Delete entries by entryGuid", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_ADMIN_TAG })
@@ -90,7 +91,7 @@ public class ESAdminController {
                 .searchData(entryGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
-                .build()));
+                .build(),OperationStatus.MARK_FOR_DELETE));
     }
 
     @Operation(summary = "Delete entries by threadGuid", description = "Delete entries by threadGuid", tags = { NotesConstants.OPENAPI_NOTES_ELASTICSEARCH_ADMIN_TAG })
@@ -103,7 +104,6 @@ public class ESAdminController {
                 .searchData(threadGuid.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
-                .build()));
+                .build(),OperationStatus.MARK_FOR_DELETE));
     }
-
 }

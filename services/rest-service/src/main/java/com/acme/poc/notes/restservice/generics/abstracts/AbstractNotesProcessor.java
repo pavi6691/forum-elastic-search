@@ -7,6 +7,7 @@ import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.QueryRequest;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.util.ESUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -183,7 +184,7 @@ public abstract class AbstractNotesProcessor<E extends INoteEntity<E>> {
     protected void updateVersions(E existingEntry, E updatedEntry, IQueryRequest query, Collection<E> results) {
         if (!existingEntry.getGuid().equals(updatedEntry.getGuid())) {
             if (query.getFilters().contains(Filter.INCLUDE_VERSIONS)) {
-                E history = existingEntry.copyThis();
+                E history = existingEntry.clone();
                 ESUtil.clearHistoryAndThreads(history);
                 if (query.getResultFormat() == ResultFormat.TREE) {
                     if (query.getSortOrder() == NoteSortOrder.ASCENDING) {

@@ -1,9 +1,12 @@
 package com.acme.poc.notes.restservice.generics.queries;
 
 import com.acme.poc.notes.models.NoteSortOrder;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
 import com.acme.poc.notes.restservice.generics.queries.enums.Field;
+
+import java.util.List;
 import java.util.Set;
 
 
@@ -20,5 +23,6 @@ public interface IQueryRequest {
     String getSearchData();
     boolean isAllEntries();
     long getCreatedDateTime();
+    List<OperationStatus> getOperationStatuses();
     
 }

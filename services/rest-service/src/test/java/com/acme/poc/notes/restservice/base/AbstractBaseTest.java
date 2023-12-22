@@ -2,7 +2,7 @@ package com.acme.poc.notes.restservice.base;
 
 import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.restservice.generics.interfaces.INotesOperations;
-import com.acme.poc.notes.restservice.base.data.ElasticSearchData;
+import com.acme.poc.notes.restservice.base.data.NotesDataForTesting;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +17,11 @@ public abstract class AbstractBaseTest<E extends INoteEntity<E>> extends TestCon
     protected INotesOperations<E> notesService;
     protected AbstractBaseTest(INotesOperations<E> notesService) {
         this.notesService = notesService;
+        try {
+            if(testContainers) {
+                notesService.getCrudRepository().deleteAll();
+            }
+        } catch (Exception e) {}
     }
 
     protected INoteEntity createNewEntry(E newExternalEntry) {
@@ -51,7 +56,7 @@ public abstract class AbstractBaseTest<E extends INoteEntity<E>> extends TestCon
     }
 
     protected INoteEntity updateGuid(INoteEntity<E> existingEntry, String content) {
-        E newEntry = existingEntry.copyThis();
+        E newEntry = existingEntry.clone();
         newEntry.setGuid(existingEntry.getGuid());
         newEntry.setContent(content);
         newEntry.setEntryGuid(existingEntry.getEntryGuid());
@@ -153,7 +158,7 @@ public abstract class AbstractBaseTest<E extends INoteEntity<E>> extends TestCon
         Map<String, E> entries = new HashMap<>();
         JSONArray jsonArray = null;
         try {
-            jsonArray = new JSONArray(ElasticSearchData.ENTRIES);
+            jsonArray = new JSONArray(NotesDataForTesting.ENTRIES);
             for (int i = 0; i < jsonArray.length(); i++) {
                 ObjectMapper mapper = new ObjectMapper();
                 E data = mapper.readValue(jsonArray.getString(i), 

@@ -20,11 +20,9 @@ public interface INoteEntity<E> {
     UUID getEntryGuidParent();
     void setEntryGuidParent(UUID entryGuidParent);
     NoteType getType();
-    void setType(NoteType type);
     String getContent();
     void setContent(String content);
     Object getCustomJson();
-    void setCustomJson(Object customJson);
     Date getCreated();
     void setCreated(Date created);
     void setCreatedInitially(Date createdInitially);
@@ -36,7 +34,7 @@ public interface INoteEntity<E> {
     @JsonIgnore
     default void setOperationStatus(OperationStatus operationStatus) {}
     @JsonIgnore
-    default OperationStatus getOperationStatus() {return OperationStatus.NONE;}
+    default OperationStatus getOperationStatus() {return OperationStatus.ACTIVE;}
     default void setThreads(List<E> threads){}
     default void setHistory(List<E> history) {}
     @JsonIgnore
@@ -64,7 +62,7 @@ public interface INoteEntity<E> {
         }
     }
     @JsonIgnore
-    E copyThis();
+    E clone();
     @JsonIgnore
     E newInstance();
 

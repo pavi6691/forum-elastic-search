@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.pgsql;
 
 import com.acme.poc.notes.restservice.base.AbstractIntegrationTest;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.persistence.postgresql.models.PGNoteEntity;
 import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNotesRepository;
 import com.acme.poc.notes.restservice.service.pgsqlservice.PGSQLNotesService;
@@ -67,7 +68,7 @@ public class PostgreSQLIntegrationTest extends AbstractIntegrationTest<PGNoteEnt
     @Order(4)
     @DisplayName("delete by guid")
     void delete() {
-        assertEquals(TEST_NOTE.guid(), notesService.delete(TEST_NOTE.guid()).getGuid());
+        assertEquals(TEST_NOTE.guid(), notesService.delete(TEST_NOTE.guid(), OperationStatus.DELETE).getGuid());
         assertEquals(null, notesService.get(TEST_NOTE.guid()));
     }
 

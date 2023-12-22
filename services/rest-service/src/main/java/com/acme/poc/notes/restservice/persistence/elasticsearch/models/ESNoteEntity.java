@@ -88,7 +88,7 @@ public class ESNoteEntity implements INoteEntity<ESNoteEntity> {
     @Transient
     private List<ESNoteEntity> history = null; // Previous versions of this entryGuid, sorted by ???
     @Override
-    public ESNoteEntity copyThis() {
+    public ESNoteEntity clone() {
         return DTOMapper.INSTANCE.from(this);
     }
     @Override

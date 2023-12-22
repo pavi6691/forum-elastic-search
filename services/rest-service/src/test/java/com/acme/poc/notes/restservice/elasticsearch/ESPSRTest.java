@@ -2,6 +2,7 @@ package com.acme.poc.notes.restservice.elasticsearch;
 
 import com.acme.poc.notes.restservice.generics.models.INoteEntity;
 import com.acme.poc.notes.restservice.base.AbstractBaseTest;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.persistence.elasticsearch.models.ESNoteEntity;
 import com.acme.poc.notes.restservice.generics.queries.IQueryRequest;
@@ -78,9 +79,9 @@ public class ESPSRTest extends AbstractBaseTest<ESNoteEntity> {
                 .searchData(EXTERNAL_GUID.toString())
                 .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                 .resultFormat(ResultFormat.FLATTEN)
-                .build());
+                .build(),OperationStatus.DELETE);
         log.info("Deleted {} entries", searchResult.size());
-        validateAll(searchResult, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES + 1, 0, 0);
+        validateAll(searchResult, 1, NUMBER_OF_ENTRIES + 1, NUMBER_OF_ENTRIES, 0);
         searchResult = notesService.get(QueryRequest.builder()
                 .searchField(Field.EXTERNAL)
                 .searchData(EXTERNAL_GUID.toString())

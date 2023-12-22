@@ -1,6 +1,7 @@
 package com.acme.poc.notes.restservice.generics.queries;
 
 import com.acme.poc.notes.models.NoteSortOrder;
+import com.acme.poc.notes.restservice.generics.queries.enums.OperationStatus;
 import com.acme.poc.notes.restservice.generics.queries.enums.ResultFormat;
 import com.acme.poc.notes.restservice.generics.abstracts.AbstractNotesProcessor;
 import com.acme.poc.notes.restservice.generics.queries.enums.Filter;
@@ -40,5 +41,17 @@ public class QueryRequest implements IQueryRequest {
     public Set<Filter> getFilters() {
         filters = new HashSet<>(filters);
         return filters;
+    }
+    @Override
+    public List<OperationStatus> getOperationStatuses() {
+        List<OperationStatus> operationStatuses;
+        if (filters.contains(Filter.INCLUDE_SOFT_DELETED)) {
+            operationStatuses = List.of(OperationStatus.MARK_FOR_SOFT_DELETE,OperationStatus.SOFT_DELETED,OperationStatus.ACTIVE,OperationStatus.UPSERT);
+        } else if (filters.contains(Filter.ONLY_SOFT_DELETED)) {
+            operationStatuses = List.of(OperationStatus.MARK_FOR_SOFT_DELETE,OperationStatus.SOFT_DELETED);
+        } else {
+            operationStatuses = List.of(OperationStatus.ACTIVE,OperationStatus.UPSERT);
+        }
+        return operationStatuses;
     }
 }

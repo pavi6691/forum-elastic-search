@@ -6,7 +6,10 @@ elasticsearch:
 index.name: note-v1
 default.db.response.size: 1000
 service.thread.pool.size: 8
-
+notes:
+  processor:
+    job:
+      enabled: false
 springdoc.show-actuator: true
 springdoc.swagger-ui.operationsSorter: method
 springdoc.swagger-ui.tagsSorter: alpha

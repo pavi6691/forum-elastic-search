@@ -18,7 +18,8 @@ public enum NotesAPIError {
     ERROR_ENTRY_HAS_BEEN_MODIFIED          (409, 4013, "Entry recently updated. Please reload"),
     ERROR_GET_ALL_ENTRIES_TIMEOUT_DELETE   (408, 4014, "Getting all entries timed out, time taken: %s ms"),
     ERROR_NOT_FOUND                        (404, 4015, "No entries found"),
-
+    ERROR_SOFT_DELETED                     (404, 4016, "Entry soft deleted"),
+    ERROR_SOFT_DELETED_ENTRIES_NOT_FOUND   (404, 4017, "Soft deleted entries not found"),
     ERROR_SERVER                           (500, 5000, "error message: %s"),
     ERROR_ON_DB_OPERATION                  (500, 5002, "Error while performing database operation. Operation: %s, error: %s");
 

@@ -93,7 +93,11 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
     @Override
     public E get(UUID guid) {
         log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "get", "guid", guid);
-        return (E) crudRepository.findById(guid).orElse(null);
+        E entry = (E) crudRepository.findById(guid).orElse(null);
+        if(entry != null && (entry.getOperationStatus().equals(OperationStatus.MARK_FOR_SOFT_DELETE) || entry.getOperationStatus().equals(OperationStatus.SOFT_DELETED))) {
+            throwRestError(NotesAPIError.ERROR_SOFT_DELETED);
+        }
+        return entry;
     }
 
     @Override
@@ -103,87 +107,66 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
     }
 
     /**
-     * Deletes entries by either externalGuid/entryGuid
-     *
+     * Deletes entries by either externalGuid/entryGuid for {@link OperationStatus#DELETE}{@link OperationStatus#ACTIVE}
+     * For other OperationStatus just mark for delete entries by given query. 
+     * entry is just marked for delete and backend job should pick it up perform operation
      * @param query search entries for given externalGuid/entryGuid
      * @return deleted entries
      */
     @Override
-    public List<E> delete(IQueryRequest query) {
-        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "delete by query", query.getSearchField().getFieldName(), query.getSearchData());
+    public List<E> delete(IQueryRequest query, OperationStatus operationStatus) {
+        log.debug("{} request: {}, deleteType: {}, field: {}, uuid: {}", LogUtil.method(), "delete by query",
+                operationStatus, query.getSearchField().getFieldName(), query.getSearchData());
+        query.getFilters().add(Filter.INCLUDE_SOFT_DELETED);
         List<E> searchHitList = search(query);
         query.setResultFormat(ResultFormat.FLATTEN);
+        List<E> cloned = new ArrayList<>(); // cloned for processing again for TREE view
+        searchHitList.stream().forEach(s -> cloned.add(s.clone()));
         List<E> processed = process(query, searchHitList.stream().iterator());
         try {
-            crudRepository.deleteAll(processed);
+            if (operationStatus == OperationStatus.DELETE || operationStatus == OperationStatus.ACTIVE) {
+                crudRepository.deleteAll(processed);
+            } else {
+                processed.stream().forEach(entity -> {
+                    entity.setOperationStatus(operationStatus);
+                    crudRepository.save(entity);
+                });
+            }
         } catch (Exception e) {
-            log.error("Error while deleting entries with field: {} and UUID: {}" + query.getSearchField().getFieldName(),query.getSearchData());
+            log.error("Error while performing delete operation. operation: {} field: {} and UUID: {}", operationStatus,
+                    query.getSearchField().getFieldName(),query.getSearchData());
             throwRestError(NotesAPIError.ERROR_SERVER, e.getCause() != null ? e.getCause().getLocalizedMessage() : e.getMessage());
         }
-        log.debug("Successfully deleted all {} entries", processed.size());
-        return processed;
-    }
-
-    @Override
-    public E delete(UUID keyGuid) {
-        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "delete by guid", "guid", keyGuid);
-        E entity = (E) crudRepository.findById(keyGuid).orElse(null);
-        if (entity != null) {
-            crudRepository.deleteById(keyGuid);
-            if (!crudRepository.findById(keyGuid).isPresent()) {
-                log.debug("Successfully deleted an entry with guid: {}", entity.getGuid());
-                return entity;
-            }
-        }
-        log.error("Cannot delete. No entry found for given guid: {}", keyGuid);
-        throwRestError(NotesAPIError.ERROR_NOT_FOUND);
-        return null;
+        log.debug("Successfully performed delete operations. operation: {} entries: {}", operationStatus, processed.size());
+        query.setResultFormat(ResultFormat.TREE);
+        return process(query, cloned.stream().iterator());
     }
 
     /**
-     * Mark for delete entries by given query. entry is just marked for delete and backend job should pick it up perform operation
-     * @param query
-     * @return items that will be deleted
+     * Deletes entries by guid for {@link OperationStatus#DELETE}{@link OperationStatus#ACTIVE}
+     * For other OperationStatus just mark for delete entries by given query. 
+     * entry is just marked for delete and backend job should pick it up perform operation
+     * @param keyGuid get entry for given key guid
+     * @return deleted entries
      */
     @Override
-    public List<E> markDelete(IQueryRequest query) {
-        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "mark to delete by query", query.getSearchField().getFieldName(), 
-                query.getSearchData());
-        List<E> searchHitList = search(query);
-        query.setResultFormat(ResultFormat.FLATTEN);
-        List<E> processed = process(query, searchHitList.stream().iterator());
-        try {
-            processed.stream().forEach(entity -> {
-                entity.setOperationStatus(OperationStatus.DELETE);
-                crudRepository.save(entity);
-            });
-        } catch (Exception e) {
-            log.error("Error while marking entries for delete. field: {} and UUID: {}" + query.getSearchField().getFieldName(),
-                    query.getSearchData());
-            throwRestError(NotesAPIError.ERROR_SERVER, e.getCause() != null ? e.getCause().getLocalizedMessage() : e.getMessage());
-        }
-        log.debug("Successfully marked to delete {} entries", processed.size());
-        return processed;
-    }
-
-    /**
-     * Mark for delete entries for given keyGuid. entry is just marked for delete and backend job should pick it up perform operation
-     * @param keyGuid
-     * @return
-     */
-    @Override
-    public E markDelete(UUID keyGuid) {
-        log.debug("{} request: {}, field: {}, uuid: {}", LogUtil.method(), "mark to delete by guid", "guid", keyGuid);
+    public E delete(UUID keyGuid, OperationStatus operationStatus) {
+        log.debug("{} request: {}, deleteType: {}, field: {}, uuid: {}", LogUtil.method(), "delete by guid", operationStatus, "guid", keyGuid);
         E entity = (E) crudRepository.findById(keyGuid).orElse(null);
         if (entity != null) {
-            entity.setOperationStatus(OperationStatus.DELETE);
-            crudRepository.save(entity);
-            if (!crudRepository.findById(keyGuid).isPresent()) {
-                log.debug("Successfully marked to delete an entry with guid: {}", entity.getGuid());
-                return entity;
+            if (operationStatus == OperationStatus.DELETE ||
+                    operationStatus == OperationStatus.ACTIVE) {
+                crudRepository.deleteById(keyGuid);
+                if (!crudRepository.findById(keyGuid).isPresent()) {
+                    log.debug("Successfully performed delete operations. operation: {} guid: {}", operationStatus, keyGuid);
+                    return entity;
+                }
+            } else {
+                entity.setOperationStatus(operationStatus);
+                return (E) crudRepository.save(entity);
             }
         }
-        log.error("Cannot mark to delete. No entry found for given guid: {}", keyGuid);
+        log.error("Cannot delete. No entry found. operation: {} given guid: {}", operationStatus, keyGuid);
         throwRestError(NotesAPIError.ERROR_NOT_FOUND);
         return null;
     }
@@ -199,7 +182,7 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
     
     @Override
     public E update(E payloadEntity) {
-        log.debug("{} request: {}, field: {}, uuid: {}, content: {}", LogUtil.method(), "update",
+        log.debug("{}, field: {}, uuid: {}, content: {}", LogUtil.method(),
                 payloadEntity.getGuid() != null ? "guid" : "entryGuid",
                 payloadEntity.getGuid() != null ? payloadEntity.getGuid() : payloadEntity.getEntryGuid(), payloadEntity.getContent());
         E entry = null;
@@ -220,6 +203,51 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         return validateAndUpdate(searchResult.get(0), payloadEntity);
     }
 
+    @Override
+    public E restore(UUID keyGuid) {
+        log.debug("{}, field: {}, uuid: {}", LogUtil.method(), "guid", keyGuid);
+        E entity = (E) crudRepository.findById(keyGuid).orElse(null);
+        if(entity != null ) {
+            if (!(entity.getOperationStatus().equals(OperationStatus.MARK_FOR_SOFT_DELETE) ||
+                    entity.getOperationStatus().equals(OperationStatus.SOFT_DELETED))) {
+                throwRestError(NotesAPIError.ERROR_SOFT_DELETED_ENTRIES_NOT_FOUND);
+            }
+        }
+        try {
+            entity.setOperationStatus(OperationStatus.UPSERT);
+            crudRepository.save(entity);
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(), LogUtil.method(), e), e);
+            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(), e.getMessage());
+        }
+        log.debug("Restore Successful, guid: {}", keyGuid);
+        return entity;
+    }
+    @Override
+    public List<E> restore(IQueryRequest query) {
+        log.debug("{}, field: {}, uuid: {}", LogUtil.method(), query.getSearchField().getFieldName(), query.getSearchData());
+        query.getFilters().add(Filter.ONLY_SOFT_DELETED);
+        List<E> searchHitList = search(query);
+        query.setResultFormat(ResultFormat.FLATTEN);
+        List<E> processed = process(query, searchHitList.stream().iterator());
+        if(processed.isEmpty()) {
+            throwRestError(NotesAPIError.ERROR_SOFT_DELETED_ENTRIES_NOT_FOUND);
+        }
+        try {
+            processed.forEach(entryToArchive -> {
+                entryToArchive.setOperationStatus(OperationStatus.UPSERT);
+                crudRepository.save(entryToArchive);
+            });
+        } catch (Exception e) {
+            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(), LogUtil.method(), e), e);
+            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(), e.getMessage());
+        }
+        log.debug("Restore Successful, Number of entries restored: {}", processed.size());
+        query.setResultFormat(ResultFormat.TREE);
+        query.getFilters().remove(Filter.ONLY_SOFT_DELETED);
+        return process(query, search(query).stream().iterator());
+    }
+
     /**
      * Archive by updating existing entry. updates archived field on database with current date and time.
      *
@@ -232,14 +260,10 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         List<E> searchHitList = search(query);
         query.setResultFormat(ResultFormat.FLATTEN);
         List<E> processed = process(query, searchHitList.stream().iterator());
-        try {
-            archive(processed);
-        } catch (Exception e) {
-            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(), LogUtil.method(), e.getMessage()), e);
-            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION, LogUtil.method(), e.getMessage());
-        }
+        archive(processed);
         query.getFilters().remove(Filter.EXCLUDE_ARCHIVED);
         query.getFilters().add(Filter.INCLUDE_ARCHIVED);
+        query.setResultFormat(ResultFormat.TREE);
         return process(query, search(query).stream().iterator());
     }
 
@@ -255,6 +279,9 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         Optional<E> result = crudRepository.findById(guid);
         if (!result.isPresent()) {
             throwRestError(NotesAPIError.ERROR_NOT_EXISTS_GUID, guid);
+        }
+        if((result.get().getOperationStatus().equals(OperationStatus.MARK_FOR_SOFT_DELETE) || result.get().getOperationStatus().equals(OperationStatus.SOFT_DELETED))) {
+            throwRestError(NotesAPIError.ERROR_SOFT_DELETED);
         }
         archive(List.of(result.get()));
         return List.of((E) crudRepository.findById(guid).orElse(null));
@@ -272,6 +299,14 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
                 QueryRequest.builder()
                         .filters(Set.of(Filter.INCLUDE_VERSIONS, Filter.INCLUDE_ARCHIVED))
                         .build());
+    }
+
+    /**
+     * Get crud repo for any other operations
+     */
+    @Override
+    public CrudRepository getCrudRepository() {
+        return crudRepository;
     }
 
     private void archive(List<E> entriesToArchive) {
@@ -293,12 +328,14 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         if (!payloadEntity.getCreated().equals(recentEntry.getCreated())) {
             throwRestError(NotesAPIError.ERROR_ENTRY_HAS_BEEN_MODIFIED, recentEntry.getCreated());  // TODO Make sure we format all timestamps in {@link NotesConstants.TIMESTAMP_ISO8601} format (not here, but in throwRestError method)
         }
-        if (payloadEntity.getArchived() != null) {
+        if (recentEntry.getArchived() != null) {
             throwRestError(NotesAPIError.ERROR_ENTRY_ARCHIVED_NO_UPDATE);
         }
-
+        if((recentEntry.getOperationStatus().equals(OperationStatus.MARK_FOR_SOFT_DELETE) || recentEntry.getOperationStatus().equals(OperationStatus.SOFT_DELETED))) {
+            throwRestError(NotesAPIError.ERROR_SOFT_DELETED);
+        }
         ESUtil.clearHistoryAndThreads(recentEntry);
-        E updating = recentEntry.copyThis();
+        E updating = recentEntry.clone();
         updating.setContent(payloadEntity.getContent());
         updating.setGuid(UUID.randomUUID());
         updating.setCreated(ESUtil.getCurrentDate());
@@ -314,13 +351,13 @@ public abstract class AbstractNotesOperations<E extends INoteEntity<E>> extends 
         try {
             existingEntity.setOperationStatus(OperationStatus.UPSERT);
             newEntryUpdated = (E) crudRepository.save(existingEntity);
-            if (newEntryUpdated == null) {
-                log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"DataBase returned null value"));
-                throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),"DataBase returned null value");
-            }
         } catch (Exception e) {
             log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),e.getMessage()),e);
             throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),e.getMessage());
+        }
+        if (newEntryUpdated == null) {
+            log.error(String.format(NotesAPIError.ERROR_ON_DB_OPERATION.errorMessage(),LogUtil.method(),"DataBase returned null value"));
+            throwRestError(NotesAPIError.ERROR_ON_DB_OPERATION,LogUtil.method(),"DataBase returned null value");
         }
         return newEntryUpdated;
     }

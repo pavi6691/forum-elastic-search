@@ -114,47 +114,23 @@ public class ESNotesService extends AbstractNotesOperations<ESNoteEntity> {
         switch (queryRequest.getSearchField()) {
             case ALL:
                 return QueryBuilders.matchAllQuery();
-            case ENTRY:
-                if (queryRequest.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) {
-                    return QueryBuilders.matchPhraseQuery(Field.ENTRY.getFieldName(), queryRequest.getSearchData());
-                } else {
-                    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                            .must(QueryBuilders.matchPhraseQuery(queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData()));
-
-                    RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(Field.CREATED.getFieldName())
-                            .gte(queryRequest.getCreatedDateTime());
-
-                    boolQuery.must(rangeQuery);
-                    return boolQuery;
-                }
             case EXTERNAL:
                 if (queryRequest.getFilters().contains(Filter.INCLUDE_ONLY_ARCHIVED)) {
                     return QueryBuilders.boolQuery()
                             .must(QueryBuilders.matchPhraseQuery(Field.EXTERNAL.getFieldName(), queryRequest.getSearchData()))
                             .filter(QueryBuilders.existsQuery("archived"));
-                } else {
-                    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                            .must(QueryBuilders.matchPhraseQuery(queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData()));
-
-                    RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(Field.CREATED.getFieldName())
-                            .gte(queryRequest.getCreatedDateTime());
-
-                    boolQuery.must(rangeQuery);
-                    return boolQuery;
                 }
+                break;
             case CONTENT:
                 return QueryBuilders.wildcardQuery(Field.CONTENT.getFieldName(), "*" + queryRequest.getSearchData() + "*")
                         .boost(1.0f)
                         .rewrite("constant_score");
-            default:
-                BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                        .must(QueryBuilders.matchPhraseQuery(queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData()));
-
-                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(Field.CREATED.getFieldName())
-                        .gte(queryRequest.getCreatedDateTime());
-
-                boolQuery.must(rangeQuery);
-                return boolQuery;
         }
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                .must(QueryBuilders.matchPhraseQuery(queryRequest.getSearchField().getFieldName(), queryRequest.getSearchData()));
+        RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(Field.CREATED.getFieldName())
+                .gte(queryRequest.getCreatedDateTime());
+        boolQuery.must(rangeQuery);
+        return boolQuery;
     }
 }

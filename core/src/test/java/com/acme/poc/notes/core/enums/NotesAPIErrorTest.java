@@ -39,7 +39,9 @@ public class NotesAPIErrorTest {
                      ERROR_ENTRY_HAS_BEEN_MODIFIED, 
                      ERROR_GET_ALL_ENTRIES_TIMEOUT_DELETE,
                      ERROR_NOT_FOUND,
-                     ERROR_SERVER,
+                     ERROR_SERVER, 
+                     ERROR_SOFT_DELETED, 
+                     ERROR_SOFT_DELETED_ENTRIES_NOT_FOUND,
                      ERROR_ON_DB_OPERATION -> {
                          String s = String.format("Checking: %s (%s, %s, \"%s\")", notesAPIError.name(), notesAPIError.httpStatusCode(), notesAPIError.errorCode(), notesAPIError.errorMessage());
                          System.out.println(s);

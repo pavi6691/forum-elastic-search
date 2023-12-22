@@ -1,7 +1,7 @@
 package com.acme.poc.notes.restservice.base.data;
 
 
-public class ElasticSearchData {
+public class NotesDataForTesting {
 
 
     public static final String ENTRIES = """

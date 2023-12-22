@@ -8,6 +8,7 @@ import com.acme.poc.notes.restservice.persistence.postgresql.repositories.PGNote
 import com.acme.poc.notes.restservice.util.DTOMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,38 +20,53 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Process dirty entries stored in postgresql. these entries are stored when there are any errors in elasticsearch.
- * Entries are stored with flag isDirty true. Once stored them back them in elasticsearch and isDirty flag is changed to false.
- * So that same entry is not picked for storing in elasticsearch
+/** JOB that covers below uses cases for ACID compliant
+ * 1. Copy UPSERT entries from postgresql to elasticsearch. entries created/updated are marked as UPSERT
+ * 2. Delete entries with operation status MARK_FOR_DELETE. entries are deleted from both postgresql and elasticsearch
+ * 3. Delete entries with operation status SOFT_DELETE from only elasticsearch. So that soft deleted entries are not included in content search.
+ *    And SOFT deleted entries are still present in postgresql and can be reverted by changing setting operation status to UPSERT
  */
 @Slf4j
 @Component
-public class DirtyNotesProcessorJob {
+public class NotesProcessorJob {
     PGNotesRepository pgNotesRepository;
     
     ESNotesRepository esNotesRepository;
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Value("${notes.processor.job.enabled:true}")
+    private boolean notesProcessorJobEnabled;
     
-    private static final String UPDATE_DIRTY_TO_FALSE = "UPDATE note e SET e.operationStatus = :newValue WHERE e.guid IN :ids";
+    private static final String UPDATE_POSTGRESQL = "UPDATE note e SET e.operationStatus = :newValue WHERE e.guid IN :ids";
     
     @Autowired
-    public DirtyNotesProcessorJob(PGNotesRepository pgNotesRepository, ESNotesRepository esNotesRepository) {
+    public NotesProcessorJob(PGNotesRepository pgNotesRepository, ESNotesRepository esNotesRepository) {
         this.pgNotesRepository = pgNotesRepository;
         this.esNotesRepository = esNotesRepository;
     }
-    @Scheduled(fixedRate = NotesConstants.DIRTY_NOTES_PROCESSOR_JOB_SCHEDULE)
-    @Transactional
+    @Scheduled(fixedRate = NotesConstants.NOTES_PROCESSOR_JOB_SCHEDULE)
     public void run() {
-        processDirtyEntries(OperationStatus.UPSERT);
-        processDirtyEntries(OperationStatus.DELETE);
+        if(notesProcessorJobEnabled) {
+            execute();
+        }
     }
-    private void processDirtyEntries(OperationStatus operation) {
-        // Get dirty entries from postgresql
+
+    /**
+     * To execute it manually when required. Ex- in integration test cases
+     */
+    @Transactional
+    public void execute() {
+        processEntries(OperationStatus.UPSERT);
+        processEntries(OperationStatus.MARK_FOR_SOFT_DELETE);
+        processEntries(OperationStatus.MARK_FOR_DELETE);
+    }
+    
+    private void processEntries(OperationStatus operation) {
+        // Get entries from postgresql
         List<PGNoteEntity> resultsFromPg = pgNotesRepository.findByOperationStatus(operation);
         if (!resultsFromPg.isEmpty()) {
-            if (OperationStatus.DELETE == operation) {
+            if (OperationStatus.MARK_FOR_DELETE == operation) {
                 pgNotesRepository.deleteByOperationStatus(operation);
             }
             List<UUID> idsToUpdate = new ArrayList<>();
@@ -66,7 +82,7 @@ public class DirtyNotesProcessorJob {
                     esNoteEntities.forEach(e -> {
                         if(OperationStatus.UPSERT == operation) {
                             esNotesRepository.save(e);
-                        } else if(OperationStatus.DELETE == operation) {
+                        } else if(OperationStatus.MARK_FOR_DELETE == operation || OperationStatus.MARK_FOR_SOFT_DELETE == operation) {
                             esNotesRepository.delete(e);
                         }
                         idsToUpdate.add(e.getGuid());
@@ -74,14 +90,19 @@ public class DirtyNotesProcessorJob {
                 }
                 // update postgresql
                 if (OperationStatus.UPSERT == operation) {
-                    // Update entries in PostgreSQL with dirty flag to false
-                    entityManager.createQuery(UPDATE_DIRTY_TO_FALSE)
-                            .setParameter("newValue", OperationStatus.NONE)
+                    // Update upsert entries in PostgreSQL
+                    entityManager.createQuery(UPDATE_POSTGRESQL)
+                            .setParameter("newValue", OperationStatus.ACTIVE)
+                            .setParameter("ids", idsToUpdate)
+                            .executeUpdate();
+                } else  if (OperationStatus.MARK_FOR_SOFT_DELETE == operation) {
+                    entityManager.createQuery(UPDATE_POSTGRESQL)
+                            .setParameter("newValue", OperationStatus.SOFT_DELETED)
                             .setParameter("ids", idsToUpdate)
                             .executeUpdate();
                 }
             } catch (Exception e) {
-                log.error("Exception in processing dirty entries", e);
+                log.error("Exception in processing notes entries", e);
             }
         }
     }
