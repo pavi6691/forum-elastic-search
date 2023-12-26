@@ -9,7 +9,7 @@ service.thread.pool.size: 8
 notes:
   processor:
     job:
-      enabled: false
+      enabled: true
 springdoc.show-actuator: true
 springdoc.swagger-ui.operationsSorter: method
 springdoc.swagger-ui.tagsSorter: alpha
