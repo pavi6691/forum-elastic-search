@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
+@Transactional
 public class NotesProcessorJob {
     PGNotesRepository pgNotesRepository;
     
@@ -55,7 +56,6 @@ public class NotesProcessorJob {
     /**
      * To execute it manually when required. Ex- in integration test cases
      */
-    @Transactional
     public void execute() {
         processEntries(OperationStatus.UPSERT);
         processEntries(OperationStatus.MARK_FOR_SOFT_DELETE);
